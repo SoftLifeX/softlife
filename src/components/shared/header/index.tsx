@@ -248,7 +248,7 @@ export default function Header({
               <div
                 onClick={() => setIsActive(!isActive)}
                 className={cn(
-                  "relative w-15 h-15 rounded-full flex items-center justify-center cursor-pointer",
+                  "relative w-15 h-15 rounded-full flex items-center justify-center cursor-pointer z-100",
                   scrolled ? "scale-100" : "scale-0",
                   isIntersecting ? "bg-background" : "bg-foreground"
                 )}
@@ -279,4 +279,5 @@ export default function Header({
   );
 
 }
+
 
