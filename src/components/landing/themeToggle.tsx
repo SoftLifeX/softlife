@@ -11,17 +11,10 @@ gsap.registerPlugin(MorphSVGPlugin);
 const ThemeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light");
 
   const raysRef = useRef<(SVGPathElement | null)[]>([]);
   const themePathRef = useRef<SVGPathElement | null>(null);
-
-  // Always call useEffect
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
-  const isLight = theme === "light";
 
   const sunPath =
     "M70 49.5C70 60.82 60.82 70 49.5 70C38.18 70 29 60.82 29 49.5C29 38.18 38.18 29 49.5 29C60 29 69.5 38 70 49.5Z";
@@ -39,9 +32,33 @@ const ThemeToggle: React.FC = () => {
     "M23 23L16 16",
   ];
 
+  // First effect: mount + initialize GSAP + sync theme
+  useEffect(() => {
+    setMounted(true);
+
+    if (theme === "light" || theme === "dark") {
+      setCurrentTheme(theme);
+    }
+
+    // Initialize rays
+    raysRef.current.forEach((el) => {
+      if (!el) return;
+      const len = el.getTotalLength();
+      gsap.set(el, {
+        strokeDasharray: len,
+        strokeDashoffset: len,
+        scale: 0,
+        transformOrigin: "50% 50%",
+      });
+    });
+
+    // Animate rays if initial theme is light
+    if (theme === "light") animateRays(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const animateRays = (show: boolean) => {
     const tl = gsap.timeline({ defaults: { ease: "power3" } });
-
     if (show) {
       tl.fromTo(
         raysRef.current,
@@ -69,56 +86,44 @@ const ThemeToggle: React.FC = () => {
     }
   };
 
-const handleToggle = () => {
-  if (!mounted) return;
+  const handleToggle = () => {
+    if (!mounted) return;
 
-  const nextTheme = theme === "dark" ? "light" : "dark";
-  setTheme(nextTheme);
+    const nextTheme = currentTheme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);          // next-themes
+    setCurrentTheme(nextTheme);   // local state
 
-  const tl = gsap.timeline({ defaults: { ease: "power3" } });
+    const tl = gsap.timeline({ defaults: { ease: "power3" } });
+    tl.add(() => animateRays(nextTheme === "light"), 0);
 
-  tl.add(() => animateRays(nextTheme === "light"), 0);
+    if (themePathRef.current) {
+      tl.to(
+        themePathRef.current,
+        {
+          duration: 1,
+          morphSVG: nextTheme === "light" ? sunPath : moonPath,
+          fill: "var(--background)",
+          stroke: "var(--background)",
+        },
+        "-=0.2"
+      );
+    }
+  };
 
-  if (themePathRef.current) {
-    tl.to(
-      themePathRef.current,
-      {
-        duration: 1,
-        morphSVG: nextTheme === "light" ? sunPath : moonPath,
-        fill: "var(--background)",
-        stroke: "var(--background)",
-      },
-      "-=0.2"
-    );
-  }
-};
+  // Update rays whenever theme changes
+  useEffect(() => {
+    if (!mounted) return;
+    animateRays(currentTheme === "light");
+  }, [currentTheme, mounted]);
 
-  //Always call this effect, it runs after mount
-useEffect(() => {
-  if (!mounted) return;
+  if (!mounted) return null; // mobile-safe
 
-  raysRef.current.forEach((el) => {
-    if (!el) return;
-    const len = el.getTotalLength();
-    gsap.set(el, {
-      strokeDasharray: len,
-      strokeDashoffset: len,
-      scale: 0,
-      transformOrigin: "50% 50%",
-    });
-  });
-
-  if (theme === "light") animateRays(true);
-}, [mounted, theme]);
-
-
-  //Conditionally render JSX
-  if (!mounted) return <div className="w-10 h-10"></div>;
+  const isLight = currentTheme === "light";
 
   return (
     <div
       onClick={handleToggle}
-      className="cursor-pointer w-10 h-10 flex items-center justify-center hover:bg-primary/25 rounded-lg"
+      className="cursor-pointer w-10 h-10 flex items-center justify-center hover:bg-primary/25 rounded-lg z-[50] pointer-events-auto"
     >
       <svg
         width={100}
@@ -131,15 +136,11 @@ useEffect(() => {
           isLight ? "scale-65 hover:rotate-90" : "scale-100"
         )}
       >
-        <g
-          className="stroke-5 stroke-background"
-        >
+        <g className="stroke-5 stroke-background">
           {rayPaths.map((d, i) => (
             <path
               key={i}
-              ref={(el) => {
-                raysRef.current[i] = el;
-              }}
+              ref={(el) => (raysRef.current[i] = el)}
               d={d}
             />
           ))}
@@ -160,4 +161,3 @@ useEffect(() => {
 };
 
 export default ThemeToggle;
-
