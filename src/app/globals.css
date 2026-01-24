@@ -44,7 +44,7 @@
   --color-border: var(--border);
   --color-contact-background: var(--contact-background);
   --color-contact-foreground: var(--contact-foreground);
-  --color-destructive: var(--desctructive);
+  --color-destructive: var(--destructive);
 }
 
 @font-face {
