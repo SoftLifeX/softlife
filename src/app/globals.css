@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-:root {
+html {
   --ease-custom: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --radius: 0.625rem;
 
@@ -18,7 +18,7 @@
   --weight: 400;
 }
 
-.dark {
+html.dark {
   --background: #0d0d0d;
   --foreground: #f5f5f5;
   --primary: #262626;
@@ -31,8 +31,6 @@
   --accent: #c2cabb;
   --weight: 350;
   --destructive: oklch(0.577 0.245 27.325) ;
-    font-variation-settings: 'wght' 350;
-      font-synthesis: none;
       font-weight: 350;
 }
 
@@ -80,7 +78,7 @@
     }
   
     html,
-    .dark {
+    html.dark {
       transition: background-color 0.45s var(--ease-custom),
         color 0.45s var(--ease-custom),
         border-color 0.45s var(--ease-custom);
@@ -93,8 +91,6 @@
        transition: background-color 0.45s var(--ease-custom),
         color 0.45s var(--ease-custom);
         font-family: Bricolage;
-        font-variation-settings: 'wght' 400;
-        font-synthesis: none;
       overflow-x: hidden;
     }
   
