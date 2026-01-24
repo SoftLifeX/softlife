@@ -1,10 +1,7 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import SmoothScroller from "@/components/smooth-scroller";
-import CustomCursor from "@/components/shared/custom-cursor";
-import Header from "@/components/shared/header";
-import { ThemeProvider } from "next-themes";
-
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "SoftLifeX",
@@ -17,21 +14,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body>
-        <ThemeProvider
-          attribute="class"
-          disableTransitionOnChange
-          defaultTheme="system"
-          enableSystem
-        >
-          <CustomCursor/>
-        <Header/>
-        <SmoothScroller>
-          {children}
-        </SmoothScroller>
-        </ThemeProvider>
-        
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
