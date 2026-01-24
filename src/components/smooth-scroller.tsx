@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollSmoother, ScrollTrigger } from "gsap/all";
 
@@ -13,23 +13,35 @@ export default function SmoothScroller({
 }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const smootherRef = useRef<ScrollSmoother | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    if (!wrapRef.current || !contentRef.current) return;
+    setMounted(true);
+    setIsDesktop(window.matchMedia("(min-width: 769px)").matches);
+  }, []);
 
-    const smoother = ScrollSmoother.create({
-      wrapper: wrapRef.current,
-      content: contentRef.current,
-      smooth: 1,
-      effects: true,
-      normalizeScroll: true,
-      smoothTouch: 0.2,
-    });
+  useEffect(() => {
+    if (!mounted || !isDesktop || !wrapRef.current || !contentRef.current) return;
+
+    const timer = setTimeout(() => {
+      if (!wrapRef.current || !contentRef.current) return;
+
+      smootherRef.current = ScrollSmoother.create({
+        wrapper: wrapRef.current,
+        content: contentRef.current,
+        smooth: 1.5,
+        effects: true,
+        normalizeScroll: true,
+      });
+    }, 100);
 
     return () => {
-      smoother.kill();
+      clearTimeout(timer);
+      smootherRef.current?.kill();
     };
-  }, []);
+  }, [mounted, isDesktop]);
 
   return (
     <div id="smooth-wrapper" ref={wrapRef}>
