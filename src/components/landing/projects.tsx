@@ -206,19 +206,19 @@ export default function Projects() {
                                 )}
 
                                 <p
-                                    className="top-7/10 md:top-18/25 left-1/20 text-sm absolute rounded-4xl py-2 px-3 opacity-100 md:opacity-0 translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 md:transition-all md:duration-300 ease-(--ease-custom) md:group-hover:opacity-100 z-20"
+                                    className="top-33/50 md:top-18/25 left-1/20 text-sm absolute rounded-4xl py-1.5 px-2 md:px-3 md:py-2 opacity-100 md:opacity-0 translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 md:transition-all md:duration-300 ease-(--ease-custom) md:group-hover:opacity-100 z-20"
                                     style={{ color: p.color, backgroundColor: p.bg }}
                                 >
                                     {p.title}
                                 </p>
 
                                 <div
-                                    className="absolute top-39/50 md:top-41/50 left-1/20 flex flex-wrap gap-2 z-20"
+                                    className="absolute top-37/50 md:top-41/50 left-1/20 flex flex-wrap gap-2 z-20"
                                 >
                                     {p.stack.map((tech) => (
                                         <div
                                             key={tech}
-                                            className="stack-pill inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm bg-background backdrop-blur-sm will-change-transform"
+                                            className="stack-pill inline-flex items-center gap-1.5 rounded-full py-1.5 px-2 md:px-3 md:py-2 text-sm bg-background backdrop-blur-sm will-change-transform"
                                         >
                                             <span className="whitespace-nowrap text-foreground text-sm">
                                                 {tech}
@@ -244,4 +244,5 @@ export default function Projects() {
             })}
         </div>
     );
+
 }
