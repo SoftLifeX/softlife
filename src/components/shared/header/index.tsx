@@ -205,6 +205,7 @@ export default function Header({
   return (
     <>
       <div
+        onClick={() => setIsActive(!isActive)}
         ref={wrapperRef}
         className={cn(
           "fixed right-5 w-20 h-20  p-4 flex items-center justify-center rounded-full",
@@ -246,7 +247,6 @@ export default function Header({
                 )}
               />
               <div
-                onClick={() => setIsActive(!isActive)}
                 className={cn(
                   "relative w-15 h-15 rounded-full flex items-center justify-center cursor-pointer",
                   scrolled ? "scale-100" : "scale-0",
@@ -277,4 +277,5 @@ export default function Header({
       </AnimatePresence>
     </>
   );
+
 }
