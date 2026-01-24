@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import gsap from "gsap";
+import gsap, { TweenVars } from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import { cn } from "@/lib/utils";
 
@@ -10,29 +10,20 @@ gsap.registerPlugin(MorphSVGPlugin);
 
 const ThemeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState<boolean>(false);
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light");
 
-  const raysRef = useRef<(SVGPathElement | null)[]>([]);
+  const raysRef = useRef<Array<SVGPathElement | null>>([]);
   const themePathRef = useRef<SVGPathElement | null>(null);
 
-  const sunPath =
-    "M70 49.5C70 60.82 60.82 70 49.5 70C38.18 70 29 60.82 29 49.5C29 38.18 38.18 29 49.5 29C60 29 69.5 38 70 49.5Z";
-  const moonPath =
-    "M70 49.5C70 60.82 60.82 70 49.5 70C38.18 70 29 60.82 29 49.5C29 38.18 38.18 29 49.5 29C41 39 50 62 70 49.5Z";
+  const sunPath = "M70 49.5C70 60.82 60.82 70 49.5 70C38.18 70 29 60.82 29 49.5C29 38.18 38.18 29 49.5 29C60 29 69.5 38 70 49.5Z";
+  const moonPath = "M70 49.5C70 60.82 60.82 70 49.5 70C38.18 70 29 60.82 29 49.5C29 38.18 38.18 29 49.5 29C41 39 50 62 70 49.5Z";
 
   const rayPaths: string[] = [
-    "M50 2V11",
-    "M85 15L78 22",
-    "M98 50H89",
-    "M85 85L78 78",
-    "M50 98V89",
-    "M23 78L16 84",
-    "M11 50H2",
-    "M23 23L16 16",
+    "M50 2V11", "M85 15L78 22", "M98 50H89", "M85 85L78 78",
+    "M50 98V89", "M23 78L16 84", "M11 50H2", "M23 23L16 16"
   ];
 
-  // First effect: mount + initialize GSAP + sync theme
   useEffect(() => {
     setMounted(true);
 
@@ -40,7 +31,6 @@ const ThemeToggle: React.FC = () => {
       setCurrentTheme(theme);
     }
 
-    // Initialize rays
     raysRef.current.forEach((el) => {
       if (!el) return;
       const len = el.getTotalLength();
@@ -49,16 +39,16 @@ const ThemeToggle: React.FC = () => {
         strokeDashoffset: len,
         scale: 0,
         transformOrigin: "50% 50%",
-      });
+      } as TweenVars);
     });
 
-    // Animate rays if initial theme is light
     if (theme === "light") animateRays(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animateRays = (show: boolean) => {
     const tl = gsap.timeline({ defaults: { ease: "power3" } });
+
     if (show) {
       tl.fromTo(
         raysRef.current,
@@ -67,13 +57,13 @@ const ThemeToggle: React.FC = () => {
           strokeDashoffset: (i, el) => (el ? el.getTotalLength() : 0),
           scale: 0,
           transformOrigin: "50% 50%",
-        },
+        } as TweenVars,
         {
           strokeDashoffset: 0,
           scale: 1,
           duration: 0.4,
           stagger: 0.05,
-        }
+        } as TweenVars
       );
     } else {
       tl.to(raysRef.current, {
@@ -82,41 +72,36 @@ const ThemeToggle: React.FC = () => {
         transformOrigin: "50% 50%",
         duration: 0.4,
         stagger: 0.05,
-      });
+      } as TweenVars);
     }
   };
 
   const handleToggle = () => {
     if (!mounted) return;
 
-    const nextTheme = currentTheme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);          // next-themes
-    setCurrentTheme(nextTheme);   // local state
+    const nextTheme: "light" | "dark" = currentTheme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    setCurrentTheme(nextTheme);
 
     const tl = gsap.timeline({ defaults: { ease: "power3" } });
     tl.add(() => animateRays(nextTheme === "light"), 0);
 
     if (themePathRef.current) {
-      tl.to(
-        themePathRef.current,
-        {
-          duration: 1,
-          morphSVG: nextTheme === "light" ? sunPath : moonPath,
-          fill: "var(--background)",
-          stroke: "var(--background)",
-        },
-        "-=0.2"
-      );
+      tl.to(themePathRef.current, {
+        duration: 1,
+        morphSVG: nextTheme === "light" ? sunPath : moonPath,
+        fill: "var(--background)",
+        stroke: "var(--background)",
+      } as TweenVars, "-=0.2");
     }
   };
 
-  // Update rays whenever theme changes
   useEffect(() => {
     if (!mounted) return;
     animateRays(currentTheme === "light");
   }, [currentTheme, mounted]);
 
-  if (!mounted) return null; // mobile-safe
+  if (!mounted) return null;
 
   const isLight = currentTheme === "light";
 
