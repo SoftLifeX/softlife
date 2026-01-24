@@ -1,22 +1,22 @@
+// tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-  ],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: "hsl(var(--primary))",
-        "primary-foreground": "hsl(var(--primary-foreground))",
-        border: "hsl(var(--border))",
-        accent: "hsl(var(--accent))",
-        destructive: "hsl(var(--destructive))",
-        "contact-background": "hsl(var(--contact-background))",
-        "contact-foreground": "hsl(var(--contact-foreground))",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        primary: "var(--primary)",
+        "primary-foreground": "var(--primary-foreground)",
+        border: "var(--border)",
+        accent: "var(--accent)",
+        destructive: "var(--destructive)",
+        "contact-background": "var(--contact-background)",
+        "contact-foreground": "var(--contact-foreground)",
+        "tag-background": "var(--tag-background)",
+        "tag-foreground": "var(--tag-foreground)",
       },
     },
   },
