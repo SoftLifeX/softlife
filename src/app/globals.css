@@ -1,4 +1,6 @@
-@import "tailwindcss";;
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
 
 
 :root {
@@ -50,6 +52,21 @@
   --color-contact-foreground: var(--contact-foreground);
   --color-destructive: var(--destructive);
 }
+
+@media (prefers-color-scheme: light) {
+    --background: #f5f5f5;
+  --foreground: #0d0d0d;
+  --primary: #e8e7e3;
+  --primary-foreground: #737373;
+  --tag-background: #e8e7e3;
+  --tag-foreground: #737373;
+  --border: #737373;
+  --accent: #0d0d0d;
+  --contact-background: #ffdce0;
+  --contact-foreground: #0d0d0d;
+  --destructive: oklch(0.704 0.191 22.216);
+  --weight: 400; 
+} 
 
 @media (prefers-color-scheme: dark) {
   :root {
