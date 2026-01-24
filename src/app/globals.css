@@ -51,23 +51,6 @@
   --color-destructive: var(--desctructive);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-  --background: #0d0d0d;
-  --foreground: #f5f5f5;
-  --primary: #262626;
-  --primary-foreground: #8c8c8c;
-  --tag-background: #262626;
-  --tag-foreground: #8c8c8c;
-  --border: #8c8c8c;
-  --contact-background: #0d0d0d;
-  --contact-foreground: pink;
-  --accent: #c2cabb;
-  --destructive: oklch(0.577 0.245 27.325);
-  --weight: 350;
-  }
-}
-
 @font-face {
   src: url("../app/assets/fonts/Bricolage.woff2");
   font-family: Bricolage;
