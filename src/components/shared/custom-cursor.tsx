@@ -1,8 +1,11 @@
 "use client";
-import { useEffect, useRef } from "react";
+
+import { useEffect, useRef, useState } from "react";
 
 export default function CustomCursor() {
     const cursorRef = useRef<HTMLDivElement | null>(null);
+    const [mounted, setMounted] = useState(false);
+    const [isDesktop, setIsDesktop] = useState(false);
 
     const posRef = useRef({
         mouseX: 0,
@@ -12,10 +15,16 @@ export default function CustomCursor() {
         rafId: 0,
     });
 
-    const scaleRef = useRef(1); // eased visual scale
-    const targetScaleRef = useRef(1); // intent scale
-    const lockRef = useRef(false); // prevents hover scaling after scroll
+    const scaleRef = useRef(1);
+    const targetScaleRef = useRef(1);
+    const lockRef = useRef(false);
     const baseSize = 30;
+
+    // Check if mounted and desktop
+    useEffect(() => {
+        setMounted(true);
+        setIsDesktop(window.matchMedia("(min-width: 768px)").matches);
+    }, []);
 
     // Apply position & scale
     const applyTransform = (x: number, y: number, s: number) => {
@@ -32,43 +41,46 @@ export default function CustomCursor() {
 
     // Track mouse
     useEffect(() => {
+        if (!mounted || !isDesktop) return;
+
         const handleMove = (e: MouseEvent) => {
             posRef.current.mouseX = e.clientX;
             posRef.current.mouseY = e.clientY;
 
-            // Unlock hover scaling on first real mouse move after scroll
             if (lockRef.current) lockRef.current = false;
         };
-        window.addEventListener("mousemove", handleMove);
+
+        window.addEventListener("mousemove", handleMove, { passive: true });
         return () => window.removeEventListener("mousemove", handleMove);
-    }, []);
+    }, [mounted, isDesktop]);
 
     // Scroll lock
     useEffect(() => {
+        if (!mounted || !isDesktop) return;
+
         let lastY = window.scrollY;
 
         const handleScroll = () => {
             const currentY = window.scrollY;
 
             if (currentY !== lastY) {
-                // Scroll started → lock hover scaling
                 lockRef.current = true;
-
-                // Optional: shrink cursor immediately
                 targetScaleRef.current = 1;
             }
 
             lastY = currentY;
         };
 
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+    }, [mounted, isDesktop]);
 
     // Hover scaling
     useEffect(() => {
+        if (!mounted || !isDesktop) return;
+
         const onEnter = (e: Event) => {
-            if (lockRef.current) return; // skip scaling if locked
+            if (lockRef.current) return;
 
             const target = e.target as HTMLElement | null;
             if (!target) return;
@@ -79,20 +91,22 @@ export default function CustomCursor() {
         };
 
         const onLeave = () => {
-            targetScaleRef.current = 1; // reset scale
+            targetScaleRef.current = 1;
         };
 
-        document.addEventListener("pointerover", onEnter);
-        document.addEventListener("pointerout", onLeave);
+        document.addEventListener("pointerover", onEnter, { passive: true });
+        document.addEventListener("pointerout", onLeave, { passive: true });
 
         return () => {
             document.removeEventListener("pointerover", onEnter);
             document.removeEventListener("pointerout", onLeave);
         };
-    }, []);
+    }, [mounted, isDesktop]);
 
     // Animation loop
     useEffect(() => {
+        if (!mounted || !isDesktop) return;
+
         const tick = () => {
             const p = posRef.current;
 
@@ -110,10 +124,8 @@ export default function CustomCursor() {
             window.dispatchEvent(
                 new CustomEvent("custom-cursor-move", {
                     detail: {
-                        // Raw mouse position (for clip-path to ease itself)
                         mouseX: p.mouseX,
                         mouseY: p.mouseY,
-                        // Eased cursor position (for reference)
                         x: p.destX,
                         y: p.destY,
                         scale: scaleRef.current,
@@ -125,11 +137,17 @@ export default function CustomCursor() {
         };
 
         posRef.current.rafId = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(posRef.current.rafId);
-    }, []);
+        return () => {
+            if (posRef.current.rafId) {
+                cancelAnimationFrame(posRef.current.rafId);
+            }
+        };
+    }, [mounted, isDesktop]);
 
     // Init cursor styles
     useEffect(() => {
+        if (!mounted || !isDesktop) return;
+
         const el = cursorRef.current;
         if (!el) return;
 
@@ -145,7 +163,10 @@ export default function CustomCursor() {
         el.style.transition = "background 0.18s ease, opacity 0.18s ease";
         el.style.mixBlendMode = "difference";
         el.style.background = "white";
-    }, []);
+    }, [mounted, isDesktop]);
 
-    return <div ref={cursorRef} aria-hidden className="hidden md:block" />;
+    // Don't render anything until mounted and on desktop
+    if (!mounted || !isDesktop) return null;
+
+    return <div ref={cursorRef} aria-hidden="true" className="hidden md:block" />;
 }
