@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 gsap.registerPlugin(MorphSVGPlugin);
 
 const ThemeToggle: React.FC = () => {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   const raysRef = useRef<(SVGPathElement | null)[]>([]);
@@ -21,7 +21,7 @@ const ThemeToggle: React.FC = () => {
     setMounted(true);
   }, []);
 
-  const isLight = resolvedTheme === "light";
+  const isLight = theme === "light";
 
   const sunPath =
     "M70 49.5C70 60.82 60.82 70 49.5 70C38.18 70 29 60.82 29 49.5C29 38.18 38.18 29 49.5 29C60 29 69.5 38 70 49.5Z";
@@ -69,44 +69,48 @@ const ThemeToggle: React.FC = () => {
     }
   };
 
-  const handleToggle = () => {
-    const nextTheme = isLight ? "dark" : "light";
-    setTheme(nextTheme);
+const handleToggle = () => {
+  if (!mounted) return;
 
-    const tl = gsap.timeline({ defaults: { ease: "power3" } });
-    tl.add(() => animateRays(nextTheme === "light"), 0);
+  const nextTheme = theme === "dark" ? "light" : "dark";
+  setTheme(nextTheme);
 
-    if (themePathRef.current) {
-      tl.to(
-        themePathRef.current,
-        {
-          duration: 1,
-          morphSVG: nextTheme === "light" ? sunPath : moonPath,
-          fill: "var(--background)",
-          stroke: "var(--background)",
-        },
-        "-=0.2"
-      );
-    }
-  };
+  const tl = gsap.timeline({ defaults: { ease: "power3" } });
+
+  tl.add(() => animateRays(nextTheme === "light"), 0);
+
+  if (themePathRef.current) {
+    tl.to(
+      themePathRef.current,
+      {
+        duration: 1,
+        morphSVG: nextTheme === "light" ? sunPath : moonPath,
+        fill: "var(--background)",
+        stroke: "var(--background)",
+      },
+      "-=0.2"
+    );
+  }
+};
 
   //Always call this effect, it runs after mount
-  useEffect(() => {
-    if (!mounted) return;
+useEffect(() => {
+  if (!mounted) return;
 
-    raysRef.current.forEach((el) => {
-      if (!el) return;
-      const len = el.getTotalLength();
-      gsap.set(el, {
-        strokeDasharray: len,
-        strokeDashoffset: len,
-        scale: 0,
-        transformOrigin: "50% 50%",
-      });
+  raysRef.current.forEach((el) => {
+    if (!el) return;
+    const len = el.getTotalLength();
+    gsap.set(el, {
+      strokeDasharray: len,
+      strokeDashoffset: len,
+      scale: 0,
+      transformOrigin: "50% 50%",
     });
+  });
 
-    if (isLight) animateRays(true);
-  }, [mounted, isLight]);
+  if (theme === "light") animateRays(true);
+}, [mounted, theme]);
+
 
   //Conditionally render JSX
   if (!mounted) return <div className="w-10 h-10"></div>;
@@ -156,3 +160,4 @@ const ThemeToggle: React.FC = () => {
 };
 
 export default ThemeToggle;
+
