@@ -22,6 +22,7 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           disableTransitionOnChange
+          defaultTheme="system"
           enableSystem
         >
           <CustomCursor/>
