@@ -2,9 +2,20 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: ["./src/**/*.{ts,tsx}"./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
+       transitionTimingFunction: {
+        "ease-custom": "cubic-bezier(0.25, 0.46, 0.45, 0.94)", 
+      },
+
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+        xl: 'calc(var(--radius) + 4px)',
+      },
+      
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
