@@ -98,19 +98,6 @@
       transition: color 0.25s var(--ease-custom);
     }
   
-    button,
-    input,
-    textarea,
-    select {
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--card-foreground);
-      transition: background-color 0.35s var(--ease-custom),
-        color 0.35s var(--ease-custom),
-        box-shadow 0.25s var(--ease-custom);
-    }
-  
     .heading {
       -webkit-text-stroke-color: var(--foreground);
       -webkit-text-stroke-width: 1px;
