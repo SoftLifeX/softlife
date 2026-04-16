@@ -6,6 +6,7 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import Link from "next/link";
 import Navbar from "../shared/nav";
+import { usePreloaderDone } from "@/components/shared/preloader-wrapper";
 
 // Register GSAP plugins globally
 gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -54,7 +55,6 @@ export default function Hero() {
         mouseMoveRef.current = true;
       }
 
-      // Throttle: only process every 16ms (~60fps)
       if (timeoutId) return;
 
       timeoutId = setTimeout(() => {
@@ -76,7 +76,6 @@ export default function Hero() {
     maskActiveRef.current = true;
     setHovered(true);
 
-    // Restart RAF if it was stopped
     if (!rafRef.current) {
       const el = revealRef.current;
       if (!el) return;
@@ -89,8 +88,7 @@ export default function Hero() {
         const targetRadius = maskActiveRef.current ? 195 : 0;
 
         const ease = maskActiveRef.current ? 0.19 : 0.35;
-        easedRadiusRef.current +=
-          (targetRadius - easedRadiusRef.current) * ease;
+        easedRadiusRef.current += (targetRadius - easedRadiusRef.current) * ease;
 
         if (Math.abs(easedRadiusRef.current - targetRadius) < 0.01) {
           easedRadiusRef.current = targetRadius;
@@ -100,10 +98,7 @@ export default function Hero() {
         el.style.clipPath = clipPath;
         (el.style as ExtendedCSSProperties).WebkitClipPath = clipPath;
 
-        if (
-          Math.abs(easedRadiusRef.current - targetRadius) > 0.01 ||
-          maskActiveRef.current
-        ) {
+        if (Math.abs(easedRadiusRef.current - targetRadius) > 0.01 || maskActiveRef.current) {
           rafRef.current = requestAnimationFrame(tick);
         } else {
           rafRef.current = null;
@@ -117,7 +112,6 @@ export default function Hero() {
     maskActiveRef.current = false;
     setHovered(false);
 
-    // Restart RAF if it was stopped (to animate back to 0)
     if (!rafRef.current) {
       const el = revealRef.current;
       if (!el) return;
@@ -130,8 +124,7 @@ export default function Hero() {
         const targetRadius = maskActiveRef.current ? 195 : 0;
 
         const ease = maskActiveRef.current ? 0.19 : 0.35;
-        easedRadiusRef.current +=
-          (targetRadius - easedRadiusRef.current) * ease;
+        easedRadiusRef.current += (targetRadius - easedRadiusRef.current) * ease;
 
         if (Math.abs(easedRadiusRef.current - targetRadius) < 0.01) {
           easedRadiusRef.current = targetRadius;
@@ -141,10 +134,7 @@ export default function Hero() {
         el.style.clipPath = clipPath;
         (el.style as ExtendedCSSProperties).WebkitClipPath = clipPath;
 
-        if (
-          Math.abs(easedRadiusRef.current - targetRadius) > 0.01 ||
-          maskActiveRef.current
-        ) {
+        if (Math.abs(easedRadiusRef.current - targetRadius) > 0.01 || maskActiveRef.current) {
           rafRef.current = requestAnimationFrame(tick);
         } else {
           rafRef.current = null;
@@ -159,7 +149,6 @@ export default function Hero() {
     const el = revealRef.current;
     if (!el) return;
 
-
     const tick = () => {
       const { x, y } = cursorPosRef.current;
 
@@ -167,10 +156,7 @@ export default function Hero() {
       const localX = x - rect.left;
       const localY = y - rect.top;
 
-      // Ease radius only
       const targetRadius = maskActiveRef.current ? 195 : 0;
-
-      // different easing for enter vs exit
       const ease = maskActiveRef.current ? 0.18 : 0.35;
 
       easedRadiusRef.current += (targetRadius - easedRadiusRef.current) * ease;
@@ -185,7 +171,7 @@ export default function Hero() {
 
       rafRef.current = requestAnimationFrame(tick);
     };
-    
+
     tick();
 
     return () => {
@@ -219,15 +205,17 @@ export default function Hero() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const preloaderDone = usePreloaderDone();
   // GSAP Animations
   useGSAP(
     () => {
+      if (!preloaderDone) return;
+
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches;
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
-      //  — reveal only when GSAP is ready
       gsap.set(
         [
           ".heading",
@@ -241,47 +229,35 @@ export default function Hero() {
         { visibility: "visible" }
       );
 
-      // If user prefers reduced motion, show everything immediately and skip animations
       if (prefersReducedMotion) {
         gsap.set(
           [".heading", ".description", ".description-large", ".link-container"],
-          {
-            opacity: 1,
-            yPercent: 0,
-            xPercent: 0,
-          }
+          { opacity: 1, yPercent: 0, xPercent: 0 }
         );
-        gsap.set([blockRef.current, blockRef2.current, blockRef3.current], {
-          width: 0,
-        });
+        gsap.set([blockRef.current, blockRef2.current, blockRef3.current], { width: 0 });
+        // Dispatch immediately for reduced motion
+        window.dispatchEvent(new CustomEvent("hero-animations-complete"));
         return;
       }
 
       const ctx = gsap.context(() => {
         const tl = gsap.timeline({
           onComplete: () => {
-            // Clean up timeline after animations complete
             tl.kill();
+            // ← Dispatch event so MobileExperiencePopup knows hero is done
+            window.dispatchEvent(new CustomEvent("hero-animations-complete"));
           },
         });
 
         tl.fromTo(
           blockRef.current,
-          {
-            width: "0%",
-            right: "0%",
-          },
+          { width: "0%", right: "0%" },
           {
             width: "100%",
             duration: 1,
             ease,
             onComplete: () => {
-              gsap.to(blockRef.current, {
-                width: 0,
-                right: "100%",
-                duration: 0.4,
-                ease,
-              });
+              gsap.to(blockRef.current, { width: 0, right: "100%", duration: 0.4, ease });
             },
           },
           0.4
@@ -289,21 +265,13 @@ export default function Hero() {
 
         tl.fromTo(
           blockRef2.current,
-          {
-            width: "0%",
-            left: "0%",
-          },
+          { width: "0%", left: "0%" },
           {
             width: "100%",
             duration: 1,
             ease,
             onComplete: () => {
-              gsap.to(blockRef2.current, {
-                width: 0,
-                left: "100%",
-                duration: 0.4,
-                ease,
-              });
+              gsap.to(blockRef2.current, { width: 0, left: "100%", duration: 0.4, ease });
             },
           },
           0.4
@@ -311,21 +279,13 @@ export default function Hero() {
 
         tl.fromTo(
           blockRef3.current,
-          {
-            width: "0%",
-            left: "0%",
-          },
+          { width: "0%", left: "0%" },
           {
             width: "100%",
             duration: 1,
             ease,
             onComplete: () => {
-              gsap.to(blockRef3.current, {
-                width: 0,
-                left: "100%",
-                duration: 0.4,
-                ease,
-              });
+              gsap.to(blockRef3.current, { width: 0, left: "100%", duration: 0.4, ease });
             },
           },
           0.4
@@ -347,7 +307,6 @@ export default function Hero() {
           ease,
           onComplete: () => {
             gsap.set(titleSplit.words, { yPercent: 0, opacity: 1 });
-
             gsap.to(titleSplit.words, {
               yPercent: -50,
               opacity: 0,
@@ -364,13 +323,8 @@ export default function Hero() {
           },
         });
 
-        // Reveal text setup
-        new SplitText(".reveal", {
-          type: "words",
-          wordsClass: "reveal++",
-        });
+        new SplitText(".reveal", { type: "words", wordsClass: "reveal++" });
 
-        // Description animations
         const descSplit = new SplitText(".description", {
           type: "words, lines",
           wordsClass: "des++",
@@ -383,10 +337,7 @@ export default function Hero() {
           mask: "lines",
         });
 
-        gsap.set([descSplit.words, descLargeSplit.words], {
-          yPercent: 100,
-          opacity: 0,
-        });
+        gsap.set([descSplit.words, descLargeSplit.words], { yPercent: 100, opacity: 0 });
 
         tl.to(
           descSplit.words,
@@ -398,7 +349,6 @@ export default function Hero() {
             ease,
             onComplete: () => {
               gsap.set(descSplit.words, { yPercent: 0, opacity: 1 });
-
               gsap.to(descSplit.words, {
                 yPercent: -50,
                 opacity: 0,
@@ -427,7 +377,6 @@ export default function Hero() {
             ease,
             onComplete: () => {
               gsap.set(descLargeSplit.words, { yPercent: 0, opacity: 1 });
-
               gsap.to(descLargeSplit.words, {
                 yPercent: -50,
                 opacity: 0,
@@ -446,7 +395,6 @@ export default function Hero() {
           "<0.2"
         );
 
-        // link animations
         const linkSplit = new SplitText(".herolink", {
           type: "words, lines",
           mask: "lines",
@@ -464,7 +412,6 @@ export default function Hero() {
             ease,
             onComplete: () => {
               gsap.set(linkSplit.words, { yPercent: 0, opacity: 1 });
-
               gsap.to(linkSplit.words, {
                 yPercent: -50,
                 opacity: 0,
@@ -483,36 +430,37 @@ export default function Hero() {
           "<"
         );
 
-        gsap.set(heroWidthRef.current,{ width: 0})
+        gsap.set(heroWidthRef.current, { width: 0 });
 
-        tl.to(heroWidthRef.current, {
-          width: "100%",
-          stagger: 1,
-          ease,
-          onComplete: () => {
-            gsap.to(heroWidthRef.current, {
-              width: 0,
-              stagger: 1,
-              ease,
-              scrollTrigger: {
-                trigger: containerRef.current,
-                start: "30% top",
-                end: "+=10%",
-                scrub: true,
-                onEnter: (self) => scrollTriggersRef.current.push(self),
-              },
-            });
-          }
-        },
-      "<");
+        tl.to(
+          heroWidthRef.current,
+          {
+            width: "100%",
+            stagger: 1,
+            ease,
+            onComplete: () => {
+              gsap.to(heroWidthRef.current, {
+                width: 0,
+                stagger: 1,
+                ease,
+                scrollTrigger: {
+                  trigger: containerRef.current,
+                  start: "30% top",
+                  end: "+=10%",
+                  scrub: true,
+                  onEnter: (self) => scrollTriggersRef.current.push(self),
+                },
+              });
+            },
+          },
+          "<"
+        );
 
         return () => {
           titleSplit.revert();
           descSplit.revert();
           descLargeSplit.revert();
           linkSplit.revert();
-
-          // Kill all ScrollTriggers
           scrollTriggersRef.current.forEach((st) => st.kill());
           scrollTriggersRef.current = [];
         };
@@ -520,7 +468,6 @@ export default function Hero() {
 
       return () => {
         ctx.revert();
-        // Extra cleanup - kill any remaining ScrollTriggers
         ScrollTrigger.getAll().forEach((st) => {
           if (
             st.trigger === sectionRef.current ||
@@ -531,7 +478,7 @@ export default function Hero() {
         });
       };
     },
-    { scope: sectionRef }
+    { scope: sectionRef, dependencies: [preloaderDone] }
   );
 
   return (
@@ -540,37 +487,37 @@ export default function Hero() {
       className="px relative min-h-svh bg-primary"
       id="#"
     >
-      <Navbar/>
+      <Navbar />
       <div ref={containerRef} className="hero">
         <div
           data-speed="1.1"
           className="relative w-full flex md:pt-10 pt-80 pb-6 md:pb-12"
         >
           <div className="relative w-full flex justify-end">
-              <h1
-                className="heading gsap-hide large text-4xl md:text-8xl text-right leading-tight text-transparent"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                role="heading"
-                aria-level={1}
-                aria-label="I am SoftLifeX Developer & Designer"
-              >
-                I am SoftLifeX <br /> Developer & Designer
-                <br />
-              </h1>
+            <h1
+              className="heading gsap-hide large text-4xl md:text-8xl text-right leading-tight text-transparent"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              role="heading"
+              aria-level={1}
+              aria-label="I am SoftLifeX Developer & Designer"
+            >
+              I am SoftLifeX <br /> Developer &amp; Designer
+              <br />
+            </h1>
 
-              {/* Mask text - reveal on hover */}
-              <div
-                ref={revealRef}
-                className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-4xl md:text-8xl z-10 bg-primary text-end text-foreground"
-                style={{
-                  opacity: hovered ? 1 : 0,
-                  transition: "opacity 0s ease",
-                  willChange: "clip-path",
-                }}
-                aria-hidden="true"
-              >
-                Building Products People Actually Want To Click
+            {/* Mask text - reveal on hover */}
+            <div
+              ref={revealRef}
+              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-4xl md:text-8xl z-10 bg-primary text-end text-foreground"
+              style={{
+                opacity: hovered ? 1 : 0,
+                transition: "opacity 0s ease",
+                willChange: "clip-path",
+              }}
+              aria-hidden="true"
+            >
+              Building Products People Actually Want To Click
             </div>
 
             <div
@@ -604,7 +551,6 @@ export default function Hero() {
                 href="/contact"
                 className="link relative inline-block text-sm text-primary-foreground group"
               >
-
                 <span className="relative block h-[1.2em] overflow-hidden z-10">
                   <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-8">
                     Start A Conversation
@@ -615,7 +561,7 @@ export default function Hero() {
                 </span>
 
                 <span
-                ref={heroWidthRef}
+                  ref={heroWidthRef}
                   className="absolute left-0 right-0 -bottom-px h-px bg-current z-0 origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom) group-hover:origin-right group-hover:scale-x-0"
                 />
               </Link>
@@ -626,7 +572,6 @@ export default function Hero() {
                 download
                 className="link relative inline-block text-sm text-primary-foreground group"
               >
-
                 <span className="relative block h-[1.2em] overflow-hidden z-10">
                   <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-8">
                     Resume
@@ -636,9 +581,7 @@ export default function Hero() {
                   </span>
                 </span>
 
-                <span
-                  className="absolute left-0 right-0 -bottom-px h-px bg-current z-0 origin-right scale-x-0 transition-transform duration-500 ease-(--ease-custom) group-hover:origin-left group-hover:scale-x-100"
-                />
+                <span className="absolute left-0 right-0 -bottom-px h-px bg-current z-0 origin-right scale-x-0 transition-transform duration-500 ease-(--ease-custom) group-hover:origin-left group-hover:scale-x-100" />
               </Link>
             </div>
             <div

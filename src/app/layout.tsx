@@ -4,11 +4,12 @@ import SmoothScroller from "@/components/smooth-scroller";
 import CustomCursor from "@/components/shared/custom-cursor";
 import Header from "@/components/shared/header";
 import { ThemeProvider } from "@/components/theme-provider";
-
+import PreloaderWrapper from "@/components/shared/preloader-wrapper";
+import MobileExperiencePopup from "@/components/shared/mobile-experience-popup";
 
 export const metadata: Metadata = {
   title: "SoftLifeX",
-  description: "",
+  description: "Mobile & Web Developer Portfolio — Daniel, the only one softlife.",
 };
 
 export default function RootLayout({
@@ -24,13 +25,15 @@ export default function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
-          <CustomCursor/>
-        <Header/>
-        <SmoothScroller>
-          {children}
-        </SmoothScroller>
+          <PreloaderWrapper>
+            <CustomCursor />
+            <Header />
+            <MobileExperiencePopup />
+            <SmoothScroller>
+              {children}
+            </SmoothScroller>
+          </PreloaderWrapper>
         </ThemeProvider>
-        
       </body>
     </html>
   );

@@ -9,6 +9,7 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import SplitText from "gsap/SplitText";
 
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
 export default function Services() {
   const serviceWidthRef = useRef<HTMLDivElement | null>(null);
@@ -25,31 +26,21 @@ export default function Services() {
       const cards = cardsRef.current;
       if (!cards.length) return;
 
-      // If user prefers reduced motion, show everything immediately
       if (prefersReducedMotion) {
         gsap.set([".serviceSubtitle", ".serviceline"], {
           opacity: 1,
           xPercent: 0,
         });
-        gsap.set(serviceWidthRef.current, {
-          width: "100%",
-        });
-        gsap.set(cards, {
-          x: 0,
-          y: 0,
-          opacity: 1,
-          scale: 1,
-        });
+        gsap.set(serviceWidthRef.current, { width: "100%" });
+        gsap.set(cards, { x: 0, y: 0, opacity: 1, scale: 1 });
         return;
       }
 
       const ctx = gsap.context(() => {
+        // Subtitle block wipe
         gsap.fromTo(
           serviceBlockRef.current,
-          {
-            width: "0%",
-            right: "0%",
-          },
+          { width: "0%", right: "0%" },
           {
             width: "100%",
             duration: 0.5,
@@ -72,13 +63,13 @@ export default function Services() {
                     duration: 0.1,
                     ease,
                   });
-                }
+                },
               });
             },
           }
         );
 
-        // underline animation 
+        // Underline animation
         gsap.from(serviceWidthRef.current, {
           width: 0,
           ease,
@@ -91,20 +82,19 @@ export default function Services() {
           },
         });
 
-        // Store matchMedia instance for proper cleanup
         const mm = gsap.matchMedia();
         matchMediaRef.current = mm;
 
         mm.add(
           {
-            desktop: "(min-width: 768px)",
+            desktop: "(min-width: 769px)",
             mobile: "(max-width: 768px)",
           },
           (context) => {
             const { desktop, mobile } = context.conditions!;
 
             if (desktop) {
-              // measure final positions
+              // Only stack/animate on desktop — never touch cards on mobile
               const positions = cards.map((card) => {
                 const rect = card.getBoundingClientRect();
                 return { x: rect.left, y: rect.top };
@@ -113,7 +103,6 @@ export default function Services() {
               const baseIndex = 1;
               const base = positions[baseIndex];
 
-              // stack all cards
               cards.forEach((card, i) => {
                 gsap.set(card, {
                   x: base.x - positions[i].x,
@@ -124,7 +113,6 @@ export default function Services() {
                 });
               });
 
-              // Remove willChange after animation completes
               gsap.to(cards, {
                 x: 0,
                 y: 0,
@@ -140,7 +128,6 @@ export default function Services() {
                   onEnter: (self) => scrollTriggersRef.current.push(self),
                 },
                 onComplete: () => {
-                  // Remove willChange to free GPU memory
                   cards.forEach((card) => {
                     gsap.set(card, { willChange: "auto" });
                   });
@@ -149,11 +136,9 @@ export default function Services() {
             }
 
             if (mobile) {
+              // Ensure cards are fully visible and unstyled on mobile
               gsap.set(cards, {
-                y: 0,
-                opacity: 1,
-                scale: 1,
-                willChange: "auto",
+                clearProps: "all",
               });
             }
           }
@@ -177,35 +162,25 @@ export default function Services() {
           },
         });
 
-        // Clean up ScrollTriggers and SplitText
         return () => {
           servicelineSplit.revert();
           mm.revert();
-
-          // Kill all ScrollTriggers
-          scrollTriggersRef.current.forEach(st => st.kill());
+          scrollTriggersRef.current.forEach((st) => st.kill());
           scrollTriggersRef.current = [];
-
-          // Remove willChange from all cards
           cards.forEach((card) => {
             gsap.set(card, { willChange: "auto" });
           });
         };
-
       }, serviceSectionRef);
 
       return () => {
         ctx.revert();
-
-        //  Extra cleanup for matchMedia
         if (matchMediaRef.current) {
           matchMediaRef.current.revert();
           matchMediaRef.current = null;
         }
-
-        //  cleanup - kill any remaining ScrollTriggers
-        ScrollTrigger.getAll().forEach(st => {
-          if (st.trigger?.closest('.services-section')) {
+        ScrollTrigger.getAll().forEach((st) => {
+          if (st.trigger?.closest(".services-section")) {
             st.kill();
           }
         });
@@ -220,7 +195,7 @@ export default function Services() {
       id="services"
       className="services-section min-h-screen py px bg-primary"
     >
-      <div className=" w-full flex justify-end mb-8">
+      <div className="w-full flex justify-end mb-8">
         <div className="relative">
           <div className="relative group">
             <p
@@ -266,11 +241,12 @@ export default function Services() {
         </div>
 
         <div className="absolute hidden md:block">
-          <p className="serviceline text-sm">who says you can&apos;t impress your clients, <br />
-            while making your competition jealous :)</p>
+          <p className="serviceline text-sm">
+            who says you can&apos;t impress your clients, <br />
+            while making your competition jealous :)
+          </p>
         </div>
       </div>
-
     </section>
   );
 }

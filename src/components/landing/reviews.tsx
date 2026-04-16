@@ -2,290 +2,365 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { reviewItems, type Review } from "@/lib/constants/reviewInfo";
 import { cn } from "@/lib/utils";
 import Magnetic from "../magnetic";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-export default function Reviews() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [activeIndex, setActiveIndex] = useState<number>(0);
-    const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const reviewWidth = useRef<HTMLDivElement | null>(null);
-    const reviewBlockRef = useRef<HTMLDivElement | null>(null);
-    const reviewTextRef = useRef<HTMLParagraphElement | null>(null);
+const SLOT = {
+    center: { x: 0, y: 0, z: 0, ry: 0, rz: 0, scale: 1, opacity: 1, zIndex: 10 },
+    back1: { x: 22, y: 12, z: -70, ry: 5, rz: 2, scale: 0.95, opacity: 0.65, zIndex: 5 },
+    back2: { x: 42, y: 24, z: -140, ry: 10, rz: 4, scale: 0.90, opacity: 0.35, zIndex: 3 },
+    hidden: { x: 0, y: 0, z: -220, ry: 0, rz: 0, scale: 0.88, opacity: 0, zIndex: 1 },
+} as const;
 
-    const reviewWidth2 = useRef<HTMLDivElement | null>(null);
-    const reviewBlockRef2 = useRef<HTMLDivElement | null>(null);
+type Slot = keyof typeof SLOT;
+
+const getSlots = (centerIdx: number, total: number): Slot[] =>
+    Array.from({ length: total }, (_, i) => {
+        const dist = ((i - centerIdx) + total) % total;
+        if (dist === 0) return "center";
+        if (dist === 1) return "back1";
+        if (dist === 2) return "back2";
+        return "hidden";
+    });
+
+export default function Reviews() {
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const pinnedRef = useRef<HTMLDivElement>(null);
+    const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+    const reviewTextRef = useRef<HTMLParagraphElement | null>(null);
+    const reviewBlockRef = useRef<HTMLDivElement | null>(null);
+    const reviewWidthRef = useRef<HTMLDivElement | null>(null);
+
     const reviewTextRef2 = useRef<HTMLParagraphElement | null>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const scrollTriggersRef = useRef<any[]>([]);
+    const reviewBlockRef2 = useRef<HTMLDivElement | null>(null);
+    const reviewWidthRef2 = useRef<HTMLDivElement | null>(null);
+
+    const [activeIndex, setActiveIndex] = useState(0);
 
     useGSAP(
         () => {
-            const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const prefersReducedMotion = window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
             const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
-            // user prefers reduced motion, show everything immediately
             if (prefersReducedMotion) {
-                gsap.set(reviewTextRef.current, {
-                    opacity: 1,
-                    yPercent: 0,
-                });
-                gsap.set(reviewWidth.current, {
-                    width: "100%",
-                });
-
-                gsap.set(reviewTextRef2.current, {
-                    opacity: 1,
-                    yPercent: 0,
-                });
-                gsap.set(reviewWidth2.current, {
-                    width: "100%",
+                gsap.set([reviewTextRef.current, reviewTextRef2.current], { opacity: 1 });
+                gsap.set([reviewWidthRef.current, reviewWidthRef2.current], { width: "100%" });
+                cardsRef.current.forEach((card, i) => {
+                    if (!card) return;
+                    gsap.set(card, {
+                        position: "absolute", top: 0, left: 0, width: "100%",
+                        opacity: i === 0 ? 1 : 0,
+                    });
                 });
                 return;
             }
 
-            const ctx = gsap.context(() => {
-                // Wipe animation
-                gsap.fromTo(
-                    reviewBlockRef.current,
-                    {
-                        width: "0%",
-                        left: "0%",
-                    },
-                    {
-                        width: "100%",
-                        duration: 0.5,
-                        ease,
-                        scrollTrigger: {
-                            trigger: reviewTextRef.current,
-                            start: "top 90%",
-                            toggleActions: "play none none none",
-                            onEnter: (self) => scrollTriggersRef.current.push(self),
-                        },
-                        onComplete: () => {
-                            gsap.to(reviewBlockRef.current, {
-                                width: 0,
-                                left: "100%",
-                                duration: 0.4,
-                                ease,
-                                onComplete: () => {
-                                    // Use the ref directly instead of class selector
-                                    gsap.to(reviewTextRef.current, {
-                                        opacity: 1,
-                                        duration: 0.1,
-                                        ease,
-                                    });
-                                },
-                            });
-                        },
-                    }
-                );
+            const buildWipe = (
+                blockEl: HTMLElement | null,
+                textEl: HTMLElement | null,
+                widthEl: HTMLElement | null,
+                fromSide: "left" | "right"
+            ) => {
+                if (!blockEl || !textEl || !widthEl) return;
+                const fromProps = fromSide === "left"
+                    ? { width: "0%", left: "0%", right: "auto" }
+                    : { width: "0%", right: "0%", left: "auto" };
+                const toExitProps = fromSide === "left"
+                    ? { width: 0, left: "100%" }
+                    : { width: 0, right: "100%" };
 
-                // Underline animation
-                gsap.from(reviewWidth.current, {
-                    width: 0,
-                    stagger: 1,
-                    ease,
+                gsap.fromTo(blockEl, fromProps, {
+                    width: "100%", duration: 0.5, ease,
                     scrollTrigger: {
-                        trigger: reviewTextRef.current,
-                        start: "top 80%",
-                        end: "top 50%",
-                        scrub: true,
-                        onEnter: (self) => scrollTriggersRef.current.push(self),
+                        trigger: textEl, start: "top 90%",
+                        toggleActions: "play none none none",
+                    },
+                    onComplete: () => {
+                        gsap.to(blockEl, {
+                            ...toExitProps, duration: 0.4, ease,
+                            onComplete: () => { gsap.to(textEl, { opacity: 1, duration: 0.1, ease }); },
+                        });
                     },
                 });
 
-                gsap.fromTo(
-                    reviewBlockRef2.current,
-                    {
-                        width: "0%",
-                        right: "0%",
-                    },
-                    {
-                        width: "100%",
-                        duration: 0.5,
-                        ease,
-                        scrollTrigger: {
-                            trigger: reviewTextRef2.current,
-                            start: "top 90%",
-                            toggleActions: "play none none none",
-                            onEnter: (self) => scrollTriggersRef.current.push(self),
-                        },
-                        onComplete: () => {
-                            gsap.to(reviewBlockRef2.current, {
-                                width: 0,
-                                right: "100%",
-                                duration: 0.4,
-                                ease,
-                                onComplete: () => {
-                                    // Use the ref directly instead of class selector
-                                    gsap.to(reviewTextRef2.current, {
-                                        opacity: 1,
-                                        duration: 0.1,
-                                        ease,
-                                    });
-                                },
-                            });
-                        },
-                    }
-                );
-
-                // Underline animation
-                gsap.from(reviewWidth2.current, {
-                    width: 0,
-                    stagger: 1,
-                    ease,
+                gsap.from(widthEl, {
+                    width: 0, ease,
                     scrollTrigger: {
-                        trigger: reviewTextRef2.current,
-                        start: "top 80%",
-                        end: "top 50%",
-                        scrub: true,
-                        onEnter: (self) => scrollTriggersRef.current.push(self),
+                        trigger: textEl, start: "top 80%", end: "top 50%", scrub: true,
                     },
                 });
+            };
 
-                // Card scale animations
-                gsap.utils.toArray<HTMLElement>(".card-container").forEach(
-                    (container) => {
-                        const tl = gsap.timeline({
-                            scrollTrigger: {
-                                trigger: container,
-                                start: "top bottom",
-                                end: "bottom top",
-                                scrub: 0.5,
-                                onEnter: (self) => scrollTriggersRef.current.push(self),
-                            },
-                        });
+            buildWipe(reviewBlockRef.current, reviewTextRef.current, reviewWidthRef.current, "left");
+            buildWipe(reviewBlockRef2.current, reviewTextRef2.current, reviewWidthRef2.current, "right");
 
-                        tl.fromTo(
-                            container,
-                            { scale: 0.5 },
-                            { scale: 1, ease: "none", duration: 0.6 }
-                        ).to(container, {
-                            scale: 0.5,
-                            opacity: 0,
-                            ease: "none",
-                            duration: 0.3,
-                        });
-                    }
-                );
+            // ── Card stack setup ──────────────────────────────────────────────────
+            const cards = cardsRef.current.filter(Boolean) as HTMLElement[];
+            const total = cards.length;
 
-                // Clean up ScrollTriggers
-                return () => {
-                    scrollTriggersRef.current.forEach(st => st.kill());
-                    scrollTriggersRef.current = [];
-                };
-            }, containerRef);
+            const initialSlots = getSlots(0, total);
+            cards.forEach((card, i) => {
+                const s = SLOT[initialSlots[i]];
+                gsap.set(card, {
+                    position: "absolute", top: 0, left: 0, width: "100%",
+                    x: s.x, y: s.y, z: s.z,
+                    rotateY: s.ry, rotateZ: s.rz,
+                    scale: s.scale, opacity: s.opacity, zIndex: s.zIndex,
+                });
+            });
 
-            return () => {
-                ctx.revert();
+            const scrollPerCard = window.innerHeight * 0.85;
 
-                // Extra cleanup - kill any remaining ScrollTriggers
-                ScrollTrigger.getAll().forEach(st => {
-                    if (st.trigger?.closest('.reviews-section')) {
-                        st.kill();
+            // ── Authoritative state — single source of truth ──────────────────────
+            // currentIndex  = the card that is visually "live" right now
+            // pendingIndex  = the destination we are currently animating toward
+            // They diverge only during a transition; once it settles they match.
+            let currentIndex = 0;
+            let pendingIndex = 0;   // tracks where we intend to land
+            let isAnimating = false;
+
+            const goTo = (nextIndex: number, direction: "next" | "prev") => {
+                // If already heading there, do nothing
+                if (nextIndex === pendingIndex) return;
+                // Record intent immediately so rapid scroll doesn't queue duplicate calls
+                pendingIndex = nextIndex;
+
+                const springEase = "cubic-bezier(0.23, 1, 0.32, 1)";
+                const exitEase = "cubic-bezier(0.4, 0, 1, 1)";
+
+                const exitX = direction === "next" ? -380 : 380;
+                const exitRY = direction === "next" ? -28 : 28;
+                const exitRZ = direction === "next" ? -14 : 14;
+
+                const enterX = direction === "next" ? 380 : -380;
+                const enterRY = direction === "next" ? 32 : -32;
+                const enterRZ = direction === "next" ? 10 : -10;
+
+                isAnimating = true;
+
+                // Kill any in-flight tweens on the two active cards so they
+                // don't fight the new animation
+                gsap.killTweensOf(cards[currentIndex]);
+                gsap.killTweensOf(cards[nextIndex]);
+
+                // Throw outgoing card off screen
+                gsap.to(cards[currentIndex], {
+                    x: exitX, y: -30, z: 0,
+                    rotateY: exitRY, rotateZ: exitRZ,
+                    scale: 0.84, opacity: 0,
+                    duration: 0.52, ease: exitEase, zIndex: 20,
+                });
+
+                // Position incoming card at fly-in start
+                gsap.set(cards[nextIndex], {
+                    x: enterX, y: -18, z: 20,
+                    rotateY: enterRY, rotateZ: enterRZ,
+                    scale: 0.88, opacity: 0, zIndex: 15,
+                });
+
+                // Animate incoming card into center
+                gsap.to(cards[nextIndex], {
+                    x: 0, y: 0, z: 0,
+                    rotateY: 0, rotateZ: 0,
+                    scale: 1, opacity: 1,
+                    duration: 0.62, ease: springEase, delay: 0.06, zIndex: 10,
+                });
+
+                // Shuffle backing cards
+                const newSlots = getSlots(nextIndex, total);
+                cards.forEach((card, i) => {
+                    if (i === currentIndex || i === nextIndex) return;
+                    const s = SLOT[newSlots[i]];
+                    gsap.to(card, {
+                        x: s.x, y: s.y, z: s.z,
+                        rotateY: s.ry, rotateZ: s.rz,
+                        scale: s.scale, opacity: s.opacity, zIndex: s.zIndex,
+                        duration: 0.55, ease: springEase,
+                    });
+                });
+
+                // Settle: snap outgoing card to hidden, unlock
+                gsap.delayedCall(0.65, () => {
+                    const prevIndex = currentIndex;
+                    currentIndex = nextIndex;
+                    setActiveIndex(nextIndex);
+                    isAnimating = false;
+
+                    gsap.set(cards[prevIndex], {
+                        x: 0, y: 0, z: -220,
+                        rotateY: 0, rotateZ: 0,
+                        scale: 0.88, opacity: 0, zIndex: 1,
+                    });
+
+                    // If scroll already moved to a different target while we were
+                    // animating, immediately chase it
+                    if (pendingIndex !== currentIndex) {
+                        goTo(pendingIndex, pendingIndex > currentIndex ? "next" : "prev");
                     }
                 });
             };
-        },
-        { scope: containerRef }
-    );
 
-    useEffect(() => {
-        const handleScroll = (): void => {
-            const viewportCenter = window.innerHeight / 2;
-            let closestIndex = 0;
-            let minDistance = Infinity;
+            // ── Pin + scroll-drive ─────────────────────────────────────────────────
+            ScrollTrigger.create({
+                trigger: pinnedRef.current,
+                start: "top top",
+                end: `+=${scrollPerCard * (total - 1)}`,
+                pin: true,
+                pinSpacing: true,
+                onUpdate: (self) => {
+                    // Derive a clean integer index from scroll progress
+                    // Floor+ceil logic instead of round eliminates the midpoint
+                    // oscillation that caused conflicting direction signals
+                    const rawIndex = self.progress * (total - 1);
+                    const direction = self.direction === 1 ? "next" : "prev";
+                    const nextIndex = self.direction === 1
+                        ? Math.min(Math.ceil(rawIndex), total - 1)
+                        : Math.max(Math.floor(rawIndex), 0);
 
-            itemRefs.current.forEach((ref, index) => {
-                if (ref) {
-                    const rect = ref.getBoundingClientRect();
-                    const elementCenter = rect.top + rect.height / 2;
-                    const distance = Math.abs(viewportCenter - elementCenter);
-
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestIndex = index;
+                    if (nextIndex !== pendingIndex) {
+                        goTo(nextIndex, direction);
                     }
-                }
+                },
             });
 
-            setActiveIndex(closestIndex);
-        };
-
-        handleScroll();
-        window.addEventListener("scroll", handleScroll, { passive: true });
-
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+            return () => {
+                ScrollTrigger.getAll().forEach((st) => {
+                    if ((st.trigger as HTMLElement)?.closest(".reviews-section")) st.kill();
+                });
+            };
+        },
+        { scope: sectionRef }
+    );
 
     return (
-        <div className="reviews-section min-h-screen py px bg-primary">
-            <div className="relative w-fit">
-                <div className="relative w-fit group">
-                    <p
-                        ref={reviewTextRef}
-                        className={cn(
-                            "review opacity-0 relative justify-start w-fit text-sm font text-foreground origin-left"
-                        )}
-                    >
-                        But don&apos;t just take my word for it
-                    </p>
+        <div ref={sectionRef} className="reviews-section bg-primary">
 
+            {/* ── Top headline wipe ─────────────────────────────────────────── */}
+            <div className="px-4 pt-16 pb-8 md:pt-24 md:pb-12">
+                <div className="relative w-fit">
+                    <div className="relative w-fit group">
+                        <p
+                            ref={reviewTextRef}
+                            className="opacity-0 relative w-fit text-sm text-foreground origin-left"
+                        >
+                            But don&apos;t just take my word for it
+                        </p>
+                        <div
+                            ref={reviewWidthRef}
+                            className={cn(
+                                "absolute left-0 bottom-0 h-px w-full bg-foreground",
+                                "origin-left transition-transform duration-500 ease-(--ease-custom)",
+                                "group-hover:origin-right group-hover:scale-x-0"
+                            )}
+                        />
+                    </div>
                     <div
-                        ref={reviewWidth}
-                        className={cn(
-                            "absolute left-0 bottom-0 h-px w-full bg-foreground",
-                            "origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom)",
-                            "group-hover:origin-right group-hover:scale-x-0"
-                        )}
+                        ref={reviewBlockRef}
+                        className="absolute w-0 h-full top-0 left-0 pointer-events-none bg-foreground"
                     />
                 </div>
-
-                <div
-                    ref={reviewBlockRef}
-                    className="absolute w-0 h-full top-0 left-0 pointer-events-none bg-foreground"
-                />
             </div>
 
-            
-
+            {/*
+                ── Pinned section ────────────────────────────────────────────────
+                Explicit height is critical — without it GSAP measures 0 before
+                the absolute-positioned cards exist, producing a wrong spacer
+                that causes the large gap on mobile.
+            */}
             <div
-                ref={containerRef}
-                className="relative flex w-full flex-col items-center gap-[18.5svh]"
+                ref={pinnedRef}
+                className="relative w-full flex items-center justify-center"
+                style={{ height: "100svh" }}
             >
-                <div className="px-4">
+                {/*
+                    perspective on the stack wrapper (not the pinned container)
+                    keeps 3D transforms scoped and avoids bleed into surrounding
+                    layout on iOS Safari.
+                */}
+                <div
+                    className="relative w-full max-w-xs sm:max-w-sm"
+                    style={{
+                        height: 400,
+                        perspective: "1000px",
+                        perspectiveOrigin: "50% 40%",
+                    }}
+                >
                     {reviewItems.map((review: Review, index: number) => (
                         <div
                             key={review.id}
                             ref={(el) => {
-                                itemRefs.current[index] = el;
+                                cardsRef.current[index] = el;
                             }}
-                            className="card-container flex justify-center items-center mb-[18.5svh]"
+                            style={{ transformStyle: "preserve-3d", willChange: "transform, opacity" }}
                         >
                             <Magnetic>
-                                <div className="bg-background w-100 md:h-100 rounded-lg shadow-lg p-8">
-                                <p className="mt-6 mb-6 pt-10 text-foreground text-sm leading-relaxed">
-                                    &ldquo; {review.text}&ldquo;
-                                </p>
-
-                                <div className="">
-                                    <h3 className="text-sm font-semibold text-foreground text-end mb-3">
-                                        {review.name}
-                                    </h3>
-                                    <p className="text-sm text-primary-foreground text-end">
-                                        {review.role} · {review.company}
+                                <div className="bg-background rounded-2xl p-8 w-full">
+                                    <span className="block text-4xl font-serif text-foreground/20 leading-none mb-3">
+                                        &ldquo;
+                                    </span>
+                                    <p className="text-foreground text-sm leading-relaxed mb-8">
+                                        {review.text}
                                     </p>
+                                    <div className="border-t border-foreground/10 pt-5">
+                                        <h3 className="text-sm font-semibold text-foreground text-end">
+                                            {review.name}
+                                        </h3>
+                                        <p className="text-xs text-primary-foreground text-end mt-1">
+                                            {review.role} · {review.company}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
                             </Magnetic>
-                            
                         </div>
                     ))}
+
+                    {/* Dot indicators */}
+                    <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex gap-2 items-center">
+                        {reviewItems.map((_, i) => (
+                            <span
+                                key={i}
+                                className={cn(
+                                    "block h-1.5 rounded-full bg-foreground transition-all duration-300",
+                                    i === activeIndex
+                                        ? "w-5 opacity-100"
+                                        : "w-1.5 opacity-25"
+                                )}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Bottom headline wipe ──────────────────────────────────────── */}
+            <div className="px-4 pt-8 pb-16 md:pt-12 md:pb-24">
+                <div className="relative w-fit ml-auto">
+                    <div className="relative w-fit group">
+                        <p
+                            ref={reviewTextRef2}
+                            className="opacity-0 relative w-fit text-sm text-foreground origin-right"
+                        >
+                            Here&apos;s what they said
+                        </p>
+                        <div
+                            ref={reviewWidthRef2}
+                            className={cn(
+                                "absolute left-0 bottom-0 h-px w-full bg-foreground",
+                                "origin-right transition-transform duration-500 ease-(--ease-custom)",
+                                "group-hover:origin-left group-hover:scale-x-0"
+                            )}
+                        />
+                    </div>
+                    <div
+                        ref={reviewBlockRef2}
+                        className="absolute w-0 h-full top-0 right-0 pointer-events-none bg-foreground"
+                    />
                 </div>
             </div>
         </div>

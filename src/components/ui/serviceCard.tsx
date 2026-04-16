@@ -54,24 +54,6 @@ export function ServiceCard({
     };
   }, []);
 
-  const rotations = isMobile
-    ? [
-      "-rotate-[0deg]",
-      "rotate-[0deg]",
-      "-rotate-[0deg]",
-      "rotate-[0deg]",
-      "-rotate-[0deg]",
-      "rotate-[0deg]",
-    ]
-    : [
-      "-rotate-[10deg]",
-      "rotate-[4deg]",
-      "-rotate-[6deg]",
-      "rotate-[8deg]",
-      "-rotate-[11deg]",
-      "rotate-[7deg]",
-    ];
-
   const translate = isMobile
     ? [
       "translate-y-0",
