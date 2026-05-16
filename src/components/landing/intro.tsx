@@ -1,166 +1,51 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+
+import { useRef } from "react";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger } from "@/lib/gsap-init";
 import { cn } from "@/lib/utils";
-
-// Register GSAP plugins globally
-gsap.registerPlugin(ScrollTrigger, SplitText);
-
-// Extend CSSStyleDeclaration for WebKit properties
-interface ExtendedCSSProperties extends CSSStyleDeclaration {
-  WebkitClipPath?: string;
-}
+import { useRevealMask } from "@/hooks/useRevealMask";
+import { registerWipe } from "@/hooks/useWipeReveal";
 
 export default function Intro() {
-  const introRevealRef = useRef<HTMLDivElement | null>(null);
-  const cursorPosRef = useRef({ x: 0, y: 0 });
-  const rafRef = useRef<number | null>(null);
   const introSectionRef = useRef<HTMLDivElement | null>(null);
-  const introBlockRef = useRef<HTMLDivElement | null>(null);
-  const widthRef = useRef<HTMLDivElement | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const scrollTriggersRef = useRef<any[]>([]);
+  const introBlockRef   = useRef<HTMLDivElement | null>(null);
+  const widthRef        = useRef<HTMLDivElement | null>(null);
+  const subtitleRef     = useRef<HTMLParagraphElement | null>(null);
 
-  const easedRadiusRef = useRef(0);
-  const mouseMoveRef = useRef(false);
-  const [hovered, setHovered] = useState(false);
-  const maskActiveRef = useRef(false);
-
-  // Listen to CustomCursor position
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const { x, y } = (e as CustomEvent).detail;
-      cursorPosRef.current.x = x;
-      cursorPosRef.current.y = y;
-    };
-
-    window.addEventListener("custom-cursor-move", handler);
-    return () => window.removeEventListener("custom-cursor-move", handler);
-  }, []);
-
-  // Mouse move tracker for conditional mask
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    const handleMove = (e: MouseEvent) => {
-      if (Math.abs(e.movementX) > 0 || Math.abs(e.movementY) > 0) {
-        mouseMoveRef.current = true;
-      }
-
-      if (timeoutId) return;
-
-      timeoutId = setTimeout(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        timeoutId = null as any;
-      }, 16);
-    };
-
-    window.addEventListener("mousemove", handleMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMove);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, []);
-
-  // Only toggle refs — RAF is always running
-  const handleMouseEnter = () => {
-    if (!mouseMoveRef.current) return;
-    maskActiveRef.current = true;
-    setHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    maskActiveRef.current = false;
-    setHovered(false);
-  };
-
-  // Continuous RAF loop — never stops (mirrors Hero exactly)
-  useEffect(() => {
-    const el = introRevealRef.current;
-    if (!el) return;
-
-    const tick = () => {
-      const { x, y } = cursorPosRef.current;
-
-      const rect = el.getBoundingClientRect();
-      const localX = x - rect.left;
-      const localY = y - rect.top;
-
-      const targetRadius = maskActiveRef.current ? 195 : 0;
-      const ease = maskActiveRef.current ? 0.18 : 0.35;
-
-      easedRadiusRef.current += (targetRadius - easedRadiusRef.current) * ease;
-
-      if (Math.abs(easedRadiusRef.current - targetRadius) < 0.01) {
-        easedRadiusRef.current = targetRadius;
-      }
-
-      const clipPath = `circle(${easedRadiusRef.current}px at ${localX}px ${localY}px)`;
-      el.style.clipPath = clipPath;
-      (el.style as ExtendedCSSProperties).WebkitClipPath = clipPath;
-
-      // Always keep running
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    tick();
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
-  }, []);
-
-  // Reset mask on scroll
-  useEffect(() => {
-    let lastY = window.scrollY;
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          if (window.scrollY !== lastY) {
-            maskActiveRef.current = false;
-            mouseMoveRef.current = false;
-            setHovered(false);
-          }
-          lastY = window.scrollY;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
 
   useGSAP(
     () => {
-      let ctx: gsap.Context;
+      const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
-      // Font loading fix — SplitText never measures with fallback font
-      document.fonts.ready.then(() => {
-        const prefersReducedMotion = window.matchMedia(
-          "(prefers-reduced-motion: reduce)"
-        ).matches;
-        const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReducedMotion) {
+        gsap.set([subtitleRef.current, ".about", ".intro"], { opacity: 1, yPercent: 0 });
+        gsap.set(widthRef.current, { width: "100%" });
+        return;
+      }
 
-        if (prefersReducedMotion) {
-          gsap.set([".about", ".intro", ".subtitle"], {
-            opacity: 1,
-            yPercent: 0,
-          });
-          gsap.set(widthRef.current, { width: "100%" });
-          return;
-        }
+      const ctx = gsap.context(() => {
+        // Everything deferred until fonts load.
+        // registerWipe's final step is gsap.to(text, { opacity: 1 }) —
+        // if that fires before the font is ready the element can be
+        // measured with fallback metrics and then stay invisible once the
+        // real font swaps in. Gating the whole block on fonts.ready fixes it.
+        document.fonts.ready.then(() => {
+          registerWipe(
+            { blockRef: introBlockRef, widthRef, textRef: subtitleRef },
+            {
+              trigger: () => subtitleRef.current,
+              direction: "left",
+              startOffset: "top 90%",
+              underlineStart: "top 80%",
+              underlineEnd: "top 60%",
+              ease,
+            }
+          );
 
-        ctx = gsap.context(() => {
           const aboutSplit = new SplitText(".about", {
             type: "chars, words, lines",
             mask: "lines",
@@ -175,7 +60,6 @@ export default function Intro() {
               start: "top 70%",
               end: "top 55%",
               scrub: true,
-              onEnter: (self) => scrollTriggersRef.current.push(self),
             },
           });
 
@@ -184,8 +68,14 @@ export default function Intro() {
             linesClass: "line",
           });
 
-          gsap.from(introTitleSplit.words, {
-            opacity: 0,
+          // Words start hidden — the element itself was opacity:0 (set below
+          // in JSX via className). Now that SplitText has split correctly with
+          // the real font, make the element visible and let the scrub drive words in.
+          gsap.set(".intro", { opacity: 1 });
+          gsap.set(introTitleSplit.words, { opacity: 0 });
+
+          gsap.to(introTitleSplit.words, {
+            opacity: 1,
             ease,
             stagger: 0.02,
             scrollTrigger: {
@@ -193,91 +83,39 @@ export default function Intro() {
               start: "top 90%",
               end: "bottom top",
               scrub: true,
-              onEnter: (self) => scrollTriggersRef.current.push(self),
             },
           });
 
-          gsap.fromTo(
-            introBlockRef.current,
-            { width: "0%", left: "0%" },
-            {
-              width: "100%",
-              duration: 0.5,
-              ease,
-              scrollTrigger: {
-                trigger: ".subtitle",
-                start: "top 90%",
-                toggleActions: "play none none none",
-                onEnter: (self) => scrollTriggersRef.current.push(self),
-              },
-              onComplete: () => {
-                gsap.to(introBlockRef.current, {
-                  width: 0,
-                  left: "100%",
-                  duration: 0.4,
-                  ease,
-                  onComplete: () => {
-                    gsap.to(".subtitle", {
-                      opacity: 1,
-                      duration: 0.1,
-                      ease,
-                    });
-                  },
-                });
-              },
-            }
-          );
-
-          gsap.from(widthRef.current, {
-            width: 0,
-            stagger: 1,
-            ease,
-            clearProps: "transform",
-            scrollTrigger: {
-              trigger: ".subtitle",
-              start: "top 80%",
-              end: "top 60%",
-              scrub: true,
-              onEnter: (self) => scrollTriggersRef.current.push(self),
-            },
-          });
-
-          return () => {
-            introTitleSplit.revert();
+          ctx.add(() => () => {
             aboutSplit.revert();
-            scrollTriggersRef.current.forEach((st) => st.kill());
-            scrollTriggersRef.current = [];
-          };
-        }, introSectionRef);
-      });
+            introTitleSplit.revert();
+            gsap.set(".intro", { opacity: 1 }); // restore after revert
+          });
 
-      return () => {
-        ctx?.revert();
-        ScrollTrigger.getAll().forEach((st) => {
-          if (st.trigger?.closest(".intro-section")) {
-            st.kill();
-          }
+          // Font swap changes element heights — recalculate all trigger
+          // positions so nothing fires at a stale scroll offset.
+          ScrollTrigger.refresh();
         });
-      };
+      }, introSectionRef);
+
+      return () => ctx.revert();
     },
     { scope: introSectionRef }
   );
 
   return (
-    <section
-      ref={introSectionRef}
-      className="intro-section relative py px"
-    >
+    <section ref={introSectionRef} className="intro-section relative py px">
+      {/* Subtitle with wipe reveal */}
       <div className="relative w-fit">
         <div className="relative w-fit group">
           <p
+            ref={subtitleRef}
             className={cn(
               "opacity-0 subtitle relative justify-start w-fit text-sm text-foreground origin-left"
             )}
           >
             Who tf do I think i am?
           </p>
-
           <div
             ref={widthRef}
             className={cn(
@@ -287,37 +125,36 @@ export default function Intro() {
             )}
           />
         </div>
-
         <div
           ref={introBlockRef}
           className="absolute w-0 h-full top-0 left-0 pointer-events-none bg-foreground"
         />
       </div>
 
+      {/* About paragraph */}
       <div className="flex justify-end-safe w-full pt-4 pb-3 md:pb-12 text-sm text-primary-foreground">
         <p className="about text-end">
           Asides from the &ldquo;generic&ldquo; slab of text you&apos;re about to read,
           <br /> i&apos;m just a chill guy, I like traveling, learning new things,
-          <br /> I enjoy the peace and quiet but will opt for the occasional
-          chaos at times.
+          <br /> I enjoy the peace and quiet but will opt for the occasional chaos at times.
           <br />
           ohh and most importantly, i&apos;m obsessed with sweets
         </p>
       </div>
 
+      {/* Main intro paragraph with reveal mask */}
       <div className="relative w-full flex justify-start">
         <p
-          className="intro large text-3xl md:text-8xl w-full text-foreground"
+          className="intro large text-3xl md:text-8xl w-full text-foreground opacity-0"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          I&apos;m an award winning Full-stack & Mobile Software
-          Engineer and designer, with 4 years of experience focused on crafting
-          high quality digital & immersive experiences
+          I&apos;m an award winning Full-stack &amp; Mobile Software Engineer and designer,
+          with 4 years of experience focused on crafting high quality digital &amp; immersive experiences
         </p>
 
         <div
-          ref={introRevealRef}
+          ref={revealRef}
           id="about"
           className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-8xl z-10 bg-background"
           style={{
@@ -326,8 +163,9 @@ export default function Intro() {
             willChange: "clip-path",
           }}
         >
-          A Developer who&apos;s skills haven&apos;t been replaced by chatGPT - (&ldquo;yet&ldquo;), specialized in motion design, I
-          make stuff MOVE! - only when you pay me enough... Or bribe me with sweets
+          A Developer who&apos;s skills haven&apos;t been replaced by chatGPT - (&ldquo;yet&ldquo;),
+          specialized in motion design, I make stuff MOVE! - only when you pay me enough...
+          Or bribe me with sweets
         </div>
       </div>
     </section>

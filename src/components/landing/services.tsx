@@ -1,107 +1,64 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
+import { useRef } from "react";
+import { SplitText } from "gsap/SplitText";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "@/lib/gsap-init";
 import { services } from "@/lib/constants/serviceInfo";
 import { ServiceCard } from "../ui/serviceCard";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
-import SplitText from "gsap/SplitText";
-
-gsap.registerPlugin(ScrollTrigger, SplitText);
+import { registerWipe } from "@/hooks/useWipeReveal";
 
 export default function Services() {
-  const serviceWidthRef = useRef<HTMLDivElement | null>(null);
   const serviceSectionRef = useRef<HTMLDivElement | null>(null);
-  const serviceBlockRef = useRef<HTMLDivElement | null>(null);
-  const cardsRef = useRef<HTMLDivElement[]>([]);
-  const scrollTriggersRef = useRef<any[]>([]);
-  const matchMediaRef = useRef<any>(null);
+  const serviceBlockRef   = useRef<HTMLDivElement | null>(null);
+  const serviceWidthRef   = useRef<HTMLDivElement | null>(null);
+  const subtitleRef       = useRef<HTMLParagraphElement | null>(null);
+  const cardsRef          = useRef<HTMLDivElement[]>([]);
 
   useGSAP(
     () => {
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-      const cards = cardsRef.current;
+      const cards = cardsRef.current.filter(Boolean);
       if (!cards.length) return;
 
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
       if (prefersReducedMotion) {
-        gsap.set([".serviceSubtitle", ".serviceline"], {
-          opacity: 1,
-          xPercent: 0,
-        });
+        gsap.set([subtitleRef.current, ".serviceline"], { opacity: 1, xPercent: 0 });
         gsap.set(serviceWidthRef.current, { width: "100%" });
         gsap.set(cards, { x: 0, y: 0, opacity: 1, scale: 1 });
         return;
       }
 
       const ctx = gsap.context(() => {
-        // Subtitle block wipe
-        gsap.fromTo(
-          serviceBlockRef.current,
-          { width: "0%", right: "0%" },
+        // Subtitle wipe
+        registerWipe(
+          { blockRef: serviceBlockRef, widthRef: serviceWidthRef, textRef: subtitleRef },
           {
-            width: "100%",
-            duration: 0.5,
+            trigger: () => subtitleRef.current,
+            direction: "right",
+            startOffset: "top 90%",
+            underlineStart: "top bottom",
+            underlineEnd: "top 80%",
             ease,
-            scrollTrigger: {
-              trigger: ".serviceSubtitle",
-              start: "top 90%",
-              toggleActions: "play none none none",
-              onEnter: (self) => scrollTriggersRef.current.push(self),
-            },
-            onComplete: () => {
-              gsap.to(serviceBlockRef.current, {
-                width: 0,
-                right: "100%",
-                duration: 0.4,
-                ease,
-                onComplete: () => {
-                  gsap.to(".serviceSubtitle", {
-                    opacity: 1,
-                    duration: 0.1,
-                    ease,
-                  });
-                },
-              });
-            },
           }
         );
 
-        // Underline animation
-        gsap.from(serviceWidthRef.current, {
-          width: 0,
-          ease,
-          scrollTrigger: {
-            trigger: ".serviceSubtitle",
-            start: "top bottom",
-            end: "top 80%",
-            scrub: true,
-            onEnter: (self) => scrollTriggersRef.current.push(self),
-          },
-        });
-
+        // Card stack animation — desktop only
         const mm = gsap.matchMedia();
-        matchMediaRef.current = mm;
 
         mm.add(
-          {
-            desktop: "(min-width: 769px)",
-            mobile: "(max-width: 768px)",
-          },
+          { desktop: "(min-width: 769px)", mobile: "(max-width: 768px)" },
           (context) => {
             const { desktop, mobile } = context.conditions!;
 
             if (desktop) {
-              // Only stack/animate on desktop — never touch cards on mobile
               const positions = cards.map((card) => {
                 const rect = card.getBoundingClientRect();
                 return { x: rect.left, y: rect.top };
               });
-
-              const baseIndex = 1;
-              const base = positions[baseIndex];
+              const base = positions[1]; // index 1 as origin
 
               cards.forEach((card, i) => {
                 gsap.set(card, {
@@ -114,36 +71,27 @@ export default function Services() {
               });
 
               gsap.to(cards, {
-                x: 0,
-                y: 0,
-                opacity: 1,
-                scale: 1,
-                ease,
-                stagger: 0.2,
+                x: 0, y: 0, opacity: 1, scale: 1,
+                ease, stagger: 0.2,
                 scrollTrigger: {
                   trigger: cards[0],
                   start: "top 85%",
                   end: "top 15%",
                   scrub: true,
-                  onEnter: (self) => scrollTriggersRef.current.push(self),
                 },
                 onComplete: () => {
-                  cards.forEach((card) => {
-                    gsap.set(card, { willChange: "auto" });
-                  });
+                  cards.forEach((card) => gsap.set(card, { willChange: "auto" }));
                 },
               });
             }
 
             if (mobile) {
-              // Ensure cards are fully visible and unstyled on mobile
-              gsap.set(cards, {
-                clearProps: "all",
-              });
+              gsap.set(cards, { clearProps: "all" });
             }
           }
         );
 
+        // Decorative centre text reveal
         const servicelineSplit = new SplitText(".serviceline", {
           type: "chars, words",
           mask: "chars",
@@ -158,33 +106,16 @@ export default function Services() {
             start: "top 80%",
             end: "top 65%",
             scrub: true,
-            onEnter: (self) => scrollTriggersRef.current.push(self),
           },
         });
 
         return () => {
           servicelineSplit.revert();
           mm.revert();
-          scrollTriggersRef.current.forEach((st) => st.kill());
-          scrollTriggersRef.current = [];
-          cards.forEach((card) => {
-            gsap.set(card, { willChange: "auto" });
-          });
         };
       }, serviceSectionRef);
 
-      return () => {
-        ctx.revert();
-        if (matchMediaRef.current) {
-          matchMediaRef.current.revert();
-          matchMediaRef.current = null;
-        }
-        ScrollTrigger.getAll().forEach((st) => {
-          if (st.trigger?.closest(".services-section")) {
-            st.kill();
-          }
-        });
-      };
+      return () => ctx.revert();
     },
     { scope: serviceSectionRef }
   );
@@ -195,13 +126,13 @@ export default function Services() {
       id="services"
       className="services-section min-h-screen py px bg-primary"
     >
+      {/* Subtitle */}
       <div className="w-full flex justify-end mb-8">
         <div className="relative">
           <div className="relative group">
             <p
-              className={cn(
-                "serviceSubtitle opacity-0 relative text-sm text-foreground"
-              )}
+              ref={subtitleRef}
+              className={cn("serviceSubtitle opacity-0 relative text-sm text-foreground")}
             >
               So what do I do, exactly?
             </p>
@@ -221,14 +152,13 @@ export default function Services() {
         </div>
       </div>
 
+      {/* Cards + centre text */}
       <div className="relative flex justify-center items-center">
         <div className="container relative mx-auto grid gap-8 md:grid-cols-3">
           {services.map((service, index) => (
             <div
               key={index}
-              ref={(el) => {
-                if (el) cardsRef.current[index] = el;
-              }}
+              ref={(el) => { if (el) cardsRef.current[index] = el; }}
             >
               <ServiceCard
                 index={index}

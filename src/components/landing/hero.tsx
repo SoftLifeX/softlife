@@ -1,241 +1,61 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+/**
+ * Hero
+ *
+ * CHANGES FROM ORIGINAL:
+ * - Removed gsap.registerPlugin() call — now centralized in gsap-init.ts.
+ * - Replaced 3 concurrent RAF loops (handleMouseEnter tick, handleMouseLeave
+ *   tick, and the continuous useEffect tick) with a single useRevealMask hook.
+ *   The original handleMouseEnter/Leave each launched their OWN RAF loop
+ *   in addition to the one that was always running — up to 3 loops writing
+ *   to the same element simultaneously.
+ * - Removed the window "custom-cursor-move" CustomEvent listener —
+ *   cursor position is now read from cursorStore (zero allocation).
+ * - Removed `scrollTriggersRef` manual tracking — useGSAP ctx.revert()
+ *   kills all ScrollTriggers created inside the context automatically.
+ * - `ExtendedCSSProperties` interface moved into the hook.
+ * - All ScrollTrigger cleanup is handled by ctx.revert() + GSAP scope.
+ */
+
+import { useRef } from "react";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger } from "@/lib/gsap-init";
 import Link from "next/link";
 import Navbar from "../shared/nav";
-import { usePreloaderDone } from "@/components/shared/preloader-wrapper";
-
-// Register GSAP plugins globally
-gsap.registerPlugin(ScrollTrigger, SplitText);
-
-// Extend CSSStyleDeclaration for WebKit properties
-interface ExtendedCSSProperties extends CSSStyleDeclaration {
-  WebkitClipPath?: string;
-}
+import { usePreloaderDone } from "@/hooks/usePreloaderDone";
+import { useRevealMask } from "@/hooks/useRevealMask";
 
 export default function Hero() {
-  const revealRef = useRef<HTMLDivElement | null>(null);
-  const cursorPosRef = useRef({ x: 0, y: 0 });
-  const rafRef = useRef<number | null>(null);
-  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const sectionRef   = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const blockRef = useRef<HTMLDivElement | null>(null);
-  const blockRef2 = useRef<HTMLDivElement | null>(null);
-  const blockRef3 = useRef<HTMLDivElement | null>(null);
+  const blockRef     = useRef<HTMLDivElement | null>(null);
+  const blockRef2    = useRef<HTMLDivElement | null>(null);
+  const blockRef3    = useRef<HTMLDivElement | null>(null);
   const heroWidthRef = useRef<HTMLDivElement | null>(null);
 
-  const easedRadiusRef = useRef(0);
-  const mouseMoveRef = useRef(false);
-  const [hovered, setHovered] = useState(false);
-  const maskActiveRef = useRef(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const scrollTriggersRef = useRef<any[]>([]);
-
-  // Listen to CustomCursor position
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const { x, y } = (e as CustomEvent).detail;
-      cursorPosRef.current.x = x;
-      cursorPosRef.current.y = y;
-    };
-
-    window.addEventListener("custom-cursor-move", handler);
-    return () => window.removeEventListener("custom-cursor-move", handler);
-  }, []);
-
-  // Mouse move tracker for conditional mask
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    const handleMove = (e: MouseEvent) => {
-      if (Math.abs(e.movementX) > 0 || Math.abs(e.movementY) > 0) {
-        mouseMoveRef.current = true;
-      }
-
-      if (timeoutId) return;
-
-      timeoutId = setTimeout(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        timeoutId = null as any;
-      }, 16);
-    };
-
-    window.addEventListener("mousemove", handleMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMove);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, []);
-
-  // Conditional hover
-  const handleMouseEnter = () => {
-    if (!mouseMoveRef.current) return;
-    maskActiveRef.current = true;
-    setHovered(true);
-
-    if (!rafRef.current) {
-      const el = revealRef.current;
-      if (!el) return;
-
-      const tick = () => {
-        const { x, y } = cursorPosRef.current;
-        const rect = el.getBoundingClientRect();
-        const localX = x - rect.left;
-        const localY = y - rect.top;
-        const targetRadius = maskActiveRef.current ? 195 : 0;
-
-        const ease = maskActiveRef.current ? 0.19 : 0.35;
-        easedRadiusRef.current += (targetRadius - easedRadiusRef.current) * ease;
-
-        if (Math.abs(easedRadiusRef.current - targetRadius) < 0.01) {
-          easedRadiusRef.current = targetRadius;
-        }
-
-        const clipPath = `circle(${easedRadiusRef.current}px at ${localX}px ${localY}px)`;
-        el.style.clipPath = clipPath;
-        (el.style as ExtendedCSSProperties).WebkitClipPath = clipPath;
-
-        if (Math.abs(easedRadiusRef.current - targetRadius) > 0.01 || maskActiveRef.current) {
-          rafRef.current = requestAnimationFrame(tick);
-        } else {
-          rafRef.current = null;
-        }
-      };
-      tick();
-    }
-  };
-
-  const handleMouseLeave = () => {
-    maskActiveRef.current = false;
-    setHovered(false);
-
-    if (!rafRef.current) {
-      const el = revealRef.current;
-      if (!el) return;
-
-      const tick = () => {
-        const { x, y } = cursorPosRef.current;
-        const rect = el.getBoundingClientRect();
-        const localX = x - rect.left;
-        const localY = y - rect.top;
-        const targetRadius = maskActiveRef.current ? 195 : 0;
-
-        const ease = maskActiveRef.current ? 0.19 : 0.35;
-        easedRadiusRef.current += (targetRadius - easedRadiusRef.current) * ease;
-
-        if (Math.abs(easedRadiusRef.current - targetRadius) < 0.01) {
-          easedRadiusRef.current = targetRadius;
-        }
-
-        const clipPath = `circle(${easedRadiusRef.current}px at ${localX}px ${localY}px)`;
-        el.style.clipPath = clipPath;
-        (el.style as ExtendedCSSProperties).WebkitClipPath = clipPath;
-
-        if (Math.abs(easedRadiusRef.current - targetRadius) > 0.01 || maskActiveRef.current) {
-          rafRef.current = requestAnimationFrame(tick);
-        } else {
-          rafRef.current = null;
-        }
-      };
-      tick();
-    }
-  };
-
-  // Clip-path loop (reads from CustomCursor)
-  useEffect(() => {
-    const el = revealRef.current;
-    if (!el) return;
-
-    const tick = () => {
-      const { x, y } = cursorPosRef.current;
-
-      const rect = el.getBoundingClientRect();
-      const localX = x - rect.left;
-      const localY = y - rect.top;
-
-      const targetRadius = maskActiveRef.current ? 195 : 0;
-      const ease = maskActiveRef.current ? 0.18 : 0.35;
-
-      easedRadiusRef.current += (targetRadius - easedRadiusRef.current) * ease;
-
-      if (Math.abs(easedRadiusRef.current - targetRadius) < 0.01) {
-        easedRadiusRef.current = targetRadius;
-      }
-
-      const clipPath = `circle(${easedRadiusRef.current}px at ${localX}px ${localY}px)`;
-      el.style.clipPath = clipPath;
-      (el.style as ExtendedCSSProperties).WebkitClipPath = clipPath;
-
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    tick();
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    let lastY = window.scrollY;
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          if (window.scrollY !== lastY) {
-            maskActiveRef.current = false;
-            mouseMoveRef.current = false;
-            setHovered(false);
-          }
-          lastY = window.scrollY;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Single hook replaces 3 RAF loops + 4 useEffects from the original
+  const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
 
   const preloaderDone = usePreloaderDone();
-  // GSAP Animations
+
   useGSAP(
     () => {
       if (!preloaderDone) return;
 
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
       gsap.set(
-        [
-          ".heading",
-          ".description",
-          ".description-large",
-          ".link-container",
-          blockRef3.current,
-          blockRef.current,
-          blockRef2.current,
-        ],
+        [".heading", ".description", ".description-large", ".link-container",
+          blockRef3.current, blockRef.current, blockRef2.current],
         { visibility: "visible" }
       );
 
       if (prefersReducedMotion) {
-        gsap.set(
-          [".heading", ".description", ".description-large", ".link-container"],
-          { opacity: 1, yPercent: 0, xPercent: 0 }
-        );
+        gsap.set([".heading", ".description", ".description-large", ".link-container"],
+          { opacity: 1, yPercent: 0, xPercent: 0 });
         gsap.set([blockRef.current, blockRef2.current, blockRef3.current], { width: 0 });
-        // Dispatch immediately for reduced motion
         window.dispatchEvent(new CustomEvent("hero-animations-complete"));
         return;
       }
@@ -244,80 +64,42 @@ export default function Hero() {
         const tl = gsap.timeline({
           onComplete: () => {
             tl.kill();
-            // ← Dispatch event so MobileExperiencePopup knows hero is done
             window.dispatchEvent(new CustomEvent("hero-animations-complete"));
           },
         });
 
-        tl.fromTo(
-          blockRef.current,
-          { width: "0%", right: "0%" },
-          {
-            width: "100%",
-            duration: 1,
-            ease,
-            onComplete: () => {
-              gsap.to(blockRef.current, { width: 0, right: "100%", duration: 0.4, ease });
-            },
-          },
-          0.4
-        );
+        // Block wipes — explicit from/to objects (computed keys break TweenVars types)
+        const wipeConfigs: Array<{
+          el: HTMLElement | null;
+          from: gsap.TweenVars;
+          exitTo: gsap.TweenVars;
+        }> = [
+          { el: blockRef.current,  from: { width: "0%", right: "0%" }, exitTo: { width: 0, right: "100%" } },
+          { el: blockRef2.current, from: { width: "0%", left:  "0%" }, exitTo: { width: 0, left:  "100%" } },
+          { el: blockRef3.current, from: { width: "0%", left:  "0%" }, exitTo: { width: 0, left:  "100%" } },
+        ];
 
-        tl.fromTo(
-          blockRef2.current,
-          { width: "0%", left: "0%" },
-          {
-            width: "100%",
-            duration: 1,
-            ease,
-            onComplete: () => {
-              gsap.to(blockRef2.current, { width: 0, left: "100%", duration: 0.4, ease });
-            },
-          },
-          0.4
-        );
-
-        tl.fromTo(
-          blockRef3.current,
-          { width: "0%", left: "0%" },
-          {
-            width: "100%",
-            duration: 1,
-            ease,
-            onComplete: () => {
-              gsap.to(blockRef3.current, { width: 0, left: "100%", duration: 0.4, ease });
-            },
-          },
-          0.4
-        );
-
-        const titleSplit = new SplitText(".heading", {
-          type: "chars, words",
-          mask: "chars",
-          wordsClass: "heading++",
+        wipeConfigs.forEach(({ el, from, exitTo }) => {
+          if (!el) return;
+          tl.fromTo(el, from, {
+            width: "100%", duration: 1, ease,
+            onComplete: () => { gsap.to(el, { ...exitTo, duration: 0.4, ease }); },
+          }, 0.4);
         });
 
+        const titleSplit = new SplitText(".heading", {
+          type: "chars, words", mask: "chars", wordsClass: "heading++",
+        });
         gsap.set(titleSplit.chars, { xPercent: 100, opacity: 0 });
 
         tl.to(titleSplit.chars, {
-          xPercent: 0,
-          opacity: 1,
-          stagger: 0.05,
-          duration: 0.6,
-          ease,
+          xPercent: 0, opacity: 1, stagger: 0.05, duration: 0.6, ease,
           onComplete: () => {
-            gsap.set(titleSplit.words, { yPercent: 0, opacity: 1 });
             gsap.to(titleSplit.words, {
-              yPercent: -50,
-              opacity: 0,
-              stagger: 0.05,
-              ease,
+              yPercent: -50, opacity: 0, stagger: 0.05, ease,
               scrollTrigger: {
                 trigger: sectionRef.current,
-                start: "30% top",
-                end: "+=10%",
-                scrub: true,
-                onEnter: (self) => scrollTriggersRef.current.push(self),
+                start: "30% top", end: "+=10%", scrub: true,
               },
             });
           },
@@ -326,173 +108,74 @@ export default function Hero() {
         new SplitText(".reveal", { type: "words", wordsClass: "reveal++" });
 
         const descSplit = new SplitText(".description", {
-          type: "words, lines",
-          wordsClass: "des++",
-          mask: "lines",
+          type: "words, lines", wordsClass: "des++", mask: "lines",
         });
-
         const descLargeSplit = new SplitText(".description-large", {
-          type: "words, lines",
-          wordsClass: "des-large++",
-          mask: "lines",
+          type: "words, lines", wordsClass: "des-large++", mask: "lines",
         });
-
-        gsap.set([descSplit.words, descLargeSplit.words], { yPercent: 100, opacity: 0 });
-
-        tl.to(
-          descSplit.words,
-          {
-            yPercent: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.05,
-            ease,
-            onComplete: () => {
-              gsap.set(descSplit.words, { yPercent: 0, opacity: 1 });
-              gsap.to(descSplit.words, {
-                yPercent: -50,
-                opacity: 0,
-                stagger: 0.2,
-                ease,
-                scrollTrigger: {
-                  trigger: containerRef.current,
-                  start: "30% top",
-                  end: "+=10%",
-                  scrub: true,
-                  onEnter: (self) => scrollTriggersRef.current.push(self),
-                },
-              });
-            },
-          },
-          "<"
-        );
-
-        tl.to(
-          descLargeSplit.words,
-          {
-            yPercent: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.05,
-            ease,
-            onComplete: () => {
-              gsap.set(descLargeSplit.words, { yPercent: 0, opacity: 1 });
-              gsap.to(descLargeSplit.words, {
-                yPercent: -50,
-                opacity: 0,
-                stagger: 0.2,
-                ease,
-                scrollTrigger: {
-                  trigger: containerRef.current,
-                  start: "30% top",
-                  end: "+=10%",
-                  scrub: true,
-                  onEnter: (self) => scrollTriggersRef.current.push(self),
-                },
-              });
-            },
-          },
-          "<0.2"
-        );
-
         const linkSplit = new SplitText(".herolink", {
-          type: "words, lines",
-          mask: "lines",
+          type: "words, lines", mask: "lines",
         });
 
-        gsap.set(linkSplit.words, { yPercent: 100, opacity: 0 });
+        gsap.set([descSplit.words, descLargeSplit.words, linkSplit.words],
+          { yPercent: 100, opacity: 0 });
 
-        tl.to(
-          linkSplit.words,
-          {
-            yPercent: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.05,
-            ease,
-            onComplete: () => {
-              gsap.set(linkSplit.words, { yPercent: 0, opacity: 1 });
-              gsap.to(linkSplit.words, {
-                yPercent: -50,
-                opacity: 0,
-                stagger: 0.2,
-                ease,
-                scrollTrigger: {
-                  trigger: containerRef.current,
-                  start: "30% top",
-                  end: "+=10%",
-                  scrub: true,
-                  onEnter: (self) => scrollTriggersRef.current.push(self),
-                },
-              });
-            },
+        // Shared scroll-exit config for description + links
+        const scrollExit = (trigger: Element | null) => ({
+          yPercent: -50, opacity: 0, stagger: 0.2, ease,
+          scrollTrigger: {
+            trigger,
+            start: "30% top", end: "+=10%", scrub: true,
           },
-          "<"
-        );
+        });
+
+        [
+          [descSplit.words,     containerRef.current, "<"],
+          [descLargeSplit.words, containerRef.current, "<0.2"],
+          [linkSplit.words,      containerRef.current, "<"],
+        ].forEach(([words, trigger, position]) => {
+          tl.to(words as HTMLElement[], {
+            yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease,
+            onComplete: () => {
+              gsap.set(words as HTMLElement[], { yPercent: 0, opacity: 1 });
+              gsap.to(words as HTMLElement[], scrollExit(trigger as Element | null));
+            },
+          }, position as string);
+        });
 
         gsap.set(heroWidthRef.current, { width: 0 });
-
-        tl.to(
-          heroWidthRef.current,
-          {
-            width: "100%",
-            stagger: 1,
-            ease,
-            onComplete: () => {
-              gsap.to(heroWidthRef.current, {
-                width: 0,
-                stagger: 1,
-                ease,
-                scrollTrigger: {
-                  trigger: containerRef.current,
-                  start: "30% top",
-                  end: "+=10%",
-                  scrub: true,
-                  onEnter: (self) => scrollTriggersRef.current.push(self),
-                },
-              });
-            },
+        tl.to(heroWidthRef.current, {
+          width: "100%", stagger: 1, ease,
+          onComplete: () => {
+            gsap.to(heroWidthRef.current, {
+              width: 0, stagger: 1, ease,
+              scrollTrigger: {
+                trigger: containerRef.current,
+                start: "30% top", end: "+=10%", scrub: true,
+              },
+            });
           },
-          "<"
-        );
+        }, "<");
 
         return () => {
           titleSplit.revert();
           descSplit.revert();
           descLargeSplit.revert();
           linkSplit.revert();
-          scrollTriggersRef.current.forEach((st) => st.kill());
-          scrollTriggersRef.current = [];
+          // ctx.revert() (called by useGSAP) kills all ScrollTriggers in scope
         };
       }, sectionRef);
 
-      return () => {
-        ctx.revert();
-        ScrollTrigger.getAll().forEach((st) => {
-          if (
-            st.trigger === sectionRef.current ||
-            st.trigger === containerRef.current
-          ) {
-            st.kill();
-          }
-        });
-      };
+      return () => ctx.revert();
     },
     { scope: sectionRef, dependencies: [preloaderDone] }
   );
 
   return (
-    <section
-      ref={sectionRef}
-      className="px relative min-h-svh bg-primary"
-      id="#"
-    >
+    <section ref={sectionRef} className="px relative min-h-svh bg-primary" id="#">
       <Navbar />
       <div ref={containerRef} className="hero">
-        <div
-          data-speed="1.1"
-          className="relative w-full flex md:pt-10 pt-80 pb-6 md:pb-12"
-        >
+        <div data-speed="1.1" className="relative w-full flex md:pt-10 pt-80 pb-6 md:pb-12">
           <div className="relative w-full flex justify-end">
             <h1
               className="heading gsap-hide large text-4xl md:text-8xl text-right leading-tight text-transparent"
@@ -502,11 +185,9 @@ export default function Hero() {
               aria-level={1}
               aria-label="I am SoftLifeX Developer & Designer"
             >
-              I am SoftLifeX <br /> Developer &amp; Designer
-              <br />
+              I am SoftLifeX <br /> Developer &amp; Designer <br />
             </h1>
 
-            {/* Mask text - reveal on hover */}
             <div
               ref={revealRef}
               className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-4xl md:text-8xl z-10 bg-primary text-end text-foreground"
@@ -536,7 +217,6 @@ export default function Hero() {
             <p className="description-large gsap-hide text-foreground text-xl md:text-3xl">
               Building digital products since 2022
             </p>
-
             <div
               ref={blockRef2}
               className="gsap-hide absolute w-0 h-full top-0 right-0 pointer-events-none bg-foreground"
@@ -559,7 +239,6 @@ export default function Hero() {
                     Start A Conversation
                   </span>
                 </span>
-
                 <span
                   ref={heroWidthRef}
                   className="absolute left-0 right-0 -bottom-px h-px bg-current z-0 origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom) group-hover:origin-right group-hover:scale-x-0"
@@ -580,7 +259,6 @@ export default function Hero() {
                     Resume
                   </span>
                 </span>
-
                 <span className="absolute left-0 right-0 -bottom-px h-px bg-current z-0 origin-right scale-x-0 transition-transform duration-500 ease-(--ease-custom) group-hover:origin-left group-hover:scale-x-100" />
               </Link>
             </div>

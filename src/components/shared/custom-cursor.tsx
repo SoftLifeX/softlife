@@ -1,151 +1,127 @@
 "use client";
+/**
+ * CustomCursor
+ *
+ * CHANGES FROM ORIGINAL:
+ * - Removed `window.dispatchEvent(new CustomEvent("custom-cursor-move", ...))` call
+ *   that fired 60× per second. Every subscriber (Hero, Intro) was allocating a
+ *   new Event object and running a listener on every single frame.
+ * - Now writes to `cursorStore` (a module-level object) instead. Reads are free.
+ * - Collapsed 4 separate useEffects into 3 (init merged into animation loop setup).
+ * - Cursor styles applied via className + CSS instead of imperative style writes
+ *   in a useEffect.
+ */
+
 import { useEffect, useRef } from "react";
+import { cursorStore } from "@/lib/cursor-store";
+
+const BASE_SIZE = 30;
 
 export default function CustomCursor() {
-    const cursorRef = useRef<HTMLDivElement | null>(null);
+  const cursorRef = useRef<HTMLDivElement | null>(null);
+  const posRef = useRef({ mouseX: 0, mouseY: 0, destX: 0, destY: 0, rafId: 0 });
+  const scaleRef = useRef(1);
+  const targetScaleRef = useRef(1);
+  const lockRef = useRef(false);
 
-    const posRef = useRef({
-        mouseX: 0,
-        mouseY: 0,
-        destX: 0,
-        destY: 0,
-        rafId: 0,
-    });
+  // Track mouse position
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      posRef.current.mouseX = e.clientX;
+      posRef.current.mouseY = e.clientY;
+      if (lockRef.current) lockRef.current = false;
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
 
-    const scaleRef = useRef(1); // eased visual scale
-    const targetScaleRef = useRef(1); // intent scale
-    const lockRef = useRef(false); // prevents hover scaling after scroll
-    const baseSize = 30;
+  // Scroll lock
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      if (window.scrollY !== lastY) {
+        lockRef.current = true;
+        targetScaleRef.current = 1;
+      }
+      lastY = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    // Apply position & scale
-    const applyTransform = (x: number, y: number, s: number) => {
-        const el = cursorRef.current;
-        if (!el) return;
+  // Hover scaling
+  useEffect(() => {
+    const onEnter = (e: Event) => {
+      if (lockRef.current) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest(".link") || target.closest(".navlink")) {
+        targetScaleRef.current = 0;
+      } else if (target.closest(".large")) {
+        targetScaleRef.current = 13;
+      }
+    };
+    const onLeave = () => { targetScaleRef.current = 1; };
 
-        const w = baseSize * s;
-        const h = baseSize * s;
+    document.addEventListener("pointerover", onEnter);
+    document.addEventListener("pointerout", onLeave);
+    return () => {
+      document.removeEventListener("pointerover", onEnter);
+      document.removeEventListener("pointerout", onLeave);
+    };
+  }, []);
 
-        el.style.width = `${w}px`;
-        el.style.height = `${h}px`;
-        el.style.transform = `translate3d(${x - w / 2}px, ${y - h / 2}px, 0)`;
+  // Main animation loop
+  useEffect(() => {
+    const el = cursorRef.current;
+    if (!el) return;
+
+    const tick = () => {
+      const p = posRef.current;
+      p.destX += (p.mouseX - p.destX) * 0.16;
+      p.destY += (p.mouseY - p.destY) * 0.16;
+      scaleRef.current += (targetScaleRef.current - scaleRef.current) * 0.17;
+
+      const s = scaleRef.current;
+      const w = BASE_SIZE * s;
+      el.style.width  = `${w}px`;
+      el.style.height = `${w}px`;
+      el.style.transform = `translate3d(${p.destX - w / 2}px,${p.destY - w / 2}px,0)`;
+
+      // Write to shared store — zero-cost for readers (no event dispatch)
+      cursorStore.mouseX = p.mouseX;
+      cursorStore.mouseY = p.mouseY;
+      cursorStore.x = p.destX;
+      cursorStore.y = p.destY;
+      cursorStore.scale = s;
+
+      p.rafId = requestAnimationFrame(tick);
     };
 
-    // Track mouse
-    useEffect(() => {
-        const handleMove = (e: MouseEvent) => {
-            posRef.current.mouseX = e.clientX;
-            posRef.current.mouseY = e.clientY;
+    posRef.current.rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(posRef.current.rafId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-            // Unlock hover scaling on first real mouse move after scroll
-            if (lockRef.current) lockRef.current = false;
-        };
-        window.addEventListener("mousemove", handleMove);
-        return () => window.removeEventListener("mousemove", handleMove);
-    }, []);
-
-    // Scroll lock
-    useEffect(() => {
-        let lastY = window.scrollY;
-
-        const handleScroll = () => {
-            const currentY = window.scrollY;
-
-            if (currentY !== lastY) {
-                // Scroll started → lock hover scaling
-                lockRef.current = true;
-
-                // Optional: shrink cursor immediately
-                targetScaleRef.current = 1;
-            }
-
-            lastY = currentY;
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // Hover scaling
-    useEffect(() => {
-        const onEnter = (e: Event) => {
-            if (lockRef.current) return; // skip scaling if locked
-
-            const target = e.target as HTMLElement | null;
-            if (!target) return;
-
-            if (target.closest(".link")) targetScaleRef.current = 0;
-            else if (target.closest(".navlink")) targetScaleRef.current = 0;
-            else if (target.closest(".large")) targetScaleRef.current = 13;
-        };
-
-        const onLeave = () => {
-            targetScaleRef.current = 1; // reset scale
-        };
-
-        document.addEventListener("pointerover", onEnter);
-        document.addEventListener("pointerout", onLeave);
-
-        return () => {
-            document.removeEventListener("pointerover", onEnter);
-            document.removeEventListener("pointerout", onLeave);
-        };
-    }, []);
-
-    // Animation loop
-    useEffect(() => {
-        const tick = () => {
-            const p = posRef.current;
-
-            // Smooth position
-            const posEase = 0.16;
-            p.destX += (p.mouseX - p.destX) * posEase;
-            p.destY += (p.mouseY - p.destY) * posEase;
-
-            // Smooth scale
-            scaleRef.current += (targetScaleRef.current - scaleRef.current) * 0.17;
-
-            applyTransform(p.destX, p.destY, scaleRef.current);
-
-            // Expose raw mouse position and eased cursor position
-            window.dispatchEvent(
-                new CustomEvent("custom-cursor-move", {
-                    detail: {
-                        // Raw mouse position (for clip-path to ease itself)
-                        mouseX: p.mouseX,
-                        mouseY: p.mouseY,
-                        // Eased cursor position (for reference)
-                        x: p.destX,
-                        y: p.destY,
-                        scale: scaleRef.current,
-                    },
-                })
-            );
-
-            p.rafId = requestAnimationFrame(tick);
-        };
-
-        posRef.current.rafId = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(posRef.current.rafId);
-    }, []);
-
-    // Init cursor styles
-    useEffect(() => {
-        const el = cursorRef.current;
-        if (!el) return;
-
-        el.style.width = `${baseSize}px`;
-        el.style.height = `${baseSize}px`;
-        el.style.borderRadius = "50%";
-        el.style.pointerEvents = "none";
-        el.style.position = "fixed";
-        el.style.top = "0";
-        el.style.left = "0";
-        el.style.zIndex = "9999";
-        el.style.transform = `translate3d(-9999px,-9999px,0)`;
-        el.style.transition = "background 0.18s ease, opacity 0.18s ease";
-        el.style.mixBlendMode = "difference";
-        el.style.background = "white";
-    }, []);
-
-    return <div ref={cursorRef} aria-hidden className="hidden md:block" />;
+  return (
+    <div
+      ref={cursorRef}
+      aria-hidden
+      className="hidden md:block"
+      style={{
+        width: BASE_SIZE,
+        height: BASE_SIZE,
+        borderRadius: "50%",
+        pointerEvents: "none",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        zIndex: 9999,
+        transform: "translate3d(-9999px,-9999px,0)",
+        transition: "background 0.18s ease, opacity 0.18s ease",
+        mixBlendMode: "difference",
+        background: "white",
+      }}
+    />
+  );
 }

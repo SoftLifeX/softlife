@@ -1,124 +1,71 @@
 "use client";
+
 import { useRef } from "react";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
+import { gsap } from "@/lib/gsap-init";
 import { cn } from "@/lib/utils";
 import { Tag } from "../ui/tag";
 import { techStack } from "@/lib/constants/techstack";
-import ScrollTrigger from "gsap/ScrollTrigger";
-
-// Register GSAP plugins globally
-gsap.registerPlugin(ScrollTrigger, SplitText);
+import { registerWipe } from "@/hooks/useWipeReveal";
 
 export default function Skills() {
-  const skillWidthRef = useRef<HTMLDivElement | null>(null);
-  const skillWidthRef2 = useRef<HTMLDivElement | null>(null);
-  const skillWidthRef3 = useRef<HTMLDivElement | null>(null);
   const skillSectionRef = useRef<HTMLDivElement | null>(null);
-  const skillBlockRef = useRef<HTMLDivElement | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const scrollTriggersRef = useRef<any[]>([]);
+  const skillBlockRef   = useRef<HTMLDivElement | null>(null);
+  const skillWidthRef   = useRef<HTMLDivElement | null>(null);
+  const skillWidthRef2  = useRef<HTMLDivElement | null>(null);
+  const skillWidthRef3  = useRef<HTMLDivElement | null>(null);
+  const subtitleRef     = useRef<HTMLParagraphElement | null>(null);
 
   useGSAP(
     () => {
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      // user prefers reduced motion, show everything immediately
       if (prefersReducedMotion) {
-        gsap.set([".skillSubtitle", ".skillParagraph"], {
-          opacity: 1,
-          yPercent: 0,
-        });
-        gsap.set(skillWidthRef.current, {
-          width: "100%",
-        });
-
-        gsap.set(skillWidthRef2.current, {
-          width: "100%",
-        });
-
-        gsap.set(skillWidthRef3.current, {
-          width: "100%",
-        });
+        gsap.set([subtitleRef.current, ".skillParagraph"], { opacity: 1, yPercent: 0 });
+        gsap.set([skillWidthRef.current, skillWidthRef2.current, skillWidthRef3.current], { width: "100%" });
         return;
       }
 
       const ctx = gsap.context(() => {
-        gsap.fromTo(
-          skillBlockRef.current,
+        // Subtitle wipe — was ~25 lines, now 8
+        registerWipe(
+          { blockRef: skillBlockRef, widthRef: skillWidthRef, textRef: subtitleRef },
           {
-            width: "0%",
-            left: "0%",
-          },
-          {
-            width: "100%",
-            duration: 0.5,
+            trigger: () => subtitleRef.current,
+            direction: "left",
+            startOffset: "top 90%",
+            underlineStart: "top 80%",
+            underlineEnd: "top 50%",
             ease,
-            scrollTrigger: {
-              trigger: ".skillSubtitle",
-              start: "top 90%",
-              toggleActions: "play none none none",
-              onEnter: (self) => scrollTriggersRef.current.push(self),
-            },
-            onComplete: () => {
-              gsap.to(skillBlockRef.current, {
-                width: 0,
-                left: "100%",
-                duration: 0.4,
-                ease,
-                onComplete: () => {
-                  gsap.to(".skillSubtitle", {
-                    opacity: 1,
-                    duration: 0.1,
-                    ease,
-                  });
-                },
-              });
-            },
           }
         );
 
-        gsap.from(skillWidthRef.current, {
-          width: 0,
-          stagger: 1,
-          ease,
-          scrollTrigger: {
-            trigger: ".skillSubtitle",
-            start: "top 80%",
-            end: "top 50%",
-            scrub: true,
-            onEnter: (self) => scrollTriggersRef.current.push(self),
-          },
-        });
-
+        // Inline underlines inside the paragraph text
         gsap.from(skillWidthRef2.current, {
           width: 0,
-          stagger: 1,
           ease,
           scrollTrigger: {
             trigger: ".skillParagraph",
             start: "top 65%",
             end: "top 50%",
             scrub: true,
-            onEnter: (self) => scrollTriggersRef.current.push(self),
           },
         });
 
         gsap.from(skillWidthRef3.current, {
           width: 0,
-          stagger: 1,
           ease,
           scrollTrigger: {
             trigger: ".skillParagraph",
             start: "top 65%",
             end: "top 50%",
             scrub: true,
-            onEnter: (self) => scrollTriggersRef.current.push(self),
           },
         });
 
+        // Paragraph text reveal
         const skillSplit = new SplitText(".skillParagraph", {
           type: "chars, words, lines",
           mask: "lines",
@@ -133,10 +80,10 @@ export default function Skills() {
             start: "top 70%",
             end: "top 55%",
             scrub: true,
-            onEnter: (self) => scrollTriggersRef.current.push(self),
           },
         });
 
+        // Tech pill entrance
         const techPills = gsap.utils.toArray<HTMLElement>(".tech-pill");
 
         gsap.set(techPills, {
@@ -157,48 +104,34 @@ export default function Skills() {
             start: "top 75%",
             end: "top 55%",
             scrub: true,
-            onEnter: (self) => scrollTriggersRef.current.push(self),
+          },
+          onComplete: () => {
+            // Remove willChange after animation — frees compositor layers
+            gsap.set(techPills, { willChange: "auto" });
           },
         });
 
-
-
-        // Clean up ScrollTriggers and SplitText
-        return () => {
-          skillSplit.revert();
-
-          scrollTriggersRef.current.forEach((st) => st?.kill());
-          scrollTriggersRef.current = [];
-        };
-
+        return () => skillSplit.revert();
       }, skillSectionRef);
 
-      return () => {
-        ctx.revert();
-
-        // Extra cleanup - kill any remaining ScrollTriggers
-        ScrollTrigger.getAll().forEach(st => {
-          if (st.trigger?.closest('.skills-section')) {
-            st.kill();
-          }
-        });
-      };
+      return () => ctx.revert();
     },
     { scope: skillSectionRef }
   );
 
   return (
     <section ref={skillSectionRef} className="skills-section px py">
-      <div className=" relative w-fit">
+      {/* Subtitle */}
+      <div className="relative w-fit">
         <div className="relative w-fit group">
           <p
+            ref={subtitleRef}
             className={cn(
-              "skillSubtitle opacity-0 relative justify-start w-fit text-sm text-foreground origin-left"
+              "opacity-0 skillSubtitle relative justify-start w-fit text-sm text-foreground origin-left"
             )}
           >
             What do I build with?
           </p>
-
           <div
             ref={skillWidthRef}
             className={cn(
@@ -208,19 +141,15 @@ export default function Skills() {
             )}
           />
         </div>
-
         <div
           ref={skillBlockRef}
           className="absolute w-0 h-full top-0 left-0 pointer-events-none bg-foreground"
         />
       </div>
 
+      {/* Paragraph 1 */}
       <div className="pt-4 w-full">
-        <p
-          className={cn(
-            "skillParagraph text-start  w-full text-sm text-primary-foreground"
-          )}
-        >
+        <p className={cn("skillParagraph text-start w-full text-sm text-primary-foreground")}>
           - I build with a hybrid of the{" "}
           <span className="relative inline-block group">
             T3 and MERN stacks
@@ -237,17 +166,15 @@ export default function Skills() {
           <br /> and ReactNative and Flutter for Mobile Development
         </p>
       </div>
+
+      {/* Paragraph 2 */}
       <div className="w-full flex pt-4 justify-end">
-        <p
-          className={cn(
-            "skillParagraph text-start md:text-center w-full text-sm text-primary-foreground"
-          )}
-        >
+        <p className={cn("skillParagraph text-start md:text-center w-full text-sm text-primary-foreground")}>
           My{" "}
           <span className="relative inline-block group">
             not so vanity
             <span
-            ref={skillWidthRef3}
+              ref={skillWidthRef3}
               className={cn(
                 "absolute left-0 bottom-0.5 h-px w-full bg-primary-foreground",
                 "origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom)",
@@ -259,6 +186,7 @@ export default function Skills() {
         </p>
       </div>
 
+      {/* Tech pills */}
       <div className="flex flex-wrap gap-3 pt-4">
         {techStack.map(({ icon, name }) => (
           <div key={name} className="tech-pill">
@@ -266,7 +194,6 @@ export default function Skills() {
           </div>
         ))}
       </div>
-
     </section>
   );
 }
