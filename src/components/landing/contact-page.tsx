@@ -303,7 +303,7 @@ export default function Contact() {
           {/* Primary CTA */}
           <Link
             href="mailto:daniel.c.daniel.dev@gmail.com"
-            className="cta-primary group relative inline-flex items-center gap-3 px-8 py-4 border border-background/20 text-background text-sm tracking-wide hover:border-background/60 transition-colors duration-500 overflow-hidden"
+            className="link cta-primary group relative inline-flex items-center gap-3 px-8 py-4 border border-background/20 text-background text-sm tracking-wide hover:border-background/60 transition-colors duration-500 overflow-hidden"
           >
             <span
               aria-hidden="true"

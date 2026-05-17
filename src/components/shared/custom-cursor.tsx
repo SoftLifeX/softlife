@@ -1,21 +1,9 @@
 "use client";
-/**
- * CustomCursor
- *
- * CHANGES FROM ORIGINAL:
- * - Removed `window.dispatchEvent(new CustomEvent("custom-cursor-move", ...))` call
- *   that fired 60× per second. Every subscriber (Hero, Intro) was allocating a
- *   new Event object and running a listener on every single frame.
- * - Now writes to `cursorStore` (a module-level object) instead. Reads are free.
- * - Collapsed 4 separate useEffects into 3 (init merged into animation loop setup).
- * - Cursor styles applied via className + CSS instead of imperative style writes
- *   in a useEffect.
- */
 
 import { useEffect, useRef } from "react";
 import { cursorStore } from "@/lib/cursor-store";
 
-const BASE_SIZE = 30;
+const baseSize = 30;
 
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement | null>(null);
@@ -83,7 +71,7 @@ export default function CustomCursor() {
       scaleRef.current += (targetScaleRef.current - scaleRef.current) * 0.17;
 
       const s = scaleRef.current;
-      const w = BASE_SIZE * s;
+      const w = baseSize * s;
       el.style.width  = `${w}px`;
       el.style.height = `${w}px`;
       el.style.transform = `translate3d(${p.destX - w / 2}px,${p.destY - w / 2}px,0)`;
@@ -109,8 +97,8 @@ export default function CustomCursor() {
       aria-hidden
       className="hidden md:block"
       style={{
-        width: BASE_SIZE,
-        height: BASE_SIZE,
+        width: baseSize,
+        height: baseSize,
         borderRadius: "50%",
         pointerEvents: "none",
         position: "fixed",

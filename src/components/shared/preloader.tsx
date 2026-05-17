@@ -25,17 +25,17 @@ function buildClip(
 
 export default function Preloader() {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const ooRef      = useRef<HTMLDivElement>(null);
-  const softRef    = useRef<HTMLDivElement>(null);
-  const lifeRef    = useRef<HTMLDivElement>(null);
+  const ooRef = useRef<HTMLDivElement>(null);
+  const softRef = useRef<HTMLDivElement>(null);
+  const lifeRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(true);
 
   useEffect(() => {
     ((document.fonts?.ready ?? Promise.resolve()) as Promise<unknown>).then(() => {
       const overlay = overlayRef.current;
-      const ooEl    = ooRef.current;
-      const softEl  = softRef.current;
-      const lifeEl  = lifeRef.current;
+      const ooEl = ooRef.current;
+      const softEl = softRef.current;
+      const lifeEl = lifeRef.current;
       if (!overlay || !ooEl || !softEl || !lifeEl) return;
 
       const splitChars = (el: HTMLElement, text: string, cls: string) => {
@@ -44,19 +44,19 @@ export default function Preloader() {
             ch === " "
               ? `<span style="display:inline-block;width:0.3em"> </span>`
               : `<span style="display:inline-block;overflow:hidden;vertical-align:top">`
-                + `<span class="${cls}" style="display:inline-block;line-height:1">${ch}</span></span>`
+              + `<span class="${cls}" style="display:inline-block;line-height:1">${ch}</span></span>`
           )
           .join("");
         return Array.from(el.querySelectorAll<HTMLElement>(`.${cls}`));
       };
 
-      const ooChars   = splitChars(ooEl,   "only one", "oo");
-      const softChars = splitChars(softEl, "soft",     "sf");
-      const lifeChars = splitChars(lifeEl, "life",     "lf");
+      const ooChars = splitChars(ooEl, "only one", "oo");
+      const softChars = splitChars(softEl, "soft", "sf");
+      const lifeChars = splitChars(lifeEl, "life", "lf");
 
-      gsap.set(ooChars,   { x: -40, opacity: 0 });
-      gsap.set(softChars, { x: 60,  opacity: 0 });
-      gsap.set(lifeChars, { x: 60,  opacity: 0 });
+      gsap.set(ooChars, { x: -40, opacity: 0 });
+      gsap.set(softChars, { x: 60, opacity: 0 });
+      gsap.set(lifeChars, { x: 60, opacity: 0 });
 
       const hole = { left: 50, right: 50, top: 50, bottom: 50 };
       overlay.style.clipPath = buildClip(hole.left, hole.right, hole.top, hole.bottom);
@@ -69,7 +69,7 @@ export default function Preloader() {
 
       const tl = gsap.timeline();
 
-      tl.to(ooChars,   { x: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: EASE });
+      tl.to(ooChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: EASE });
       tl.to(softChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: EASE }, "-=0.65");
       tl.to(lifeChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: EASE }, "<0.18");
 
@@ -80,11 +80,11 @@ export default function Preloader() {
 
       tl.add("split");
       tl.to(softEl, { x: "-12vw", duration: 0.7, ease: SNAP }, "split");
-      tl.to(lifeEl, { x:  "12vw", duration: 0.7, ease: SNAP }, "split");
+      tl.to(lifeEl, { x: "12vw", duration: 0.7, ease: SNAP }, "split");
       tl.to(hole, {
-        left:   40,
-        right:  60, 
-        top:    50 - textHalfVh,
+        left: 40,
+        right: 60,
+        top: 50 - textHalfVh,
         bottom: 50 + textHalfVh,
         duration: 0.7,
         ease: SNAP,
@@ -94,19 +94,18 @@ export default function Preloader() {
       tl.to({}, { duration: 0.35 });
 
       tl.to(hole, {
-        left:   0,
-        right:  100,
-        top:    0,
+        left: 0,
+        right: 100,
+        top: 0,
         bottom: 100,
         duration: 0.75,
         ease: SNAP,
-        onUpdate: applyClip,
-        onComplete: () => {
+        onStart: () => {
           window.dispatchEvent(new CustomEvent("preloader-complete"));
-          setMounted(false);
         },
+        onUpdate: applyClip,
+        onComplete: () => setMounted(false),
       });
-
       tl.to([softEl, lifeEl], { opacity: 0, duration: 0.25 }, "-=0.6");
     });
   }, []);
@@ -153,7 +152,7 @@ export default function Preloader() {
           style={{
             position: "absolute",
             bottom: "clamp(36px, 5vh, 64px)",
-            left:   "clamp(20px, 4vw, 52px)",
+            left: "clamp(20px, 4vw, 52px)",
             fontFamily: "system-ui, sans-serif",
             fontSize: "clamp(9px, 0.9vw, 11px)",
             fontWeight: 400,
