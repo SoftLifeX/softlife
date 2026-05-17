@@ -217,7 +217,7 @@ export default function Header({
       <div
         ref={wrapperRef}
         className={cn(
-          "fixed right-5 top-5 w-22 h-22 p-4 flex items-center justify-center rounded-full transition-all duration-300",
+          "link fixed right-5 top-5 w-22 h-22 p-4 flex items-center justify-center rounded-full transition-all duration-300",
           scrolled ? "scale-100 pointer-events-auto z-50" : "scale-0 -z-50 pointer-events-none"
         )}
       >

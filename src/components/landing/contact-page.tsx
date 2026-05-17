@@ -348,7 +348,7 @@ export default function Contact() {
         </div>
 
         {/* Social row */}
-        <div className="contact-sub gsap-hide mt-10 flex items-center gap-2">
+        <div className="link contact-sub gsap-hide mt-10 flex items-center gap-2">
           {[
             { label: "GitHub", href: "https://github.com/SoftLifeX" },
             { label: "LinkedIn", href: "https://linkedin.com/in/daniel-c-daniel-dev" },

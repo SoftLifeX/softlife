@@ -75,8 +75,8 @@ export default function Services() {
                 ease, stagger: 0.2,
                 scrollTrigger: {
                   trigger: cards[0],
-                  start: "top 85%",
-                  end: "top 15%",
+                  start: "top bottom",
+                  end: "top 35%",
                   scrub: true,
                 },
                 onComplete: () => {

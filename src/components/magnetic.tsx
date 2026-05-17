@@ -1,17 +1,4 @@
 "use client";
-/**
- * Magnetic
- *
- * CHANGES FROM ORIGINAL:
- * - `isMobile` used to call window.matchMedia() synchronously on mount.
- *   A matchMedia *listener* is now used so if the user resizes
- *   (e.g. DevTools responsive toggle) the effect correctly re-evaluates.
- * - `boundsRef` is invalidated on scroll/resize and lazily refreshed on
- *   mousemove — same as before but the logic is cleaner.
- * - `handleMouseEnter` no longer has an unused `e: MouseEvent` param.
- * - `willChange: "transform"` removed from the outer wrapper (it was on
- *   the wrong element; GSAP sets it on the inner wrapper via quickTo).
- */
 
 import { useEffect, useRef, ReactNode } from "react";
 import { gsap } from "@/lib/gsap-init";

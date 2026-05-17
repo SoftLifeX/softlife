@@ -91,18 +91,21 @@ export default function Preloader() {
         onUpdate: applyClip,
       }, "split");
 
-      tl.to({}, { duration: 0.35 });
+      tl.to({}, { duration: 0.35,
+        
+        onComplete: () => {
+          window.dispatchEvent(new CustomEvent("preloader-complete"));
+        },
+
+       });
 
       tl.to(hole, {
         left: 0,
         right: 100,
         top: 0,
         bottom: 100,
-        duration: 1,
+        duration: 0.95,
         ease: SNAP,
-        onStart: () => {
-          window.dispatchEvent(new CustomEvent("preloader-complete"));
-        },
         onUpdate: applyClip,
         onComplete: () => setMounted(false),
       });
