@@ -91,9 +91,9 @@ export default function Preloader() {
         onUpdate: applyClip,
       }, "split");
 
-      tl.to({}, { duration: 0.35,
+      tl.to({}, { duration: 0.3,
         
-        onComplete: () => {
+        onStart: () => {
           window.dispatchEvent(new CustomEvent("preloader-complete"));
         },
 
@@ -104,7 +104,7 @@ export default function Preloader() {
         right: 100,
         top: 0,
         bottom: 100,
-        duration: 0.95,
+        duration: 0.85,
         ease: SNAP,
         onUpdate: applyClip,
         onComplete: () => setMounted(false),
