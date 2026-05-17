@@ -98,7 +98,7 @@ export default function Preloader() {
         right: 100,
         top: 0,
         bottom: 100,
-        duration: 0.75,
+        duration: 0.85,
         ease: SNAP,
         onStart: () => {
           window.dispatchEvent(new CustomEvent("preloader-complete"));
