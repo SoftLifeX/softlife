@@ -33,7 +33,7 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
         smooth:          1,
         effects:         true,
         normalizeScroll: true,
-        smoothTouch:     0,   // explicitly off; use native on touch
+        smoothTouch:     0,
       });
 
       return () => smoother.kill();

@@ -1,21 +1,4 @@
 "use client";
-/**
- * Hero
- *
- * CHANGES FROM ORIGINAL:
- * - Removed gsap.registerPlugin() call — now centralized in gsap-init.ts.
- * - Replaced 3 concurrent RAF loops (handleMouseEnter tick, handleMouseLeave
- *   tick, and the continuous useEffect tick) with a single useRevealMask hook.
- *   The original handleMouseEnter/Leave each launched their OWN RAF loop
- *   in addition to the one that was always running — up to 3 loops writing
- *   to the same element simultaneously.
- * - Removed the window "custom-cursor-move" CustomEvent listener —
- *   cursor position is now read from cursorStore (zero allocation).
- * - Removed `scrollTriggersRef` manual tracking — useGSAP ctx.revert()
- *   kills all ScrollTriggers created inside the context automatically.
- * - `ExtendedCSSProperties` interface moved into the hook.
- * - All ScrollTrigger cleanup is handled by ctx.revert() + GSAP scope.
- */
 
 import { useRef } from "react";
 import { SplitText } from "gsap/SplitText";

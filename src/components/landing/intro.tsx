@@ -28,11 +28,6 @@ export default function Intro() {
       }
 
       const ctx = gsap.context(() => {
-        // Everything deferred until fonts load.
-        // registerWipe's final step is gsap.to(text, { opacity: 1 }) —
-        // if that fires before the font is ready the element can be
-        // measured with fallback metrics and then stay invisible once the
-        // real font swaps in. Gating the whole block on fonts.ready fixes it.
         document.fonts.ready.then(() => {
           registerWipe(
             { blockRef: introBlockRef, widthRef, textRef: subtitleRef },
@@ -68,9 +63,6 @@ export default function Intro() {
             linesClass: "line",
           });
 
-          // Words start hidden — the element itself was opacity:0 (set below
-          // in JSX via className). Now that SplitText has split correctly with
-          // the real font, make the element visible and let the scrub drive words in.
           gsap.set(".intro", { opacity: 1 });
           gsap.set(introTitleSplit.words, { opacity: 0 });
 

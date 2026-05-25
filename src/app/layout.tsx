@@ -12,30 +12,24 @@ import GsapInit from "@/components/shared/gsap-init-client";
 const siteURL  = "https://softlifex.vercel.app";
 const siteName = "SoftLifeX";
 const fullName = "Daniel Chimbu-Okaaomee Daniel";
-const HANDLE    = "@softlifex";
-const DESC =
+const handle    = "@softlifex";
+const desc =
   "Full-stack & mobile software engineer crafting high-quality digital and " +
   "immersive experiences. 4 years building with React, Next.js, React Native " +
   "and Flutter — based in Lagos, Nigeria.";
 
 export const metadata: Metadata = {
-  // Title template — child pages append " | SoftLifeX" automatically
   title: {
     default:  `${siteName} — Full-Stack & Mobile Engineer`,
     template: `%s | ${siteName}`,
   },
 
-  description: DESC,
-
-  // metadataBase makes all relative URLs absolute for OG/Twitter/canonical.
-  // Also tells Google the canonical domain, preventing the *.vercel.app
-  // mirror (which Vercel generates) from being indexed as a duplicate.
+  description: desc,
   metadataBase: new URL(siteURL),
   alternates: {
     canonical: "/",
   },
 
-  // Keywords — tight and realistic (Google soft-ignores stuffed lists)
   keywords: [
     "SoftLifeX",
     "Daniel Chimbu-Okaaomee Daniel",
@@ -53,7 +47,6 @@ export const metadata: Metadata = {
   creator:   fullName,
   publisher: siteName,
 
-  // Crawling
   robots: {
     index:  true,
     follow: true,
@@ -66,15 +59,13 @@ export const metadata: Metadata = {
     },
   },
 
-  // Open Graph — Next.js auto-serves app/opengraph-image.png, but declaring
-  // dimensions explicitly ensures LinkedIn/Slack/WhatsApp pick it up correctly
   openGraph: {
     type:        "website",
     locale:      "en_NG",
     url:         siteURL,
     siteName:    siteName,
     title:       `${siteName} — Full-Stack & Mobile Engineer`,
-    description: DESC,
+    description: desc,
     images: [
       {
         url:    "/opengraph-image.png",
@@ -85,19 +76,13 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter / X card
   twitter: {
     card:        "summary_large_image",
     title:       `${siteName} — Full-Stack & Mobile Engineer`,
-    description: DESC,
-    creator:     HANDLE,
+    description: desc,
+    creator:     handle,
     images:      ["/opengraph-image.png"],
   },
-
-  // Uncomment and add your token once you connect Google Search Console:
-  // verification: {
-  //   google: "YOUR_VERIFICATION_TOKEN",
-  // },
 };
 
 export default function RootLayout({

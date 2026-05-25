@@ -1,19 +1,4 @@
 "use client";
-/**
- * ThemeToggle
- *
- * FIXES:
- * - animateRays was defined inside the component and called from useEffect,
- *   creating a stale closure on `isLight`. It's now a stable function that
- *   takes `show` as a param and reads raysRef directly — no closure issues.
- * - The initialization useEffect depended on `isLight` which caused it to
- *   re-run on every theme change and fight the toggle animation.
- *   Split into two effects: one for mount-only init, one for theme-driven rays.
- * - Added gsap.killTweensOf(raysRef.current) before each animation so rapid
- *   toggles don't stack conflicting tweens.
- * - `mounted` guard moved to a stable pattern — returns a sized placeholder
- *   to prevent layout shift.
- */
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "next-themes";

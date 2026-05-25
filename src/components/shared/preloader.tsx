@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
-const SNAP = "cubic-bezier(0.76, 0, 0.24, 1)";
-const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+const snap = "cubic-bezier(0.76, 0, 0.24, 1)";
+const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
 function buildClip(
   holeLeft: number,
@@ -69,25 +69,25 @@ export default function Preloader() {
 
       const tl = gsap.timeline();
 
-      tl.to(ooChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: EASE });
-      tl.to(softChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: EASE }, "-=0.65");
-      tl.to(lifeChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: EASE }, "<0.18");
+      tl.to(ooChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: ease });
+      tl.to(softChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: ease }, "-=0.65");
+      tl.to(lifeChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: ease }, "<0.18");
 
       tl.to({}, { duration: 0.75 });
 
-      tl.to(ooChars, { y: -18, opacity: 0, duration: 0.3, stagger: 0.018, ease: EASE });
+      tl.to(ooChars, { y: -18, opacity: 0, duration: 0.3, stagger: 0.018, ease: ease });
       tl.to({}, { duration: 0.2 });
 
       tl.add("split");
-      tl.to(softEl, { x: "-12vw", duration: 0.7, ease: SNAP }, "split");
-      tl.to(lifeEl, { x: "12vw", duration: 0.7, ease: SNAP }, "split");
+      tl.to(softEl, { x: "-12vw", duration: 0.7, ease: snap }, "split");
+      tl.to(lifeEl, { x: "12vw", duration: 0.7, ease: snap }, "split");
       tl.to(hole, {
         left: 40,
         right: 60,
         top: 50 - textHalfVh,
         bottom: 50 + textHalfVh,
         duration: 0.7,
-        ease: SNAP,
+        ease: snap,
         onUpdate: applyClip,
       }, "split");
 
@@ -105,7 +105,7 @@ export default function Preloader() {
         top: 0,
         bottom: 100,
         duration: 0.85,
-        ease: SNAP,
+        ease: snap,
         onUpdate: applyClip,
         onComplete: () => setMounted(false),
       });
