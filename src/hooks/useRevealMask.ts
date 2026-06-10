@@ -38,6 +38,10 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
 
   const revealRef = useRef<HTMLDivElement | null>(null);
   const easedRadiusRef = useRef(0);
+  // Eased position — mirrors cursor dot's lerp so mask centre
+  // and dot stay visually locked together
+  const easedXRef = useRef(0);
+  const easedYRef = useRef(0);
   const maskActiveRef = useRef(false);
   const hasMoved = useRef(false);
   const rafRef = useRef<number | null>(null);
@@ -49,19 +53,20 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
     if (!el) return;
 
     const tick = () => {
-      const x = cursorStore.x;
-      const y = cursorStore.y;
+      // Lerp position at the same rate as the cursor dot (0.16)
+      // so the mask centre and the dot are always at the same point
+      easedXRef.current += (cursorStore.mouseX - easedXRef.current) * 0.16;
+      easedYRef.current += (cursorStore.mouseY - easedYRef.current) * 0.16;
 
       const rect = el.getBoundingClientRect();
-      const localX = x - rect.left;
-      const localY = y - rect.top;
+      const localX = easedXRef.current - rect.left;
+      const localY = easedYRef.current - rect.top;
 
+      // Radius has its own independent easing — expand/collapse feel
       const target = maskActiveRef.current ? radius : 0;
-      const ease = maskActiveRef.current ? expandEase : collapseEase;
+      const ease   = maskActiveRef.current ? expandEase : collapseEase;
 
       easedRadiusRef.current += (target - easedRadiusRef.current) * ease;
-
-      // Snap to avoid perpetual micro-updates
       if (Math.abs(easedRadiusRef.current - target) < 0.01) {
         easedRadiusRef.current = target;
       }

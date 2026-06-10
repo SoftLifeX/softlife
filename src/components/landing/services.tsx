@@ -8,16 +8,20 @@ import { services } from "@/lib/constants/serviceInfo";
 import { ServiceCard } from "../ui/serviceCard";
 import { cn } from "@/lib/utils";
 import { registerWipe } from "@/hooks/useWipeReveal";
+import { usePageReady } from "@/hooks/usePageReady";
 
 export default function Services() {
   const serviceSectionRef = useRef<HTMLDivElement | null>(null);
-  const serviceBlockRef   = useRef<HTMLDivElement | null>(null);
-  const serviceWidthRef   = useRef<HTMLDivElement | null>(null);
-  const subtitleRef       = useRef<HTMLParagraphElement | null>(null);
-  const cardsRef          = useRef<HTMLDivElement[]>([]);
+  const serviceBlockRef = useRef<HTMLDivElement | null>(null);
+  const serviceWidthRef = useRef<HTMLDivElement | null>(null);
+  const subtitleRef = useRef<HTMLParagraphElement | null>(null);
+  const cardsRef = useRef<HTMLDivElement[]>([]);
+  const ready = usePageReady();
 
   useGSAP(
     () => {
+      if (!ready) return;
+
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
       const cards = cardsRef.current.filter(Boolean);
       if (!cards.length) return;
@@ -32,92 +36,92 @@ export default function Services() {
       }
 
       const ctx = gsap.context(() => {
-        // Subtitle wipe
-        registerWipe(
-          { blockRef: serviceBlockRef, widthRef: serviceWidthRef, textRef: subtitleRef },
-          {
-            trigger: () => subtitleRef.current,
-            direction: "right",
-            startOffset: "top 90%",
-            underlineStart: "top bottom",
-            underlineEnd: "top 80%",
-            ease,
-          }
-        );
+        requestAnimationFrame(() => {
+          registerWipe(
+            { blockRef: serviceBlockRef, widthRef: serviceWidthRef, textRef: subtitleRef },
+            {
+              trigger: () => subtitleRef.current,
+              direction: "right",
+              startOffset: "top 90%",
+              underlineStart: "top bottom",
+              underlineEnd: "top 80%",
+              ease,
+            }
+          );
 
-        // Card stack animation — desktop only
-        const mm = gsap.matchMedia();
+          const mm = gsap.matchMedia();
 
-        mm.add(
-          { desktop: "(min-width: 769px)", mobile: "(max-width: 768px)" },
-          (context) => {
-            const { desktop, mobile } = context.conditions!;
+          mm.add(
+            { desktop: "(min-width: 769px)", mobile: "(max-width: 768px)" },
+            (context) => {
+              const { desktop, mobile } = context.conditions!;
 
-            if (desktop) {
-              const positions = cards.map((card) => {
-                const rect = card.getBoundingClientRect();
-                return { x: rect.left, y: rect.top };
-              });
-              const base = positions[1]; // index 1 as origin
-
-              cards.forEach((card, i) => {
-                gsap.set(card, {
-                  x: base.x - positions[i].x,
-                  y: base.y - positions[i].y,
-                  opacity: 0,
-                  scale: 0,
-                  willChange: "opacity, transform",
+              if (desktop) {
+                const positions = cards.map((card) => {
+                  const rect = card.getBoundingClientRect();
+                  return { x: rect.left, y: rect.top };
                 });
-              });
+                const base = positions[1];
 
-              gsap.to(cards, {
-                x: 0, y: 0, opacity: 1, scale: 1,
-                ease, stagger: 0.2,
+                cards.forEach((card, i) => {
+                  gsap.set(card, {
+                    x: base.x - positions[i].x,
+                    y: base.y - positions[i].y,
+                    opacity: 0, scale: 0,
+                    willChange: "opacity, transform",
+                  });
+                });
+
+                gsap.to(cards, {
+                  x: 0, y: 0, opacity: 1, scale: 1, ease, stagger: 0.2,
+                  scrollTrigger: {
+                    trigger: cards[0],
+                    start: "top bottom", end: "top 35%", scrub: true,
+                  },
+                  onComplete: () => {
+                    cards.forEach((card) => gsap.set(card, { willChange: "auto" }));
+                  },
+                });
+              }
+
+              if (mobile) {
+                gsap.set(cards, { clearProps: "all" });
+              }
+            }
+          );
+
+          document.fonts.ready.then(() => {
+            const servicelineSplit = new SplitText(".serviceline", {
+              type: "chars, words",
+              mask: "chars",
+            });
+
+            gsap.fromTo(servicelineSplit.chars,
+              { xPercent: 100 },
+              {
+                xPercent: 0,
+                ease,
+                stagger: 0.02,
                 scrollTrigger: {
-                  trigger: cards[0],
-                  start: "top bottom",
-                  end: "top 35%",
+                  trigger: ".serviceline",
+                  start: "top 80%",
+                  end: "top 65%",
                   scrub: true,
                 },
-                onComplete: () => {
-                  cards.forEach((card) => gsap.set(card, { willChange: "auto" }));
-                },
-              });
-            }
+              }
+            );
 
-            if (mobile) {
-              gsap.set(cards, { clearProps: "all" });
-            }
-          }
-        );
-
-        // Decorative centre text reveal
-        const servicelineSplit = new SplitText(".serviceline", {
-          type: "chars, words",
-          mask: "chars",
+            ctx.add(() => () => {
+              servicelineSplit.revert();
+              mm.revert();
+            });
+          });
         });
-
-        gsap.from(servicelineSplit.chars, {
-          xPercent: 100,
-          ease,
-          stagger: 0.02,
-          scrollTrigger: {
-            trigger: ".serviceline",
-            start: "top 80%",
-            end: "top 65%",
-            scrub: true,
-          },
-        });
-
-        return () => {
-          servicelineSplit.revert();
-          mm.revert();
-        };
       }, serviceSectionRef);
 
       return () => ctx.revert();
     },
-    { scope: serviceSectionRef }
+    { scope: serviceSectionRef, dependencies: [ready] }
   );
 
   return (

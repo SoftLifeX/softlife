@@ -217,7 +217,7 @@ export default function Header({
       <div
         ref={wrapperRef}
         className={cn(
-          "link fixed right-5 top-5 w-22 h-22 p-4 flex items-center justify-center rounded-full transition-all duration-300",
+          "link fixed right-5 top-5 w-20 h-20 p-4 flex items-center justify-center rounded-full transition-all duration-300",
           scrolled ? "scale-100 pointer-events-auto z-50" : "scale-0 -z-50 pointer-events-none"
         )}
       >
@@ -239,7 +239,7 @@ export default function Header({
               <div
                 aria-hidden
                 className={cn(
-                  "absolute w-20 h-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border pointer-events-none -z-1 animate-pulse-ring",
+                  "absolute w-19 h-19 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border pointer-events-none -z-1 animate-pulse-ring",
                   scrolled ? "scale-100" : "scale-0",
                   isIntersecting ? "bg-background/90" : "bg-foreground/50",
                   isActive ? "hidden" : "block"
@@ -253,7 +253,7 @@ export default function Header({
                   "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full backdrop-blur-sm z-0 pointer-events-none",
                   isActive
                     ? "hidden animate-none w-15 h-15"
-                    : "block w-18 h-18 animate-pulse-dot",
+                    : "block w-17 h-17 animate-pulse-dot",
                   scrolled ? "scale-100" : "scale-0",
                   isIntersecting ? "bg-background" : "bg-foreground"
                 )}

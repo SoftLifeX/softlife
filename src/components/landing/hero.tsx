@@ -6,25 +6,25 @@ import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger } from "@/lib/gsap-init";
 import Link from "next/link";
 import Navbar from "../shared/nav";
-import { usePreloaderDone } from "@/hooks/usePreloaderDone";
+import { usePageReady } from "@/hooks/usePageReady";
 import { useRevealMask } from "@/hooks/useRevealMask";
 
 export default function Hero() {
-  const sectionRef   = useRef<HTMLDivElement | null>(null);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const blockRef     = useRef<HTMLDivElement | null>(null);
-  const blockRef2    = useRef<HTMLDivElement | null>(null);
-  const blockRef3    = useRef<HTMLDivElement | null>(null);
+  const blockRef = useRef<HTMLDivElement | null>(null);
+  const blockRef2 = useRef<HTMLDivElement | null>(null);
+  const blockRef3 = useRef<HTMLDivElement | null>(null);
   const heroWidthRef = useRef<HTMLDivElement | null>(null);
 
   // Single hook replaces 3 RAF loops + 4 useEffects from the original
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
 
-  const preloaderDone = usePreloaderDone();
+  const ready = usePageReady();
 
   useGSAP(
     () => {
-      if (!preloaderDone) return;
+      if (!ready) return;
 
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
@@ -44,114 +44,112 @@ export default function Hero() {
       }
 
       const ctx = gsap.context(() => {
-        const tl = gsap.timeline({
-          onComplete: () => {
-            tl.kill();
-            window.dispatchEvent(new CustomEvent("hero-animations-complete"));
-          },
-        });
-
-        // Block wipes — explicit from/to objects (computed keys break TweenVars types)
-        const wipeConfigs: Array<{
-          el: HTMLElement | null;
-          from: gsap.TweenVars;
-          exitTo: gsap.TweenVars;
-        }> = [
-          { el: blockRef.current,  from: { width: "0%", right: "0%" }, exitTo: { width: 0, right: "100%" } },
-          { el: blockRef2.current, from: { width: "0%", left:  "0%" }, exitTo: { width: 0, left:  "100%" } },
-          { el: blockRef3.current, from: { width: "0%", left:  "0%" }, exitTo: { width: 0, left:  "100%" } },
-        ];
-
-        wipeConfigs.forEach(({ el, from, exitTo }) => {
-          if (!el) return;
-          tl.fromTo(el, from, {
-            width: "100%", duration: 1, ease,
-            onComplete: () => { gsap.to(el, { ...exitTo, duration: 0.4, ease }); },
-          }, 0.4);
-        });
-
-        const titleSplit = new SplitText(".heading", {
-          type: "chars, words", mask: "chars", wordsClass: "heading++",
-        });
-        gsap.set(titleSplit.chars, { xPercent: 100, opacity: 0 });
-
-        tl.to(titleSplit.chars, {
-          xPercent: 0, opacity: 1, stagger: 0.05, duration: 0.6, ease,
-          onComplete: () => {
-            gsap.to(titleSplit.words, {
-              yPercent: -50, opacity: 0, stagger: 0.05, ease,
-              scrollTrigger: {
-                trigger: sectionRef.current,
-                start: "30% top", end: "+=10%", scrub: true,
+        requestAnimationFrame(() => {
+          document.fonts.ready.then(() => {
+            const tl = gsap.timeline({
+              onComplete: () => {
+                tl.kill();
+                window.dispatchEvent(new CustomEvent("hero-animations-complete"));
               },
             });
-          },
-        });
 
-        new SplitText(".reveal", { type: "words", wordsClass: "reveal++" });
+            const wipeConfigs: Array<{
+              el: HTMLElement | null;
+              from: gsap.TweenVars;
+              exitTo: gsap.TweenVars;
+            }> = [
+                { el: blockRef.current, from: { width: "0%", right: "0%" }, exitTo: { width: 0, right: "100%" } },
+                { el: blockRef2.current, from: { width: "0%", left: "0%" }, exitTo: { width: 0, left: "100%" } },
+                { el: blockRef3.current, from: { width: "0%", left: "0%" }, exitTo: { width: 0, left: "100%" } },
+              ];
 
-        const descSplit = new SplitText(".description", {
-          type: "words, lines", wordsClass: "des++", mask: "lines",
-        });
-        const descLargeSplit = new SplitText(".description-large", {
-          type: "words, lines", wordsClass: "des-large++", mask: "lines",
-        });
-        const linkSplit = new SplitText(".herolink", {
-          type: "words, lines", mask: "lines",
-        });
+            wipeConfigs.forEach(({ el, from, exitTo }) => {
+              if (!el) return;
+              tl.fromTo(el, from, {
+                width: "100%", duration: 1, ease,
+                onComplete: () => { gsap.to(el, { ...exitTo, duration: 0.4, ease }); },
+              }, 0.4);
+            });
 
-        gsap.set([descSplit.words, descLargeSplit.words, linkSplit.words],
-          { yPercent: 100, opacity: 0 });
+            const titleSplit = new SplitText(".heading", {
+              type: "chars, words", mask: "chars", wordsClass: "heading++",
+            });
+            gsap.set(titleSplit.chars, { xPercent: 100, opacity: 0 });
 
-        // Shared scroll-exit config for description + links
-        const scrollExit = (trigger: Element | null) => ({
-          yPercent: -50, opacity: 0, stagger: 0.2, ease,
-          scrollTrigger: {
-            trigger,
-            start: "30% top", end: "+=10%", scrub: true,
-          },
-        });
-
-        [
-          [descSplit.words,     containerRef.current, "<"],
-          [descLargeSplit.words, containerRef.current, "<0.2"],
-          [linkSplit.words,      containerRef.current, "<"],
-        ].forEach(([words, trigger, position]) => {
-          tl.to(words as HTMLElement[], {
-            yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease,
-            onComplete: () => {
-              gsap.set(words as HTMLElement[], { yPercent: 0, opacity: 1 });
-              gsap.to(words as HTMLElement[], scrollExit(trigger as Element | null));
-            },
-          }, position as string);
-        });
-
-        gsap.set(heroWidthRef.current, { width: 0 });
-        tl.to(heroWidthRef.current, {
-          width: "100%", stagger: 1, ease,
-          onComplete: () => {
-            gsap.to(heroWidthRef.current, {
-              width: 0, stagger: 1, ease,
-              scrollTrigger: {
-                trigger: containerRef.current,
-                start: "30% top", end: "+=10%", scrub: true,
+            tl.to(titleSplit.chars, {
+              xPercent: 0, opacity: 1, stagger: 0.05, duration: 0.6, ease,
+              onComplete: () => {
+                gsap.to(titleSplit.words, {
+                  yPercent: -50, opacity: 0, stagger: 0.05, ease,
+                  scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: "30% top", end: "+=10%", scrub: true,
+                  },
+                });
               },
             });
-          },
-        }, "<");
 
-        return () => {
-          titleSplit.revert();
-          descSplit.revert();
-          descLargeSplit.revert();
-          linkSplit.revert();
-          // ctx.revert() (called by useGSAP) kills all ScrollTriggers in scope
-        };
+            new SplitText(".reveal", { type: "words", wordsClass: "reveal++" });
+
+            const descSplit = new SplitText(".description", {
+              type: "words, lines", wordsClass: "des++", mask: "lines",
+            });
+            const descLargeSplit = new SplitText(".description-large", {
+              type: "words, lines", wordsClass: "des-large++", mask: "lines",
+            });
+            const linkSplit = new SplitText(".herolink", {
+              type: "words, lines", mask: "lines",
+            });
+
+            gsap.set([descSplit.words, descLargeSplit.words, linkSplit.words],
+              { yPercent: 100, opacity: 0 });
+
+            const scrollExit = (trigger: Element | null) => ({
+              yPercent: -50, opacity: 0, stagger: 0.2, ease,
+              scrollTrigger: { trigger, start: "30% top", end: "+=10%", scrub: true },
+            });
+
+            [
+              [descSplit.words, containerRef.current, "<"],
+              [descLargeSplit.words, containerRef.current, "<0.2"],
+              [linkSplit.words, containerRef.current, "<"],
+            ].forEach(([words, trigger, position]) => {
+              tl.to(words as HTMLElement[], {
+                yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease,
+                onComplete: () => {
+                  gsap.set(words as HTMLElement[], { yPercent: 0, opacity: 1 });
+                  gsap.to(words as HTMLElement[], scrollExit(trigger as Element | null));
+                },
+              }, position as string);
+            });
+
+            gsap.set(heroWidthRef.current, { width: 0 });
+            tl.to(heroWidthRef.current, {
+              width: "100%", stagger: 1, ease,
+              onComplete: () => {
+                gsap.to(heroWidthRef.current, {
+                  width: 0, stagger: 1, ease,
+                  scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: "30% top", end: "+=10%", scrub: true,
+                  },
+                });
+              },
+            }, "<");
+
+            ctx.add(() => () => {
+              titleSplit.revert();
+              descSplit.revert();
+              descLargeSplit.revert();
+              linkSplit.revert();
+            });
+          });
+        });
       }, sectionRef);
 
       return () => ctx.revert();
     },
-    { scope: sectionRef, dependencies: [preloaderDone] }
+    { scope: sectionRef, dependencies: [ready] }
   );
 
   return (
@@ -161,7 +159,7 @@ export default function Hero() {
         <div data-speed="1.1" className="relative w-full flex md:pt-10 pt-80 pb-6 md:pb-12">
           <div className="relative w-full flex justify-end">
             <h1
-              className="heading gsap-hide large text-4xl md:text-8xl text-right leading-tight text-transparent"
+              className="heading gsap-hide large text-4xl md:text-[5rem] text-right leading-tight text-transparent"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
               role="heading"
@@ -173,7 +171,7 @@ export default function Hero() {
 
             <div
               ref={revealRef}
-              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-4xl md:text-8xl z-10 bg-primary text-end text-foreground"
+              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-4xl md:text-[5rem] z-10 bg-primary text-end text-foreground"
               style={{
                 opacity: hovered ? 1 : 0,
                 transition: "opacity 0s ease",

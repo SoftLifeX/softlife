@@ -8,17 +8,21 @@ import { cn } from "@/lib/utils";
 import { Tag } from "../ui/tag";
 import { techStack } from "@/lib/constants/techstack";
 import { registerWipe } from "@/hooks/useWipeReveal";
+import { usePageReady } from "@/hooks/usePageReady";
 
 export default function Skills() {
   const skillSectionRef = useRef<HTMLDivElement | null>(null);
-  const skillBlockRef   = useRef<HTMLDivElement | null>(null);
-  const skillWidthRef   = useRef<HTMLDivElement | null>(null);
-  const skillWidthRef2  = useRef<HTMLDivElement | null>(null);
-  const skillWidthRef3  = useRef<HTMLDivElement | null>(null);
-  const subtitleRef     = useRef<HTMLParagraphElement | null>(null);
+  const skillBlockRef = useRef<HTMLDivElement | null>(null);
+  const skillWidthRef = useRef<HTMLDivElement | null>(null);
+  const skillWidthRef2 = useRef<HTMLDivElement | null>(null);
+  const skillWidthRef3 = useRef<HTMLDivElement | null>(null);
+  const subtitleRef = useRef<HTMLParagraphElement | null>(null);
+  const ready = usePageReady();
 
   useGSAP(
     () => {
+      if (!ready) return;
+
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -29,94 +33,75 @@ export default function Skills() {
       }
 
       const ctx = gsap.context(() => {
-        // Subtitle wipe — was ~25 lines, now 8
-        registerWipe(
-          { blockRef: skillBlockRef, widthRef: skillWidthRef, textRef: subtitleRef },
-          {
-            trigger: () => subtitleRef.current,
-            direction: "left",
-            startOffset: "top 90%",
-            underlineStart: "top 80%",
-            underlineEnd: "top 50%",
-            ease,
-          }
-        );
+        requestAnimationFrame(() => {
+          registerWipe(
+            { blockRef: skillBlockRef, widthRef: skillWidthRef, textRef: subtitleRef },
+            {
+              trigger: () => subtitleRef.current,
+              direction: "left",
+              startOffset: "top 90%",
+              underlineStart: "top 80%",
+              underlineEnd: "top 50%",
+              ease,
+            }
+          );
 
-        // Inline underlines inside the paragraph text
-        gsap.from(skillWidthRef2.current, {
-          width: 0,
-          ease,
-          scrollTrigger: {
-            trigger: ".skillParagraph",
-            start: "top 65%",
-            end: "top 50%",
-            scrub: true,
-          },
+          gsap.from(skillWidthRef2.current, {
+            width: 0, ease,
+            scrollTrigger: {
+              trigger: ".skillParagraph",
+              start: "top 65%", end: "top 50%", scrub: true,
+            },
+          });
+
+          gsap.from(skillWidthRef3.current, {
+            width: 0, ease,
+            scrollTrigger: {
+              trigger: ".skillParagraph",
+              start: "top 65%", end: "top 50%", scrub: true,
+            },
+          });
+
+          const techPills = gsap.utils.toArray<HTMLElement>(".tech-pill");
+          gsap.set(techPills, { scale: 0.88, opacity: 0, transformOrigin: "50% 50%", willChange: "transform, opacity" });
+          gsap.to(techPills, {
+            scale: 1, opacity: 1, duration: 0.28, ease: "power3.out", stagger: 0.07,
+            scrollTrigger: {
+              trigger: techPills[0]?.parentElement,
+              start: "top 75%", end: "top 55%", scrub: true,
+            },
+            onComplete: () => { gsap.set(techPills, { willChange: "auto" }); },
+          });
+
+          document.fonts.ready.then(() => {
+            const skillSplit = new SplitText(".skillParagraph", {
+              type: "chars, words, lines",
+              mask: "lines",
+            });
+
+            gsap.fromTo(skillSplit.words,
+              { yPercent: 100 },
+              {
+                yPercent: 0,
+                ease,
+                stagger: 0.02,
+                scrollTrigger: {
+                  trigger: ".skillParagraph",
+                  start: "top 70%",
+                  end: "top 55%",
+                  scrub: true,
+                },
+              }
+            );
+
+            ctx.add(() => () => skillSplit.revert());
+          });
         });
-
-        gsap.from(skillWidthRef3.current, {
-          width: 0,
-          ease,
-          scrollTrigger: {
-            trigger: ".skillParagraph",
-            start: "top 65%",
-            end: "top 50%",
-            scrub: true,
-          },
-        });
-
-        // Paragraph text reveal
-        const skillSplit = new SplitText(".skillParagraph", {
-          type: "chars, words, lines",
-          mask: "lines",
-        });
-
-        gsap.from(skillSplit.words, {
-          yPercent: 100,
-          ease,
-          stagger: 0.02,
-          scrollTrigger: {
-            trigger: ".skillParagraph",
-            start: "top 70%",
-            end: "top 55%",
-            scrub: true,
-          },
-        });
-
-        // Tech pill entrance
-        const techPills = gsap.utils.toArray<HTMLElement>(".tech-pill");
-
-        gsap.set(techPills, {
-          scale: 0.88,
-          opacity: 0,
-          transformOrigin: "50% 50%",
-          willChange: "transform, opacity",
-        });
-
-        gsap.to(techPills, {
-          scale: 1,
-          opacity: 1,
-          duration: 0.28,
-          ease: "power3.out",
-          stagger: 0.07,
-          scrollTrigger: {
-            trigger: techPills[0]?.parentElement,
-            start: "top 75%",
-            end: "top 55%",
-            scrub: true,
-          },
-          onComplete: () => {
-            // Remove willChange after animation — frees compositor layers
-            gsap.set(techPills, { willChange: "auto" });
-          },
-        });
-
-        return () => skillSplit.revert();
       }, skillSectionRef);
 
       return () => ctx.revert();
     },
-    { scope: skillSectionRef }
+    { scope: skillSectionRef, dependencies: [ready] }
   );
 
   return (

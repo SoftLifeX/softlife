@@ -104,7 +104,7 @@ export function ServiceCard({
 
           <span
             className={cn(
-              "text-4xl md:text-7xl font-bold text-foreground",
+              "text-4xl md:text-[5rem] font-bold text-foreground",
               !isScrolling && "md:group-hover:text-background"
             )}
           >

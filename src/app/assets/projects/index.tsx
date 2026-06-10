@@ -1,10 +1,11 @@
-import ochi from './ochi.webp';
+import ochi     from './ochi.webp';
 import supadupa from "./supadupa.webp";
-import light from "./light.webp";
-import flow from "./flow.webp";
-import only from "./only.webp";
-import airbnb from "./airbnb.webp"
-import skyline from "./skyline.webp"
+import light    from "./light.webp";
+import flow     from "./flow.webp";
+import only     from "./only.webp";
+import airbnb   from "./airbnb.webp";
+import skyline  from "./skyline.webp";
+import givtro   from "./givtro/givtro_mockup.webp";
 
 export const projects = {
     flow,
@@ -13,6 +14,6 @@ export const projects = {
     ochi,
     only,
     airbnb,
-    skyline
+    skyline,
+    givtro,
 };
-

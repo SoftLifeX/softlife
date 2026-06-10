@@ -36,7 +36,13 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
         smoothTouch:     0,
       });
 
-      return () => smoother.kill();
+      // Expose so PageTransition can scroll to top between route changes
+      (window as any).__smoother = smoother;
+
+      return () => {
+        smoother.kill();
+        delete (window as any).__smoother;
+      };
     });
 
     return () => mm.revert();

@@ -7,20 +7,25 @@ import { gsap, ScrollTrigger } from "@/lib/gsap-init";
 import { cn } from "@/lib/utils";
 import { useRevealMask } from "@/hooks/useRevealMask";
 import { registerWipe } from "@/hooks/useWipeReveal";
+import { usePageReady } from "@/hooks/usePageReady";
 
 export default function Intro() {
   const introSectionRef = useRef<HTMLDivElement | null>(null);
-  const introBlockRef   = useRef<HTMLDivElement | null>(null);
-  const widthRef        = useRef<HTMLDivElement | null>(null);
-  const subtitleRef     = useRef<HTMLParagraphElement | null>(null);
+  const introBlockRef = useRef<HTMLDivElement | null>(null);
+  const widthRef = useRef<HTMLDivElement | null>(null);
+  const subtitleRef = useRef<HTMLParagraphElement | null>(null);
 
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
 
+  const ready = usePageReady();
+
   useGSAP(
     () => {
-      const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+      if (!ready) return;
 
+      const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
       if (prefersReducedMotion) {
         gsap.set([subtitleRef.current, ".about", ".intro"], { opacity: 1, yPercent: 0 });
         gsap.set(widthRef.current, { width: "100%" });
@@ -28,71 +33,74 @@ export default function Intro() {
       }
 
       const ctx = gsap.context(() => {
-        document.fonts.ready.then(() => {
-          registerWipe(
-            { blockRef: introBlockRef, widthRef, textRef: subtitleRef },
-            {
-              trigger: () => subtitleRef.current,
-              direction: "left",
-              startOffset: "top 90%",
-              underlineStart: "top 80%",
-              underlineEnd: "top 60%",
+        requestAnimationFrame(() => {
+          document.fonts.ready.then(() => {
+            registerWipe(
+              { blockRef: introBlockRef, widthRef, textRef: subtitleRef },
+              {
+                trigger: () => subtitleRef.current,
+                direction: "left",
+                startOffset: "top 90%",
+                underlineStart: "top 80%",
+                underlineEnd: "top 60%",
+                ease,
+              }
+            );
+
+            const aboutSplit = new SplitText(".about", {
+              type: "chars, words, lines",
+              mask: "lines",
+            });
+
+            gsap.fromTo(aboutSplit.words,
+              { yPercent: 100 },
+              {
+                yPercent: 0,
+                ease,
+                stagger: 0.02,
+                scrollTrigger: {
+                  trigger: ".about",
+                  start: "top 70%",
+                  end: "top 55%",
+                  scrub: true,
+                },
+              }
+            );
+
+            const introTitleSplit = new SplitText(".intro", {
+              type: "chars, words, lines",
+              linesClass: "line",
+            });
+
+            gsap.set(".intro", { opacity: 1 });
+            gsap.set(introTitleSplit.words, { opacity: 0 });
+
+            gsap.to(introTitleSplit.words, {
+              opacity: 1,
               ease,
-            }
-          );
+              stagger: 0.02,
+              scrollTrigger: {
+                trigger: ".intro",
+                start: "top 90%",
+                end: "bottom top",
+                scrub: true,
+              },
+            });
 
-          const aboutSplit = new SplitText(".about", {
-            type: "chars, words, lines",
-            mask: "lines",
+            ctx.add(() => () => {
+              aboutSplit.revert();
+              introTitleSplit.revert();
+              gsap.set(".intro", { opacity: 1 });
+            });
+
+            ScrollTrigger.refresh();
           });
-
-          gsap.from(aboutSplit.words, {
-            yPercent: 100,
-            ease,
-            stagger: 0.02,
-            scrollTrigger: {
-              trigger: ".about",
-              start: "top 70%",
-              end: "top 55%",
-              scrub: true,
-            },
-          });
-
-          const introTitleSplit = new SplitText(".intro", {
-            type: "chars, words, lines",
-            linesClass: "line",
-          });
-
-          gsap.set(".intro", { opacity: 1 });
-          gsap.set(introTitleSplit.words, { opacity: 0 });
-
-          gsap.to(introTitleSplit.words, {
-            opacity: 1,
-            ease,
-            stagger: 0.02,
-            scrollTrigger: {
-              trigger: ".intro",
-              start: "top 90%",
-              end: "bottom top",
-              scrub: true,
-            },
-          });
-
-          ctx.add(() => () => {
-            aboutSplit.revert();
-            introTitleSplit.revert();
-            gsap.set(".intro", { opacity: 1 }); // restore after revert
-          });
-
-          // Font swap changes element heights — recalculate all trigger
-          // positions so nothing fires at a stale scroll offset.
-          ScrollTrigger.refresh();
         });
       }, introSectionRef);
 
       return () => ctx.revert();
     },
-    { scope: introSectionRef }
+    { scope: introSectionRef, dependencies: [ready] }
   );
 
   return (
@@ -137,7 +145,7 @@ export default function Intro() {
       {/* Main intro paragraph with reveal mask */}
       <div className="relative w-full flex justify-start">
         <p
-          className="intro large text-3xl md:text-8xl w-full text-foreground opacity-0"
+          className="intro large text-3xl md:text-[5rem] w-full text-foreground opacity-0"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
@@ -148,7 +156,7 @@ export default function Intro() {
         <div
           ref={revealRef}
           id="about"
-          className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-8xl z-10 bg-background"
+          className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-[5rem] z-10 bg-background"
           style={{
             opacity: hovered ? 1 : 0,
             transition: "opacity 0s ease",

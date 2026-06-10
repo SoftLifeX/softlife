@@ -7,12 +7,13 @@ import { reviewItems, type Review } from "@/lib/constants/reviewInfo";
 import { cn } from "@/lib/utils";
 import Magnetic from "../magnetic";
 import { registerWipe } from "@/hooks/useWipeReveal";
+import { usePageReady } from "@/hooks/usePageReady";
 
 const SLOT = {
-  center: { x: 0,  y: 0,  z: 0,    ry: 0,  rz: 0,  scale: 1,    opacity: 1,    zIndex: 10 },
-  back1:  { x: 22, y: 12, z: -70,  ry: 5,  rz: 2,  scale: 0.95, opacity: 0.65, zIndex: 5  },
-  back2:  { x: 42, y: 24, z: -140, ry: 10, rz: 4,  scale: 0.90, opacity: 0.35, zIndex: 3  },
-  hidden: { x: 0,  y: 0,  z: -220, ry: 0,  rz: 0,  scale: 0.88, opacity: 0,    zIndex: 1  },
+  center: { x: 0, y: 0, z: 0, ry: 0, rz: 0, scale: 1, opacity: 1, zIndex: 10 },
+  back1: { x: 22, y: 12, z: -70, ry: 5, rz: 2, scale: 0.95, opacity: 0.65, zIndex: 5 },
+  back2: { x: 42, y: 24, z: -140, ry: 10, rz: 4, scale: 0.90, opacity: 0.35, zIndex: 3 },
+  hidden: { x: 0, y: 0, z: -220, ry: 0, rz: 0, scale: 0.88, opacity: 0, zIndex: 1 },
 } as const;
 
 type Slot = keyof typeof SLOT;
@@ -27,23 +28,27 @@ const getSlots = (centerIdx: number, total: number): Slot[] =>
   });
 
 export default function Reviews() {
-  const sectionRef  = useRef<HTMLDivElement>(null);
-  const pinnedRef   = useRef<HTMLDivElement>(null);
-  const cardsRef    = useRef<(HTMLDivElement | null)[]>([]);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
   // Top wipe refs
   const topBlockRef = useRef<HTMLDivElement | null>(null);
   const topWidthRef = useRef<HTMLDivElement | null>(null);
-  const topTextRef  = useRef<HTMLParagraphElement | null>(null);
+  const topTextRef = useRef<HTMLParagraphElement | null>(null);
 
   // Bottom wipe refs
   const botBlockRef = useRef<HTMLDivElement | null>(null);
   const botWidthRef = useRef<HTMLDivElement | null>(null);
-  const botTextRef  = useRef<HTMLParagraphElement | null>(null);
+  const botTextRef = useRef<HTMLParagraphElement | null>(null);
+
+  const ready = usePageReady();
 
   useGSAP(
     () => {
+      if (!ready) return;
+
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -61,121 +66,120 @@ export default function Reviews() {
       }
 
       const ctx = gsap.context(() => {
-        // ── Headline wipes (was buildWipe() × 2, ~50 lines) ──────────────
-        registerWipe(
-          { blockRef: topBlockRef, widthRef: topWidthRef, textRef: topTextRef },
-          { trigger: () => topTextRef.current, direction: "left",  startOffset: "top 90%", underlineStart: "top 80%", underlineEnd: "top 50%", ease }
-        );
-        registerWipe(
-          { blockRef: botBlockRef, widthRef: botWidthRef, textRef: botTextRef },
-          { trigger: () => botTextRef.current, direction: "right", startOffset: "top 90%", underlineStart: "top 80%", underlineEnd: "top 50%", ease }
-        );
+        requestAnimationFrame(() => {
+          registerWipe(
+            { blockRef: topBlockRef, widthRef: topWidthRef, textRef: topTextRef },
+            { trigger: () => topTextRef.current, direction: "left", startOffset: "top 90%", underlineStart: "top 80%", underlineEnd: "top 50%", ease }
+          );
+          registerWipe(
+            { blockRef: botBlockRef, widthRef: botWidthRef, textRef: botTextRef },
+            { trigger: () => botTextRef.current, direction: "right", startOffset: "top 90%", underlineStart: "top 80%", underlineEnd: "top 50%", ease }
+          );
 
-        // ── Card stack setup ──────────────────────────────────────────────
-        const cards  = cardsRef.current.filter(Boolean) as HTMLElement[];
-        const total  = cards.length;
+          const cards = cardsRef.current.filter(Boolean) as HTMLElement[];
+          const total = cards.length;
 
-        const initialSlots = getSlots(0, total);
-        cards.forEach((card, i) => {
-          const s = SLOT[initialSlots[i]];
-          gsap.set(card, {
-            position: "absolute", top: 0, left: 0, width: "100%",
-            x: s.x, y: s.y, z: s.z,
-            rotateY: s.ry, rotateZ: s.rz,
-            scale: s.scale, opacity: s.opacity, zIndex: s.zIndex,
-          });
-        });
-
-        const scrollPerCard = window.innerHeight * 0.85;
-        let currentIndex = 0;
-        let pendingIndex = 0;
-
-        const goTo = (nextIndex: number, direction: "next" | "prev") => {
-          if (nextIndex === pendingIndex) return;
-          pendingIndex = nextIndex;
-
-          const springEase = "cubic-bezier(0.23, 1, 0.32, 1)";
-          const exitEase   = "cubic-bezier(0.4, 0, 1, 1)";
-          const exitX  = direction === "next" ? -380 : 380;
-          const exitRY = direction === "next" ? -28  : 28;
-          const exitRZ = direction === "next" ? -14  : 14;
-          const enterX  = direction === "next" ?  380 : -380;
-          const enterRY = direction === "next" ?   32 : -32;
-          const enterRZ = direction === "next" ?   10 : -10;
-
-          gsap.killTweensOf(cards[currentIndex]);
-          gsap.killTweensOf(cards[nextIndex]);
-
-          gsap.to(cards[currentIndex], {
-            x: exitX, y: -30, z: 0,
-            rotateY: exitRY, rotateZ: exitRZ,
-            scale: 0.84, opacity: 0,
-            duration: 0.52, ease: exitEase, zIndex: 20,
-          });
-
-          gsap.set(cards[nextIndex], {
-            x: enterX, y: -18, z: 20,
-            rotateY: enterRY, rotateZ: enterRZ,
-            scale: 0.88, opacity: 0, zIndex: 15,
-          });
-
-          gsap.to(cards[nextIndex], {
-            x: 0, y: 0, z: 0,
-            rotateY: 0, rotateZ: 0,
-            scale: 1, opacity: 1,
-            duration: 0.62, ease: springEase, delay: 0.06, zIndex: 10,
-          });
-
-          const newSlots = getSlots(nextIndex, total);
+          const initialSlots = getSlots(0, total);
           cards.forEach((card, i) => {
-            if (i === currentIndex || i === nextIndex) return;
-            const s = SLOT[newSlots[i]];
-            gsap.to(card, {
+            const s = SLOT[initialSlots[i]];
+            gsap.set(card, {
+              position: "absolute", top: 0, left: 0, width: "100%",
               x: s.x, y: s.y, z: s.z,
               rotateY: s.ry, rotateZ: s.rz,
               scale: s.scale, opacity: s.opacity, zIndex: s.zIndex,
-              duration: 0.55, ease: springEase,
             });
           });
 
-          gsap.delayedCall(0.65, () => {
-            const prevIndex = currentIndex;
-            currentIndex = nextIndex;
-            setActiveIndex(nextIndex);
+          const scrollPerCard = window.innerHeight * 0.85;
+          let currentIndex = 0;
+          let pendingIndex = 0;
 
-            gsap.set(cards[prevIndex], {
-              x: 0, y: 0, z: -220,
+          const goTo = (nextIndex: number, direction: "next" | "prev") => {
+            if (nextIndex === pendingIndex) return;
+            pendingIndex = nextIndex;
+
+            const springEase = "cubic-bezier(0.23, 1, 0.32, 1)";
+            const exitEase = "cubic-bezier(0.4, 0, 1, 1)";
+            const exitX = direction === "next" ? -380 : 380;
+            const exitRY = direction === "next" ? -28 : 28;
+            const exitRZ = direction === "next" ? -14 : 14;
+            const enterX = direction === "next" ? 380 : -380;
+            const enterRY = direction === "next" ? 32 : -32;
+            const enterRZ = direction === "next" ? 10 : -10;
+
+            gsap.killTweensOf(cards[currentIndex]);
+            gsap.killTweensOf(cards[nextIndex]);
+
+            gsap.to(cards[currentIndex], {
+              x: exitX, y: -30, z: 0,
+              rotateY: exitRY, rotateZ: exitRZ,
+              scale: 0.84, opacity: 0,
+              duration: 0.52, ease: exitEase, zIndex: 20,
+            });
+
+            gsap.set(cards[nextIndex], {
+              x: enterX, y: -18, z: 20,
+              rotateY: enterRY, rotateZ: enterRZ,
+              scale: 0.88, opacity: 0, zIndex: 15,
+            });
+
+            gsap.to(cards[nextIndex], {
+              x: 0, y: 0, z: 0,
               rotateY: 0, rotateZ: 0,
-              scale: 0.88, opacity: 0, zIndex: 1,
+              scale: 1, opacity: 1,
+              duration: 0.62, ease: springEase, delay: 0.06, zIndex: 10,
             });
 
-            if (pendingIndex !== currentIndex) {
-              goTo(pendingIndex, pendingIndex > currentIndex ? "next" : "prev");
-            }
+            const newSlots = getSlots(nextIndex, total);
+            cards.forEach((card, i) => {
+              if (i === currentIndex || i === nextIndex) return;
+              const s = SLOT[newSlots[i]];
+              gsap.to(card, {
+                x: s.x, y: s.y, z: s.z,
+                rotateY: s.ry, rotateZ: s.rz,
+                scale: s.scale, opacity: s.opacity, zIndex: s.zIndex,
+                duration: 0.55, ease: springEase,
+              });
+            });
+
+            gsap.delayedCall(0.65, () => {
+              const prevIndex = currentIndex;
+              currentIndex = nextIndex;
+              setActiveIndex(nextIndex);
+
+              gsap.set(cards[prevIndex], {
+                x: 0, y: 0, z: -220,
+                rotateY: 0, rotateZ: 0,
+                scale: 0.88, opacity: 0, zIndex: 1,
+              });
+
+              if (pendingIndex !== currentIndex) {
+                goTo(pendingIndex, pendingIndex > currentIndex ? "next" : "prev");
+              }
+            });
+          };
+
+          ScrollTrigger.create({
+            trigger: pinnedRef.current,
+            start: "top top",
+            end: `+=${scrollPerCard * (total - 1)}`,
+            pin: true,
+            pinSpacing: true,
+            onUpdate: (self) => {
+              const rawIndex = self.progress * (total - 1);
+              const direction = self.direction === 1 ? "next" : "prev";
+              const nextIndex = self.direction === 1
+                ? Math.min(Math.ceil(rawIndex), total - 1)
+                : Math.max(Math.floor(rawIndex), 0);
+              if (nextIndex !== pendingIndex) goTo(nextIndex, direction);
+            },
           });
-        };
-
-        ScrollTrigger.create({
-          trigger: pinnedRef.current,
-          start: "top top",
-          end: `+=${scrollPerCard * (total - 1)}`,
-          pin: true,
-          pinSpacing: true,
-          onUpdate: (self) => {
-            const rawIndex  = self.progress * (total - 1);
-            const direction = self.direction === 1 ? "next" : "prev";
-            const nextIndex = self.direction === 1
-              ? Math.min(Math.ceil(rawIndex), total - 1)
-              : Math.max(Math.floor(rawIndex), 0);
-
-            if (nextIndex !== pendingIndex) goTo(nextIndex, direction);
-          },
         });
       }, sectionRef);
 
       return () => ctx.revert();
     },
-    { scope: sectionRef }
+    { scope: sectionRef, dependencies: [ready] }
   );
 
   return (
