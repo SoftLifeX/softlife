@@ -7,16 +7,15 @@ import { gsap, ScrollTrigger } from "@/lib/gsap-init";
 import { Fragment } from "react";
 import Link from "next/link";
 import { useRevealMask } from "@/hooks/useRevealMask";
-import { usePageReady } from "@/hooks/usePageReady";
 
 const YEAR = new Date().getFullYear();
 
 export default function Contact() {
   const contactSectionRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const contactWidthRef = useRef<HTMLSpanElement | null>(null);
-  const marqueRef = useRef<HTMLDivElement | null>(null);
-  const footerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef      = useRef<HTMLDivElement | null>(null);
+  const contactWidthRef   = useRef<HTMLSpanElement | null>(null);
+  const marqueRef         = useRef<HTMLDivElement | null>(null);
+  const footerRef         = useRef<HTMLDivElement | null>(null);
 
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
 
@@ -28,12 +27,8 @@ export default function Contact() {
     return () => { tween.kill(); };
   }, []);
 
-  const ready = usePageReady();
-
   useGSAP(
     () => {
-      if (!ready) return;
-
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
@@ -47,76 +42,68 @@ export default function Contact() {
       }
 
       const ctx = gsap.context(() => {
-        requestAnimationFrame(() => {
-          document.fonts.ready.then(() => {
-            const contactSplit = new SplitText(".contact-heading", { type: "chars, words", mask: "chars" });
-            gsap.set(contactSplit.chars, { xPercent: 100, opacity: 0 });
-            gsap.to(contactSplit.chars, {
-              xPercent: 0, opacity: 1, stagger: 0.04, duration: 1, ease,
+        document.fonts.ready.then(() => {
+          const contactSplit = new SplitText(".contact-heading", { type: "chars, words", mask: "chars" });
+          gsap.set(contactSplit.chars, { xPercent: 100, opacity: 0 });
+          gsap.to(contactSplit.chars, {
+            xPercent: 0, opacity: 1, stagger: 0.04, duration: 1, ease,
+            scrollTrigger: {
+              trigger: contactSectionRef.current,
+              start: "top 65%", end: "top 35%", scrub: true,
+            },
+          });
+
+          const subSplit = new SplitText(".contact-sub", { type: "words, lines", mask: "lines" });
+          gsap.set(subSplit.words, { yPercent: 100, opacity: 0 });
+          gsap.to(subSplit.words, {
+            yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.04, ease,
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 55%", end: "top 30%", scrub: true,
+            },
+          });
+
+          const linkSplit = new SplitText(".contact-link-text", { type: "words, lines", mask: "lines" });
+          gsap.set(linkSplit.words, { yPercent: 100, opacity: 0 });
+          gsap.to(linkSplit.words, {
+            yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease,
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 50%", end: "top 25%", scrub: true,
+            },
+          });
+
+          gsap.set(contactWidthRef.current, { width: 0 });
+          gsap.to(contactWidthRef.current, {
+            width: "100%", ease,
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 50%", end: "top 25%", scrub: true,
+            },
+          });
+
+          gsap.fromTo(footerRef.current,
+            { opacity: 0, y: 20 },
+            {
+              opacity: 1, y: 0, duration: 1, ease,
               scrollTrigger: {
-                trigger: contactSectionRef.current,
-                start: "top 65%", end: "top 35%", scrub: true,
+                trigger: footerRef.current,
+                start: "top 90%", end: "top 70%", scrub: true,
               },
-            });
+            }
+          );
 
-            const subSplit = new SplitText(".contact-sub", { type: "words, lines", mask: "lines" });
-            gsap.fromTo(subSplit.words,
-              { yPercent: 100, opacity: 0 },
-              {
-                yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.04, ease,
-                scrollTrigger: {
-                  trigger: containerRef.current,
-                  start: "top 55%", end: "top 30%", scrub: true,
-                },
-              }
-            );
-
-            const linkSplit = new SplitText(".contact-link-text", { type: "words, lines", mask: "lines" });
-            gsap.fromTo(linkSplit.words,
-              { yPercent: 100, opacity: 0 },
-              {
-                yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease,
-                scrollTrigger: {
-                  trigger: containerRef.current,
-                  start: "top 50%", end: "top 25%", scrub: true,
-                },
-              }
-            );
-
-            gsap.set(contactWidthRef.current, { width: 0 });
-            gsap.to(contactWidthRef.current, {
-              width: "100%", ease,
-              scrollTrigger: {
-                trigger: containerRef.current,
-                start: "top 50%", end: "top 25%", scrub: true,
-              },
-            });
-
-            gsap.fromTo(footerRef.current,
-              { opacity: 0, y: 20 },
-              {
-                opacity: 1, y: 0, duration: 1, ease,
-                scrollTrigger: {
-                  trigger: footerRef.current,
-                  start: "top 90%", end: "top 70%", scrub: true,
-                },
-              }
-            );
-
-            ScrollTrigger.refresh();
-
-            ctx.add(() => () => {
-              contactSplit.revert();
-              subSplit.revert();
-              linkSplit.revert();
-            });
+          ctx.add(() => () => {
+            contactSplit.revert();
+            subSplit.revert();
+            linkSplit.revert();
           });
         });
       }, contactSectionRef);
 
       return () => ctx.revert();
     },
-    { scope: contactSectionRef, dependencies: [ready] }
+    { scope: contactSectionRef }
   );
 
   return (
@@ -206,7 +193,7 @@ export default function Contact() {
 
         <div className="link contact-sub gsap-hide mt-10 flex items-center gap-2">
           {[
-            { label: "GitHub", href: "https://github.com/SoftLifeX" },
+            { label: "GitHub",   href: "https://github.com/SoftLifeX" },
             { label: "LinkedIn", href: "https://linkedin.com/in/daniel-c-daniel-dev" },
           ].map(({ label, href }, i, arr) => (
             <Fragment key={label}>
@@ -231,9 +218,13 @@ export default function Contact() {
             <span className="w-px h-3 bg-background/15 hidden sm:block" />
             <Link href="/resume.pdf" target="_blank" download className="link relative inline-block text-sm text-primary-foreground group">
               <span className="relative block h-[1.2em] overflow-hidden z-10">
-                <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-8">Resume</span>
-                <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">Resume</span>
+              <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+                Resume
               </span>
+              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+                Resume
+              </span>
+            </span>
               <span className="absolute left-0 right-0 -bottom-px h-px bg-current z-0 origin-right scale-x-0 transition-transform duration-500 ease-(--ease-custom) group-hover:origin-left group-hover:scale-x-100" />
             </Link>
           </div>
