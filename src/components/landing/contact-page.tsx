@@ -132,7 +132,7 @@ export default function Contact() {
 
         <div className="relative w-full flex justify-center">
           <h2
-            className="contact-heading gsap-hide large text-4xl md:text-[5rem] text-center leading-tight text-background"
+            className="contact-heading gsap-hide large text-3xl md:text-[5rem] text-center leading-tight text-background"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             aria-label="It all starts with a conversation"

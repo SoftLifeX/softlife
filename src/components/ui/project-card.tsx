@@ -14,13 +14,10 @@ interface ProjectCardProps {
 
 export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCardProps) {
   return (
-    <Link
-      href={p.disabled ? "#" : p.href}
-      onClick={(e) => onLockedClick(e, p.disabled)}
+    <div
       className={cn(
-        "project-card-inner group relative flex flex-col w-full h-95 overflow-hidden rounded-xl",
+        "project-card-inner group1 relative flex flex-col w-full h-95 overflow-hidden rounded-xl",
         offsetClass,
-        p.disabled ? "cursor-not-allowed" : "cursor-pointer"
       )}
     >
       {/* Parallax image */}
@@ -33,7 +30,7 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
             sizes="(min-width: 768px) 33vw, 100vw"
             className={cn(
               "object-cover transition-transform duration-700 ease-out",
-              "group-hover:scale-[1.03]",
+              "group1-hover:scale-[1.03]",
               p.disabled && "opacity-60"
             )}
           />
@@ -72,8 +69,11 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
           {p.stack.length > 3 && <span className="text-xs text-white/40 px-1 py-0.5">+{p.stack.length - 3}</span>}
         </div>
 
-        {/* Ghost CTA — text + arrow, underline + dual-span translateY, no fill */}
-        <span className="relative inline-flex items-center gap-2 w-fit text-sm text-white mt-1">
+        <Link
+          href={p.disabled ? "#" : p.href}
+          onClick={(e) => onLockedClick(e, p.disabled)}
+          className={cn("link group relative inline-flex items-center gap-2 w-fit text-sm text-white mt-1",
+            p.disabled ? "cursor-not-allowed" : "cursor-pointer")}>
           <span className="relative block h-[1.2em] overflow-hidden">
             <span className="block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
               View Project
@@ -98,8 +98,8 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
               "group-hover:origin-right group-hover:scale-x-0"
             )}
           />
-        </span>
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }

@@ -206,13 +206,13 @@ export default function Hero() {
   });
 
   return (
-    <section ref={sectionRef} className="px relative min-h-svh bg-primary" id="#">
+    <section ref={sectionRef} className="px relative md:min-h-svh min-h-[80svh] bg-primary" id="#">
       <Navbar />
       <div ref={containerRef} className="hero">
-        <div data-speed="1.1" className="relative w-full flex md:pt-10 pt-80 pb-6 md:pb-12">
+        <div data-speed="1.1" className="relative w-full flex md:pt-15 pt-80 pb-6 md:pb-12">
           <div className="relative w-full flex justify-end">
             <h1
-              className="heading gsap-hide large text-4xl md:text-[5rem] text-right leading-tight text-transparent"
+              className="heading gsap-hide large text-[2.4rem] md:text-[5rem] text-right leading-tight text-transparent"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
               role="heading"

@@ -120,9 +120,7 @@
     }*/
 
   .heading {
-    -webkit-text-stroke-color: var(--foreground);
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke: 0.5;
+    color: var(--primary-foreground);
   }
 
   .heading2,

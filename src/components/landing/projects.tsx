@@ -84,7 +84,8 @@ export default function Projects() {
         }
 
         if (mobile) {
-          gsap.set(cards, { visibility: "visible", clearProps: "all" });
+          gsap.set(cards, { clearProps: "all" }); // wipe any leftover desktop inline styles (x/y/opacity/scale)
+          gsap.set(cards, { visibility: "visible" }); // then explicitly show them
         }
       });
 
@@ -137,7 +138,7 @@ export default function Projects() {
     <div ref={projectsRef} id="craft" className="px py my-[8svh]">
       <WipeLabel {...label} label="selected work" className="mb-4" />
 
-      <h2 className="projects-heading gsap-hide text-4xl md:text-6xl font-bold leading-tight text-foreground mb-12 md:mb-16 w-full">
+      <h2 className="projects-heading gsap-hide text-3xl md:text-6xl font-bold leading-tight text-foreground mb-12 md:mb-16 w-full">
         a few things that made it past &ldquo;good enough&rdquo;
       </h2>
 

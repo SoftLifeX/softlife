@@ -31,12 +31,20 @@ export default function Preloader() {
   const [mounted, setMounted] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+    let tl: gsap.core.Timeline | undefined;
+
     ((document.fonts?.ready ?? Promise.resolve()) as Promise<unknown>).then(() => {
+      if (cancelled) return;
+
       const overlay = overlayRef.current;
       const ooEl = ooRef.current;
       const softEl = softRef.current;
       const lifeEl = lifeRef.current;
       if (!overlay || !ooEl || !softEl || !lifeEl) return;
+
+      // Reveal containers (they start as visibility:hidden via .gsap-hide)
+      gsap.set([ooEl, softEl, lifeEl], { visibility: "visible" });
 
       const splitChars = (el: HTMLElement, text: string, cls: string) => {
         el.innerHTML = [...text]
@@ -67,7 +75,7 @@ export default function Preloader() {
 
       const textHalfVh = 12;
 
-      const tl = gsap.timeline();
+      tl = gsap.timeline();
 
       tl.to(ooChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: ease });
       tl.to(softChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: ease }, "-=0.65");
@@ -91,13 +99,12 @@ export default function Preloader() {
         onUpdate: applyClip,
       }, "split");
 
-      tl.to({}, { duration: 0.3,
-        
+      tl.to({}, {
+        duration: 0.3,
         onStart: () => {
           window.dispatchEvent(new CustomEvent("preloader-complete"));
         },
-
-       });
+      });
 
       tl.to(hole, {
         left: 0,
@@ -111,6 +118,11 @@ export default function Preloader() {
       });
       tl.to([softEl, lifeEl], { opacity: 0, duration: 0.25 }, "-=0.6");
     });
+
+    return () => {
+      cancelled = true;
+      tl?.kill();
+    };
   }, []);
 
   if (!mounted) return null;
@@ -152,6 +164,7 @@ export default function Preloader() {
       >
         <div
           ref={ooRef}
+          className="gsap-hide"
           style={{
             position: "absolute",
             bottom: "clamp(36px, 5vh, 64px)",
@@ -168,11 +181,11 @@ export default function Preloader() {
         />
 
         <div style={{ display: "flex", width: "50vw", justifyContent: "flex-end" }}>
-          <div ref={softRef} style={{ ...TEXT, color: fg }} />
+          <div ref={softRef} className="gsap-hide" style={{ ...TEXT, color: fg }} />
         </div>
 
         <div style={{ display: "flex", width: "50vw", justifyContent: "flex-start" }}>
-          <div ref={lifeRef} style={{ ...TEXT, color: fg, opacity: 0.4 }} />
+          <div ref={lifeRef} className="gsap-hide" style={{ ...TEXT, color: fg, opacity: 0.4 }} />
         </div>
       </div>
     </div>

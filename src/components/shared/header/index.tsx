@@ -217,7 +217,7 @@ export default function Header({
       <div
         ref={wrapperRef}
         className={cn(
-          "link fixed right-5 top-5 w-20 h-20 p-4 flex items-center justify-center rounded-full transition-all duration-300",
+          "link fixed right-5 top-5 w-18 h-18 p-4 flex items-center justify-center rounded-full transition-all duration-300",
           scrolled ? "scale-100 pointer-events-auto z-50" : "scale-0 -z-50 pointer-events-none"
         )}
       >
@@ -239,7 +239,7 @@ export default function Header({
               <div
                 aria-hidden
                 className={cn(
-                  "absolute w-19 h-19 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border pointer-events-none -z-1 animate-pulse-ring",
+                  "absolute w-16 h-16 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border pointer-events-none -z-1 animate-pulse-ring",
                   scrolled ? "scale-100" : "scale-0",
                   isIntersecting ? "bg-background/90" : "bg-foreground/50",
                   isActive ? "hidden" : "block"
@@ -252,8 +252,8 @@ export default function Header({
                 className={cn(
                   "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full backdrop-blur-sm z-0 pointer-events-none",
                   isActive
-                    ? "hidden animate-none w-15 h-15"
-                    : "block w-17 h-17 animate-pulse-dot",
+                    ? "hidden animate-none w-14 h-14"
+                    : "block w-13 h-13 animate-pulse-dot",
                   scrolled ? "scale-100" : "scale-0",
                   isIntersecting ? "bg-background" : "bg-foreground"
                 )}
@@ -265,7 +265,7 @@ export default function Header({
                 onClick={handleToggle}
                 onTouchEnd={handleToggle}
                 className={cn(
-                  "relative w-15 h-15 rounded-full flex items-center justify-center cursor-pointer touch-none select-none transition-transform active:scale-95",
+                  "relative w-14 h-14 rounded-full flex items-center justify-center cursor-pointer touch-none select-none transition-transform active:scale-95",
                   scrolled ? "scale-100" : "scale-0",
                   isIntersecting ? "bg-background" : "bg-foreground"
                 )}

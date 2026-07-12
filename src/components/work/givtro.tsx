@@ -132,8 +132,8 @@ export default function GivtroPage() {
 
         reducedMotionFallback: () => {
             gsap.set(
-                ".g-title, .g-meta, .g-overview-heading, .g-overview-body, .g-pill, .g-feature, .g-eng-item, .g-screen-card",
-                { visibility: "visible", opacity: 1, y: 0, x: 0 }
+                ".g-title, .g-meta, .g-gallery-item, .g-overview-heading, .g-overview-body, .g-pill, .g-feature, .g-eng-item, .g-screen-card",
+                { visibility: "visible", opacity: 1, y: 0, x: 0, scale: 1 }
             );
             gsap.set([overviewLabel.textRef.current, featuresLabel.textRef.current, engLabel.textRef.current, screensLabel.textRef.current], {
                 visibility: "visible",
@@ -150,6 +150,10 @@ export default function GivtroPage() {
             // Meta rows — fade up on load
             gsap.set(".g-meta", { visibility: "visible", y: 16, opacity: 0 });
             gsap.to(".g-meta", { y: 0, opacity: 1, duration: 0.7, stagger: 0.08, ease: EASE, delay: 0.4 });
+
+            // Hero gallery image
+            gsap.set(".g-gallery-item", { visibility: "visible", opacity: 0, scale: 0.98 });
+            gsap.to(".g-gallery-item", { opacity: 1, scale: 1, duration: 0.8, ease: EASE, delay: 0.2 });
 
             // Pills
             const pills = gsap.utils.toArray<HTMLElement>(".g-pill");
@@ -308,7 +312,7 @@ export default function GivtroPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-start">
-                    <div className="g-gallery-item relative w-full overflow-hidden rounded-2xl bg-foreground/5" style={{ aspectRatio: "9/10" }}>
+                    <div className="g-gallery-item gsap-hide relative w-full overflow-hidden rounded-2xl bg-foreground/5" style={{ aspectRatio: "9/10" }}>
                         <Image src={mockup} alt="Givtro" fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
                     </div>
 
