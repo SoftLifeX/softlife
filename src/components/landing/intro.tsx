@@ -2,138 +2,85 @@
 
 import { useRef } from "react";
 import { SplitText } from "gsap/SplitText";
-import { useGSAP } from "@gsap/react";
-import { gsap, ScrollTrigger } from "@/lib/gsap-init";
-import { cn } from "@/lib/utils";
+import { gsap } from "@/lib/gsap-init";
 import { useRevealMask } from "@/hooks/useRevealMask";
 import { registerWipe } from "@/hooks/useWipeReveal";
 import { usePageReady } from "@/hooks/usePageReady";
+import { useGsapScope } from "@/hooks/useGsapScope";
+import { WipeLabel, useWipeRefs } from "@/lib/animations/wipeLabel";
+import { EASE } from "@/lib/animations/tokens";
 
 export default function Intro() {
   const introSectionRef = useRef<HTMLDivElement | null>(null);
-  const introBlockRef = useRef<HTMLDivElement | null>(null);
-  const widthRef = useRef<HTMLDivElement | null>(null);
-  const subtitleRef = useRef<HTMLParagraphElement | null>(null);
+  const introLabel = useWipeRefs();
 
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
-
   const ready = usePageReady();
 
-  useGSAP(
-    () => {
-      if (!ready) return;
+  useGsapScope(introSectionRef, {
+    ready,
 
-      const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      if (prefersReducedMotion) {
-        gsap.set([subtitleRef.current, ".about", ".intro"], { opacity: 1, yPercent: 0 });
-        gsap.set(widthRef.current, { width: "100%" });
-        return;
-      }
-
-      const ctx = gsap.context(() => {
-        requestAnimationFrame(() => {
-          document.fonts.ready.then(() => {
-            registerWipe(
-              { blockRef: introBlockRef, widthRef, textRef: subtitleRef },
-              {
-                trigger: () => subtitleRef.current,
-                direction: "left",
-                startOffset: "top 90%",
-                underlineStart: "top 80%",
-                underlineEnd: "top 60%",
-                ease,
-              }
-            );
-
-            const aboutSplit = new SplitText(".about", {
-              type: "chars, words, lines",
-              mask: "lines",
-            });
-
-            gsap.fromTo(aboutSplit.words,
-              { yPercent: 100 },
-              {
-                yPercent: 0,
-                ease,
-                stagger: 0.02,
-                scrollTrigger: {
-                  trigger: ".about",
-                  start: "top 70%",
-                  end: "top 55%",
-                  scrub: true,
-                },
-              }
-            );
-
-            const introTitleSplit = new SplitText(".intro", {
-              type: "chars, words, lines",
-              linesClass: "line",
-            });
-
-            gsap.set(".intro", { opacity: 1 });
-            gsap.set(introTitleSplit.words, { opacity: 0 });
-
-            gsap.to(introTitleSplit.words, {
-              opacity: 1,
-              ease,
-              stagger: 0.02,
-              scrollTrigger: {
-                trigger: ".intro",
-                start: "top 90%",
-                end: "bottom top",
-                scrub: true,
-              },
-            });
-
-            ctx.add(() => () => {
-              aboutSplit.revert();
-              introTitleSplit.revert();
-              gsap.set(".intro", { opacity: 1 });
-            });
-
-            ScrollTrigger.refresh();
-          });
-        });
-      }, introSectionRef);
-
-      return () => ctx.revert();
+    reducedMotionFallback: () => {
+      gsap.set(introLabel.textRef.current, { visibility: "visible", opacity: 1, yPercent: 0 });
+      gsap.set(introLabel.widthRef.current, { width: "100%" });
+      gsap.set(".about", { visibility: "visible", opacity: 1, yPercent: 0 });
+      gsap.set(".intro", { visibility: "visible", opacity: 1 });
     },
-    { scope: introSectionRef, dependencies: [ready] }
-  );
+
+    // Wipe label — no font metrics needed, fires immediately
+    animate: () => {
+      gsap.set(introLabel.textRef.current, { visibility: "visible" });
+      registerWipe(introLabel, {
+        trigger: () => introLabel.textRef.current,
+        direction: "left",
+        startOffset: "top 90%",
+        underlineStart: "top 80%",
+        underlineEnd: "top 60%",
+        ease: EASE,
+      });
+    },
+
+    // SplitText work — waits fonts.ready + 1 rAF
+    animateWithSplitText: (ctx) => {
+      gsap.set(".about", { visibility: "visible" });
+      const aboutSplit = new SplitText(".about", { type: "chars, words, lines", mask: "lines" });
+
+      gsap.fromTo(
+        aboutSplit.words,
+        { yPercent: 100 },
+        {
+          yPercent: 0,
+          ease: EASE,
+          stagger: 0.02,
+          scrollTrigger: { trigger: ".about", start: "top 70%", end: "top 55%", scrub: true },
+        }
+      );
+
+      gsap.set(".intro", { visibility: "visible", opacity: 1 });
+      const introTitleSplit = new SplitText(".intro", { type: "chars, words, lines", linesClass: "line" });
+      gsap.set(introTitleSplit.words, { opacity: 0 });
+
+      gsap.to(introTitleSplit.words, {
+        opacity: 1,
+        ease: EASE,
+        stagger: 0.02,
+        scrollTrigger: { trigger: ".intro", start: "top 90%", end: "bottom top", scrub: true },
+      });
+
+      ctx.add(() => () => {
+        aboutSplit.revert();
+        introTitleSplit.revert();
+        gsap.set(".intro", { opacity: 1 });
+      });
+    },
+  });
 
   return (
     <section ref={introSectionRef} className="intro-section relative py px">
-      {/* Subtitle with wipe reveal */}
-      <div className="relative w-fit">
-        <div className="relative w-fit group">
-          <p
-            ref={subtitleRef}
-            className={cn(
-              "opacity-0 subtitle relative justify-start w-fit text-sm text-foreground origin-left"
-            )}
-          >
-            Who tf do I think i am?
-          </p>
-          <div
-            ref={widthRef}
-            className={cn(
-              "absolute left-0 bottom-0 h-px w-full bg-foreground",
-              "origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom)",
-              "group-hover:origin-right group-hover:scale-x-0"
-            )}
-          />
-        </div>
-        <div
-          ref={introBlockRef}
-          className="absolute w-0 h-full top-0 left-0 pointer-events-none bg-foreground"
-        />
-      </div>
+      <WipeLabel {...introLabel} label="Who tf do I think i am?" />
 
-      {/* About paragraph */}
       <div className="flex justify-end-safe w-full pt-4 pb-3 md:pb-12 text-sm text-primary-foreground">
-        <p className="about text-end">
+        <p className="about gsap-hide text-end">
           Asides from the &ldquo;generic&ldquo; slab of text you&apos;re about to read,
           <br /> i&apos;m just a chill guy, I like traveling, learning new things,
           <br /> I enjoy the peace and quiet but will opt for the occasional chaos at times.
@@ -142,10 +89,9 @@ export default function Intro() {
         </p>
       </div>
 
-      {/* Main intro paragraph with reveal mask */}
       <div className="relative w-full flex justify-start">
         <p
-          className="intro large text-3xl md:text-[5rem] w-full text-foreground opacity-0"
+          className="intro gsap-hide large text-3xl md:text-[5rem] w-full text-foreground"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
@@ -157,11 +103,7 @@ export default function Intro() {
           ref={revealRef}
           id="about"
           className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-[5rem] z-10 bg-background"
-          style={{
-            opacity: hovered ? 1 : 0,
-            transition: "opacity 0s ease",
-            willChange: "clip-path",
-          }}
+          style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
         >
           A Developer who&apos;s skills haven&apos;t been replaced by chatGPT - (&ldquo;yet&ldquo;),
           specialized in motion design, I make stuff MOVE! - only when you pay me enough...

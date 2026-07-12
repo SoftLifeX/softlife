@@ -2,11 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "next-themes";
-import gsap from "gsap";
-import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
+import { gsap } from "@/lib/gsap-init";
 import { cn } from "@/lib/utils";
-
-gsap.registerPlugin(MorphSVGPlugin);
 
 const SUN_PATH =
   "M70 49.5C70 60.82 60.82 70 49.5 70C38.18 70 29 60.82 29 49.5C29 38.18 38.18 29 49.5 29C60 29 69.5 38 70 49.5Z";

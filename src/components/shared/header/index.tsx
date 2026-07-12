@@ -31,7 +31,7 @@ export default function Header({
       {
         root: null,
         threshold: 0,
-        rootMargin: '0px 0px -100% 0px',
+        rootMargin: '0px 0px -90% 0px',
       }
     );
 

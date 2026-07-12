@@ -4,20 +4,14 @@
  *
  * Manages the circular clip-path reveal effect used in Hero and Intro.
  *
- * BEFORE: Each component had:
- *   1. A continuous RAF loop (always running)
- *   2. handleMouseEnter that ALSO started its own RAF if one wasn't running
- *   3. handleMouseLeave that ALSO started its own RAF if one wasn't running
- *   → Up to 3 concurrent RAF loops writing to the same element
- *   → Plus scroll + mousemove listeners duplicated in every component
- *
- * AFTER: One loop, one set of listeners, shared via a hook.
- * The loop is idle-aware: when the radius is settled and the mask
- * is inactive it still runs (single rAF is ~0 cost) but writes nothing
- * meaningful, so there's no reason to start/stop it.
+ * CHANGED: was its own `requestAnimationFrame` loop — a second scheduler
+ * running alongside CustomCursor's own rAF loop AND GSAP's internal ticker,
+ * three clocks doing the same job in the same page. Now registered on
+ * gsap.ticker, same as CustomCursor — one shared clock for the whole site.
  */
 
 import { useEffect, useRef, useState } from "react";
+import { gsap } from "@/lib/gsap-init";
 import { cursorStore } from "@/lib/cursor-store";
 
 interface ExtendedCSSProperties extends CSSStyleDeclaration {
@@ -38,23 +32,18 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
 
   const revealRef = useRef<HTMLDivElement | null>(null);
   const easedRadiusRef = useRef(0);
-  // Eased position — mirrors cursor dot's lerp so mask centre
-  // and dot stay visually locked together
   const easedXRef = useRef(0);
   const easedYRef = useRef(0);
   const maskActiveRef = useRef(false);
   const hasMoved = useRef(false);
-  const rafRef = useRef<number | null>(null);
   const [hovered, setHovered] = useState(false);
 
-  // ── Single continuous RAF ─────────────────────────────────────────────────
+  // ── Single tick, registered on GSAP's shared ticker ──────────────────────
   useEffect(() => {
     const el = revealRef.current;
     if (!el) return;
 
     const tick = () => {
-      // Lerp position at the same rate as the cursor dot (0.16)
-      // so the mask centre and the dot are always at the same point
       easedXRef.current += (cursorStore.mouseX - easedXRef.current) * 0.16;
       easedYRef.current += (cursorStore.mouseY - easedYRef.current) * 0.16;
 
@@ -62,9 +51,8 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
       const localX = easedXRef.current - rect.left;
       const localY = easedYRef.current - rect.top;
 
-      // Radius has its own independent easing — expand/collapse feel
       const target = maskActiveRef.current ? radius : 0;
-      const ease   = maskActiveRef.current ? expandEase : collapseEase;
+      const ease = maskActiveRef.current ? expandEase : collapseEase;
 
       easedRadiusRef.current += (target - easedRadiusRef.current) * ease;
       if (Math.abs(easedRadiusRef.current - target) < 0.01) {
@@ -74,18 +62,10 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
       const clip = `circle(${easedRadiusRef.current}px at ${localX}px ${localY}px)`;
       el.style.clipPath = clip;
       (el.style as ExtendedCSSProperties).WebkitClipPath = clip;
-
-      rafRef.current = requestAnimationFrame(tick);
     };
 
-    rafRef.current = requestAnimationFrame(tick);
-
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
+    gsap.ticker.add(tick);
+    return () => gsap.ticker.remove(tick);
   }, [radius, expandEase, collapseEase]);
 
   // ── Scroll: collapse mask ─────────────────────────────────────────────────
@@ -112,7 +92,6 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
   }, []);
 
   // ── Mouse tracking: only needs to set hasMoved ────────────────────────────
-  // (actual position is read from cursorStore inside the RAF loop)
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!hasMoved.current && (Math.abs(e.movementX) > 0 || Math.abs(e.movementY) > 0)) {

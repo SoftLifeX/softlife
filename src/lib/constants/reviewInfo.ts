@@ -35,11 +35,4 @@ export const reviewItems: Review[] = [
     company: "Swan Signature",
     text: "Best design handoff I've ever worked with. Daniel's Figma files were production-ready with proper naming, variants, and component documentation. Saved me at least 10 hours of back-and-forth.",
   },
-  {
-    id: 5,
-    name: "Kizito Campbell",
-    role: "CEO",
-    company: "Bellzito",
-    text: "Daniel redesigned our landing page and conversion jumped 31% in the first week. He also delivered two days early and stayed on a call to help our dev implement the animations correctly.",
-  },
 ];

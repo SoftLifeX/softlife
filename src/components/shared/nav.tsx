@@ -5,12 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navlinks } from "@/lib/constants/nav-links";
 import { cn } from "@/lib/utils";
-import gsap from "gsap";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import { gsap } from "@/lib/gsap-init";
 import { useEffect, useState } from "react";
-
-// Register GSAP ScrollTo plugin
-gsap.registerPlugin(ScrollToPlugin);
 
 export default function Navbar() {
   const pathname = usePathname();

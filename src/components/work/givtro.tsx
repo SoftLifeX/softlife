@@ -3,11 +3,13 @@
 import { useRef } from "react";
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
-import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger } from "@/lib/gsap-init";
 import { SplitText } from "gsap/SplitText";
 import { registerWipe } from "@/hooks/useWipeReveal";
 import { usePageReady } from "@/hooks/usePageReady";
+import { useGsapScope } from "@/hooks/useGsapScope";
+import { WipeLabel, useWipeRefs } from "@/lib/animations/wipeLabel";
+import { EASE } from "@/lib/animations/tokens";
 import mockup from "@/app/assets/projects/givtro/givtro_mockup.webp";
 import g1 from "@/app/assets/projects/givtro/givtro_1.webp";
 import g2 from "@/app/assets/projects/givtro/givtro_2.webp";
@@ -29,10 +31,9 @@ import g17 from "@/app/assets/projects/givtro/givtro_17.webp";
 import g18 from "@/app/assets/projects/givtro/givtro_18.webp";
 import g19 from "@/app/assets/projects/givtro/givtro_19.webp";
 import g20 from "@/app/assets/projects/givtro/givtro_20.webp";
-import FeatureCard from "@/components/ui/featureCard"
+import FeatureCard from "@/components/ui/featureCard";
 
 const BRAND = "#2466F2";
-const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
 const stack = {
     mobile: ["React Native", "Expo", "TypeScript", "Zustand", "React Query"],
@@ -114,231 +115,161 @@ function Pill({ label }: { label: string }) {
     );
 }
 
-interface WipeLabelProps {
-    blockRef: React.RefObject<HTMLDivElement | null>;
-    widthRef: React.RefObject<HTMLDivElement | null>;
-    textRef: React.RefObject<HTMLParagraphElement | null>;
-    label: string;
-}
-
-function WipeLabel({ blockRef, widthRef, textRef, label }: WipeLabelProps) {
-    return (
-        <div className="relative w-fit">
-            <div className="relative w-fit group">
-                <p ref={textRef} className="opacity-0 relative text-sm text-foreground">{label}</p>
-                <div ref={widthRef} className="absolute left-0 bottom-0 h-px w-full bg-foreground origin-left transition-transform duration-500 ease-(--ease-custom) group-hover:origin-right group-hover:scale-x-0" />
-            </div>
-            <div ref={blockRef} className="absolute w-0 h-full top-0 left-0 pointer-events-none bg-foreground" />
-        </div>
-    );
-}
-
 export default function GivtroPage() {
     const pageRef = useRef<HTMLElement>(null);
-
     const ready = usePageReady();
 
-    const overviewBlockRef = useRef<HTMLDivElement>(null);
-    const overviewWidthRef = useRef<HTMLDivElement>(null);
-    const overviewTextRef = useRef<HTMLParagraphElement>(null);
-
-    const featuresBlockRef = useRef<HTMLDivElement>(null);
-    const featuresWidthRef = useRef<HTMLDivElement>(null);
-    const featuresTextRef = useRef<HTMLParagraphElement>(null);
-
-    const engBlockRef = useRef<HTMLDivElement>(null);
-    const engWidthRef = useRef<HTMLDivElement>(null);
-    const engTextRef = useRef<HTMLParagraphElement>(null);
-
-    const screensBlockRef = useRef<HTMLDivElement>(null);
-    const screensWidthRef = useRef<HTMLDivElement>(null);
-    const screensTextRef = useRef<HTMLParagraphElement>(null);
+    const overviewLabel = useWipeRefs();
+    const featuresLabel = useWipeRefs();
+    const engLabel = useWipeRefs();
+    const screensLabel = useWipeRefs();
 
     const mobileLineRef = useRef<HTMLDivElement>(null);
     const backendLineRef = useRef<HTMLDivElement>(null);
 
-    useGSAP(
-        () => {
-            if (!ready) return;
+    useGsapScope(pageRef, {
+        ready,
 
-            const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            const ease = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-
-            if (reduced) {
-                gsap.set(
-                    ".g-title, .g-meta, .g-overview-heading, .g-overview-body, .g-pill, .g-feature, .g-eng-item",
-                    { opacity: 1, y: 0, x: 0 }
-                );
-                gsap.set([mobileLineRef.current, backendLineRef.current], { scaleX: 1 });
-                return;
-            }
-
-            const ctx = gsap.context(() => {
-
-                document.fonts.ready.then(() => {
-                    // Defer one rAF so the page has fully painted after navigation
-                    // before SplitText measures and ScrollTrigger calculates positions
-                    requestAnimationFrame(() => {
-
-                        // Title — char wipe in from right
-                        const titleSplit = new SplitText(".g-title", { type: "chars, words", mask: "chars" });
-                        gsap.set(titleSplit.chars, { xPercent: 100, opacity: 0 });
-                        gsap.to(titleSplit.chars, {
-                            xPercent: 0, opacity: 1, stagger: 0.04, duration: 0.7, ease, delay: 0.1,
-                        });
-
-                        // Overview heading — word scrub
-                        const overviewSplit = new SplitText(".g-overview-heading", { type: "words, lines" });
-                        gsap.set(overviewSplit.words, { opacity: 0, y: 20 });
-                        gsap.to(overviewSplit.words, {
-                            opacity: 1, y: 0, ease, stagger: 0.02,
-                            scrollTrigger: {
-                                trigger: ".g-overview-heading",
-                                start: "top 80%", end: "top 55%", scrub: true,
-                            },
-                        });
-
-                        // Overview body — word scrub
-                        const bodySplit = new SplitText(".g-overview-body", { type: "words, lines" });
-                        gsap.set(bodySplit.words, { opacity: 0, y: 20 });
-                        gsap.to(bodySplit.words, {
-                            opacity: 1, y: 0, ease, stagger: 0.015,
-                            scrollTrigger: {
-                                trigger: ".g-overview-body",
-                                start: "top 85%", end: "top 60%", scrub: true,
-                            },
-                        });
-
-                        ctx.add(() => () => {
-                            titleSplit.revert();
-                            overviewSplit.revert();
-                            bodySplit.revert();
-                        });
-
-                        ScrollTrigger.refresh();
-                    });
-                });
-
-                // Meta rows — fade up on load
-                gsap.set(".g-meta", { y: 16, opacity: 0 });
-                gsap.to(".g-meta", {
-                    y: 0, opacity: 1, duration: 0.7, stagger: 0.08, ease, delay: 0.4,
-                });
-
-                // Pills — exact Skills section pattern
-                const pills = gsap.utils.toArray<HTMLElement>(".g-pill");
-                gsap.set(pills, { scale: 0.88, opacity: 0, transformOrigin: "50% 50%", willChange: "transform, opacity" });
-                gsap.to(pills, {
-                    scale: 1, opacity: 1, duration: 0.28, ease: "power3.out", stagger: 0.07,
-                    scrollTrigger: {
-                        trigger: pills[0]?.parentElement,
-                        start: "top 80%", end: "top 60%", scrub: true,
-                    },
-                    onComplete: () => { gsap.set(pills, { willChange: "auto" }); },
-                });
-
-                // Section label wipes
-                [
-                    { block: overviewBlockRef, width: overviewWidthRef, text: overviewTextRef },
-                    { block: featuresBlockRef, width: featuresWidthRef, text: featuresTextRef },
-                    { block: engBlockRef, width: engWidthRef, text: engTextRef },
-                    { block: screensBlockRef, width: screensWidthRef, text: screensTextRef },
-                ].forEach(({ block, width, text }) => {
-                    registerWipe(
-                        { blockRef: block, widthRef: width, textRef: text },
-                        { trigger: () => text.current, direction: "left", startOffset: "top 90%", ease }
-                    );
-                });
-
-                // Feature cards
-                gsap.set(".g-feature", { y: 32, opacity: 0 });
-                gsap.to(".g-feature", {
-                    y: 0, opacity: 1, duration: 0.7, stagger: 0.07, ease,
-                    scrollTrigger: { trigger: ".g-features-grid", start: "top 80%", toggleActions: "play none none none" },
-                });
-
-                // Engineering divider lines — scaleX scrub, same as Skills underlines
-                [mobileLineRef, backendLineRef].forEach((lineRef) => {
-                    gsap.from(lineRef.current, {
-                        scaleX: 0,
-                        transformOrigin: "left center",
-                        ease,
-                        scrollTrigger: {
-                            trigger: lineRef.current,
-                            start: "top 80%", end: "top 60%", scrub: true,
-                        },
-                    });
-                });
-
-                // Engineering list items
-                gsap.set(".g-eng-item", { x: -20, opacity: 0 });
-                gsap.to(".g-eng-item", {
-                    x: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease,
-                    scrollTrigger: { trigger: ".g-eng-grid", start: "top 75%", toggleActions: "play none none none" },
-                });
-
-                // Screens — scroll-driven card sweep
-                // Cards start off-right, sweep through the viewport with y+rotation arcs,
-                // then exit off-left. Staggered delays keep 3-4 cards visible at once.
-                const screensSection = pageRef.current?.querySelector<HTMLElement>(".g-screens-section");
-                const screenCards = pageRef.current?.querySelectorAll<HTMLElement>(".g-screen-card");
-
-                if (screensSection && screenCards?.length) {
-                    const isMobile = window.innerWidth < 768;
-                    const stickyHeight = window.innerHeight * (isMobile ? 4 : 6);
-                    const vw = window.innerWidth;
-
-                    // Use absolute pixel x values so travel distance is viewport-relative,
-                    // not relative to the card's own width (which xPercent would be).
-                    // startX: just off the right edge. endX: fully off the left edge.
-                    const startX = vw + 20;
-                    const endX = -(vw + 200);
-
-                    gsap.set(screenCards, { opacity: 0, x: startX });
-
-                    ScrollTrigger.create({
-                        trigger: screensSection,
-                        start: "top top",
-                        end: `+=${stickyHeight}px`,
-                        pin: true,
-                        pinSpacing: true,
-                        onUpdate: (self) => {
-                            const progress = self.progress;
-
-                            screenCards.forEach((card, index) => {
-                                const delay = index * (isMobile ? 0.04 : 0.065);
-                                const cardProgress = Math.max(0, Math.min((progress - delay) * 2, 1));
-
-                                if (cardProgress > 0) {
-                                    const yPos = CARD_TRANSFORMS[index]?.[0] ?? [0, 0, 0, 0];
-                                    const rotations = CARD_TRANSFORMS[index]?.[1] ?? [0, 0, 0, 0];
-
-                                    // Pixel-based x: sweeps from right edge to left edge
-                                    const cardX = gsap.utils.interpolate(startX, endX, cardProgress);
-
-                                    const yProgress = cardProgress * 3;
-                                    const yIndex = Math.min(Math.floor(yProgress), yPos.length - 2);
-                                    const yLerp = yProgress - yIndex;
-
-                                    // y stays as percent of card height — that's intentional arc movement
-                                    const cardY = gsap.utils.interpolate(yPos[yIndex], yPos[yIndex + 1] ?? yPos[yIndex], yLerp);
-                                    const cardRotation = gsap.utils.interpolate(rotations[yIndex], rotations[yIndex + 1] ?? rotations[yIndex], yLerp);
-
-                                    gsap.set(card, { x: cardX, yPercent: cardY, rotation: cardRotation, opacity: 1 });
-                                } else {
-                                    gsap.set(card, { opacity: 0 });
-                                }
-                            });
-                        },
-                    });
-                }
-
-            }, pageRef);
-
-            return () => ctx.revert();
+        reducedMotionFallback: () => {
+            gsap.set(
+                ".g-title, .g-meta, .g-overview-heading, .g-overview-body, .g-pill, .g-feature, .g-eng-item, .g-screen-card",
+                { visibility: "visible", opacity: 1, y: 0, x: 0 }
+            );
+            gsap.set([overviewLabel.textRef.current, featuresLabel.textRef.current, engLabel.textRef.current, screensLabel.textRef.current], {
+                visibility: "visible",
+                opacity: 1,
+            });
+            gsap.set(
+                [overviewLabel.widthRef.current, featuresLabel.widthRef.current, engLabel.widthRef.current, screensLabel.widthRef.current, mobileLineRef.current, backendLineRef.current],
+                { scaleX: 1, width: "100%" }
+            );
         },
-        { scope: pageRef, dependencies: [ready] }
-    );
+
+        // Phase 1 — everything that doesn't depend on SplitText's font metrics.
+        animate: () => {
+            // Meta rows — fade up on load
+            gsap.set(".g-meta", { visibility: "visible", y: 16, opacity: 0 });
+            gsap.to(".g-meta", { y: 0, opacity: 1, duration: 0.7, stagger: 0.08, ease: EASE, delay: 0.4 });
+
+            // Pills
+            const pills = gsap.utils.toArray<HTMLElement>(".g-pill");
+            gsap.set(pills, { visibility: "visible", scale: 0.88, opacity: 0, transformOrigin: "50% 50%", willChange: "transform, opacity" });
+            gsap.to(pills, {
+                scale: 1, opacity: 1, duration: 0.28, ease: "power3.out", stagger: 0.07,
+                scrollTrigger: { trigger: pills[0]?.parentElement, start: "top 80%", end: "top 60%", scrub: true },
+                onComplete: () => {
+                    gsap.set(pills, { willChange: "auto" });
+                },
+            });
+
+            // Section label wipes
+            [
+                { refs: overviewLabel, offset: "top 90%" },
+                { refs: featuresLabel, offset: "top 90%" },
+                { refs: engLabel, offset: "top 90%" },
+                { refs: screensLabel, offset: "top 90%" },
+            ].forEach(({ refs, offset }) => {
+                gsap.set(refs.textRef.current, { visibility: "visible" });
+                registerWipe(refs, { trigger: () => refs.textRef.current, direction: "left", startOffset: offset, ease: EASE });
+            });
+
+            // Feature cards
+            gsap.set(".g-feature", { visibility: "visible", y: 32, opacity: 0 });
+            gsap.to(".g-feature", {
+                y: 0, opacity: 1, duration: 0.7, stagger: 0.07, ease: EASE,
+                scrollTrigger: { trigger: ".g-features-grid", start: "top 80%", toggleActions: "play none none none" },
+            });
+
+            // Engineering divider lines
+            [mobileLineRef, backendLineRef].forEach((lineRef) => {
+                gsap.from(lineRef.current, {
+                    scaleX: 0,
+                    transformOrigin: "left center",
+                    ease: EASE,
+                    scrollTrigger: { trigger: lineRef.current, start: "top 80%", end: "top 60%", scrub: true },
+                });
+            });
+
+            // Engineering list items
+            gsap.set(".g-eng-item", { visibility: "visible", x: -20, opacity: 0 });
+            gsap.to(".g-eng-item", {
+                x: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: EASE,
+                scrollTrigger: { trigger: ".g-eng-grid", start: "top 75%", toggleActions: "play none none none" },
+            });
+
+            // Screens — scroll-driven card sweep
+            const screensSection = pageRef.current?.querySelector<HTMLElement>(".g-screens-section");
+            const screenCards = pageRef.current?.querySelectorAll<HTMLElement>(".g-screen-card");
+
+            if (screensSection && screenCards?.length) {
+                const isMobile = window.innerWidth < 768;
+                const stickyHeight = window.innerHeight * (isMobile ? 4 : 6);
+                const vw = window.innerWidth;
+                const startX = vw + 20;
+                const endX = -(vw + 200);
+
+                gsap.set(screenCards, { visibility: "visible", opacity: 0, x: startX });
+
+                ScrollTrigger.create({
+                    trigger: screensSection,
+                    start: "top top",
+                    end: `+=${stickyHeight}px`,
+                    pin: true,
+                    pinSpacing: true,
+                    onUpdate: (self) => {
+                        const progress = self.progress;
+                        screenCards.forEach((card, index) => {
+                            const delay = index * (isMobile ? 0.04 : 0.065);
+                            const cardProgress = Math.max(0, Math.min((progress - delay) * 2, 1));
+
+                            if (cardProgress > 0) {
+                                const yPos = CARD_TRANSFORMS[index]?.[0] ?? [0, 0, 0, 0];
+                                const rotations = CARD_TRANSFORMS[index]?.[1] ?? [0, 0, 0, 0];
+                                const cardX = gsap.utils.interpolate(startX, endX, cardProgress);
+                                const yProgress = cardProgress * 3;
+                                const yIndex = Math.min(Math.floor(yProgress), yPos.length - 2);
+                                const yLerp = yProgress - yIndex;
+                                const cardY = gsap.utils.interpolate(yPos[yIndex], yPos[yIndex + 1] ?? yPos[yIndex], yLerp);
+                                const cardRotation = gsap.utils.interpolate(rotations[yIndex], rotations[yIndex + 1] ?? rotations[yIndex], yLerp);
+                                gsap.set(card, { x: cardX, yPercent: cardY, rotation: cardRotation, opacity: 1 });
+                            } else {
+                                gsap.set(card, { opacity: 0 });
+                            }
+                        });
+                    },
+                });
+            }
+        },
+
+        // Phase 2 — SplitText work, waits fonts.ready + 1 rAF (handled by useGsapScope).
+        animateWithSplitText: (ctx) => {
+            gsap.set(".g-title, .g-overview-heading, .g-overview-body", { visibility: "visible" });
+
+            const titleSplit = new SplitText(".g-title", { type: "chars, words", mask: "chars" });
+            gsap.set(titleSplit.chars, { xPercent: 100, opacity: 0 });
+            gsap.to(titleSplit.chars, { xPercent: 0, opacity: 1, stagger: 0.04, duration: 0.7, ease: EASE, delay: 0.1 });
+
+            const overviewSplit = new SplitText(".g-overview-heading", { type: "words, lines" });
+            gsap.set(overviewSplit.words, { opacity: 0, y: 20 });
+            gsap.to(overviewSplit.words, {
+                opacity: 1, y: 0, ease: EASE, stagger: 0.02,
+                scrollTrigger: { trigger: ".g-overview-heading", start: "top 80%", end: "top 55%", scrub: true },
+            });
+
+            const bodySplit = new SplitText(".g-overview-body", { type: "words, lines" });
+            gsap.set(bodySplit.words, { opacity: 0, y: 20 });
+            gsap.to(bodySplit.words, {
+                opacity: 1, y: 0, ease: EASE, stagger: 0.015,
+                scrollTrigger: { trigger: ".g-overview-body", start: "top 85%", end: "top 60%", scrub: true },
+            });
+
+            ctx.add(() => () => {
+                titleSplit.revert();
+                overviewSplit.revert();
+                bodySplit.revert();
+            });
+        },
+    });
 
     return (
         <main ref={pageRef} className="min-h-screen bg-primary text-foreground">
@@ -355,18 +286,18 @@ export default function GivtroPage() {
             <section className="px py">
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
                     <div>
-                        <div className="g-meta flex items-center gap-3 mb-6">
+                        <div className="g-meta gsap-hide flex items-center gap-3 mb-6">
                             <GivtroLogo size={36} />
                             <span className="text-sm text-primary-foreground">Naelix Technologies</span>
                         </div>
-                        <h1 className="g-title text-4xl md:text-8xl font-bold leading-tight text-foreground mb-4">
+                        <h1 className="g-title gsap-hide text-4xl md:text-8xl font-bold leading-tight text-foreground mb-4">
                             Givtro
                         </h1>
-                        <p className="g-meta text-sm text-primary-foreground max-w-md">
+                        <p className="g-meta gsap-hide text-sm text-primary-foreground max-w-md">
                             A full-featured Nigerian fintech platform — mobile-first, built solo across the entire stack.
                         </p>
                     </div>
-                    <div className="g-meta flex flex-col gap-2 text-sm md:items-end">
+                    <div className="g-meta gsap-hide flex flex-col gap-2 text-sm md:items-end">
                         <div className="flex items-center gap-2">
                             <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: BRAND }} />
                             <span className="text-primary-foreground">Coming Soon</span>
@@ -383,7 +314,7 @@ export default function GivtroPage() {
 
                     <div className="g-pills flex flex-wrap gap-2 content-start">
                         {[...stack.mobile, ...stack.backend, ...stack.services].map((s, i) => (
-                            <span key={`${s}-${i}`} className="g-pill inline-flex items-center rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs text-primary-foreground">
+                            <span key={`${s}-${i}`} className="g-pill gsap-hide inline-flex items-center rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs text-primary-foreground">
                                 {s}
                             </span>
                         ))}
@@ -393,19 +324,19 @@ export default function GivtroPage() {
 
             {/* Overview */}
             <section className="px py border-t border-foreground/10">
-                <WipeLabel blockRef={overviewBlockRef} widthRef={overviewWidthRef} textRef={overviewTextRef} label="Overview" />
+                <WipeLabel {...overviewLabel} label="Overview" />
                 <div className="grid md:grid-cols-2 gap-12 md:gap-24 mt-8">
-                    <p className="g-overview-heading text-foreground text-xl md:text-3xl leading-relaxed">
+                    <p className="g-overview-heading gsap-hide text-foreground text-xl md:text-3xl leading-relaxed">
                         Givtro is a consumer fintech app built for the Nigerian market — a single platform for moving money,
                         paying bills, buying gift cards, and managing a digital wallet.
                     </p>
                     <div className="flex flex-col gap-6 text-sm text-primary-foreground leading-relaxed">
-                        <p className="g-overview-body">
+                        <p className="g-overview-body gsap-hide">
                             I was the sole engineer on Givtro from architecture to delivery — designing and building the React Native
                             app, the Node.js/Express API, and every integration in between. No design handoff, no backend team.
                             Every decision from database schema to animation timing was mine.
                         </p>
-                        <p className="g-overview-body">
+                        <p className="g-overview-body gsap-hide">
                             The brief was to build something that felt premium and trustworthy in a market where most fintech apps
                             still feel like they were designed in 2015. That meant getting the details right — snappy transitions,
                             clear error states, and a transaction flow that never leaves the user guessing.
@@ -416,7 +347,7 @@ export default function GivtroPage() {
 
             {/* Features */}
             <section className="px py border-t border-foreground/10">
-                <WipeLabel blockRef={featuresBlockRef} widthRef={featuresWidthRef} textRef={featuresTextRef} label="Features" />
+                <WipeLabel {...featuresLabel} label="Features" />
                 <div className="g-features-grid grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/10 mt-8">
                     {features.map((f) => (
                         <FeatureCard
@@ -425,6 +356,7 @@ export default function GivtroPage() {
                             title={f.title}
                             body={f.body}
                             brand={BRAND}
+                            className="gsap-hide"
                         />
                     ))}
                 </div>
@@ -432,7 +364,7 @@ export default function GivtroPage() {
 
             {/* Engineering */}
             <section className="px py border-t border-foreground/10">
-                <WipeLabel blockRef={engBlockRef} widthRef={engWidthRef} textRef={engTextRef} label="Engineering" />
+                <WipeLabel {...engLabel} label="Engineering" />
                 <div className="g-eng-grid grid md:grid-cols-2 gap-px bg-foreground/10 mt-8">
 
                     <div className="bg-primary p-6 md:p-10">
@@ -453,7 +385,7 @@ export default function GivtroPage() {
                                 "PlusJakartaSans font system with explicit fontWeight across all components",
                                 "RectButton as the universal tap primitive — consistent ripple and touch feedback",
                             ].map((item) => (
-                                <li key={item} className="g-eng-item flex gap-3">
+                                <li key={item} className="g-eng-item gsap-hide flex gap-3">
                                     <span style={{ color: BRAND }} className="mt-1 shrink-0">—</span>
                                     <span>{item}</span>
                                 </li>
@@ -479,7 +411,7 @@ export default function GivtroPage() {
                                 "MongoDB with carefully indexed collections for wallet, transactions, and users",
                                 "Transaction state machine — every operation flows through pending to processing to terminal",
                             ].map((item) => (
-                                <li key={item} className="g-eng-item flex gap-3">
+                                <li key={item} className="g-eng-item gsap-hide flex gap-3">
                                     <span style={{ color: BRAND }} className="mt-1 shrink-0">—</span>
                                     <span>{item}</span>
                                 </li>
@@ -492,13 +424,13 @@ export default function GivtroPage() {
             {/* Screens */}
             <section className="g-screens-section relative border-t border-foreground/10 w-full h-screen overflow-hidden">
                 <div className="px relative pt-10 z-10">
-                    <WipeLabel blockRef={screensBlockRef} widthRef={screensWidthRef} textRef={screensTextRef} label="Screens" />
+                    <WipeLabel {...screensLabel} label="Screens" />
                 </div>
 
                 {screens.map((img, i) => (
                     <div
                         key={i}
-                        className="g-screen-card absolute will-change-transform z-20"
+                        className="g-screen-card gsap-hide absolute will-change-transform z-20"
                         style={{
                             width: "clamp(100px, 12vw, 160px)",
                             aspectRatio: "9/19.5",

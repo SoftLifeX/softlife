@@ -1,13 +1,13 @@
 "use client";
-
 import { useEffect, useRef } from "react";
+import { gsap } from "@/lib/gsap-init";
 import { cursorStore } from "@/lib/cursor-store";
 
 const baseSize = 30;
 
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement | null>(null);
-  const posRef = useRef({ mouseX: 0, mouseY: 0, destX: 0, destY: 0, rafId: 0 });
+  const posRef = useRef({ mouseX: 0, mouseY: 0, destX: 0, destY: 0 });
   const scaleRef = useRef(1);
   const targetScaleRef = useRef(1);
   const lockRef = useRef(false);
@@ -59,7 +59,7 @@ export default function CustomCursor() {
     };
   }, []);
 
-  // Main animation loop
+  // Main animation loop — now driven by gsap.ticker instead of its own rAF
   useEffect(() => {
     const el = cursorRef.current;
     if (!el) return;
@@ -72,7 +72,7 @@ export default function CustomCursor() {
 
       const s = scaleRef.current;
       const w = baseSize * s;
-      el.style.width  = `${w}px`;
+      el.style.width = `${w}px`;
       el.style.height = `${w}px`;
       el.style.transform = `translate3d(${p.destX - w / 2}px,${p.destY - w / 2}px,0)`;
 
@@ -82,13 +82,10 @@ export default function CustomCursor() {
       cursorStore.x = p.destX;
       cursorStore.y = p.destY;
       cursorStore.scale = s;
-
-      p.rafId = requestAnimationFrame(tick);
     };
 
-    posRef.current.rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(posRef.current.rafId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    gsap.ticker.add(tick);
+    return () => gsap.ticker.remove(tick);
   }, []);
 
   return (

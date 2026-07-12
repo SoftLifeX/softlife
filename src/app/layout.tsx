@@ -5,7 +5,6 @@ import CustomCursor from "@/components/shared/custom-cursor";
 import Header from "@/components/shared/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import Preloader from "@/components/shared/preloader";
-import MobileExperiencePopup from "@/components/shared/mobile-experience-popup";
 import GsapInit from "@/components/shared/gsap-init-client";
 import PageTransition from "@/components/shared/page-transition";
 
@@ -18,14 +17,13 @@ const HANDLE    = "@softlifex";
 const DESC =
   "Full-stack & mobile software engineer crafting high-quality digital and " +
   "immersive experiences. 4 years building with React, Next.js, React Native " +
-  "and Flutter — based in Lagos, Nigeria.";
+  "and Flutter | based in Lagos, Nigeria.";
 
 // ─── Root metadata ───────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  // Title template — child pages append " | SoftLifeX" automatically
   title: {
-    default:  `${SITE_NAME} — Full-Stack & Mobile Engineer`,
+    default:  `${SITE_NAME} | Full-Stack & Mobile Engineer`,
     template: `%s | ${SITE_NAME}`,
   },
 
@@ -77,14 +75,14 @@ export const metadata: Metadata = {
     locale:      "en_NG",
     url:         SITE_URL,
     siteName:    SITE_NAME,
-    title:       `${SITE_NAME} — Full-Stack & Mobile Engineer`,
+    title:       `${SITE_NAME} | Full-Stack & Mobile Engineer`,
     description: DESC,
     images: [
       {
         url:    "/opengraph-image.png",
         width:  1200,
         height: 630,
-        alt:    `${SITE_NAME} — Full-Stack & Mobile Engineer`,
+        alt:    `${SITE_NAME} | Full-Stack & Mobile Engineer`,
       },
     ],
   },
@@ -92,7 +90,7 @@ export const metadata: Metadata = {
   // Twitter / X card
   twitter: {
     card:        "summary_large_image",
-    title:       `${SITE_NAME} — Full-Stack & Mobile Engineer`,
+    title:       `${SITE_NAME} | Full-Stack & Mobile Engineer`,
     description: DESC,
     creator:     HANDLE,
     images:      ["/opengraph-image.png"],
@@ -117,7 +115,6 @@ export default function RootLayout({
           <Preloader />
           <CustomCursor />
           <Header />
-          <MobileExperiencePopup />
           <PageTransition>
             <SmoothScroller>
               {children}
