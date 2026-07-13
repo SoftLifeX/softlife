@@ -206,7 +206,7 @@ export default function Hero() {
   });
 
   return (
-    <section ref={sectionRef} className="px relative md:min-h-svh min-h-[80svh] bg-primary" id="#">
+    <section ref={sectionRef} className="px relative md:min-h-svh min-h-[85svh] bg-primary" id="#">
       <Navbar />
       <div ref={containerRef} className="hero">
         <div data-speed="1.1" className="relative w-full flex md:pt-15 pt-60 pb-6 md:pb-12">
@@ -250,7 +250,7 @@ export default function Hero() {
 
         <div className="flex flex-col md:flex-row w-full items-start md:justify-center md:items-center">
           <div className="relative w-fit">
-            <div className="link-container gsap-hide relative flex flex-col md:flex-row items-start md:justify-center md:items-center w-full gap-4">
+            <div className="link-container gsap-hide relative flex flex-col md:flex-row items-start md:justify-center md:items-center w-full gap-4 pb-4 md:pb-0">
               <Link href="/contact" className="link relative inline-block text-sm text-primary-foreground group">
                 <span className="relative block h-[1.2em] overflow-hidden z-10">
                   <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-8">
