@@ -1,28 +1,4 @@
-"use client";
-/**
- * useWipeReveal
- *
- * The "block sweeps across, disappears, text fades in, underline grows"
- * pattern appeared copy-pasted in: Hero, Intro, Skills, Services, Reviews.
- * That's 5 duplicates of the same ~25-line GSAP sequence.
- *
- * Usage:
- *   const { blockRef, widthRef, textRef } = useWipeReveal({
- *     trigger: ".myClass",
- *     direction: "left",       // block enters from left
- *     startOffset: "top 90%",
- *   });
- *
- * Then in JSX:
- *   <p ref={textRef} className="opacity-0 myClass">Label</p>
- *   <div ref={widthRef} className="absolute left-0 bottom-0 h-px w-full bg-foreground" />
- *   <div ref={blockRef} className="absolute w-0 h-full top-0 left-0 bg-foreground" />
- *
- * All returned refs are stable — safe to pass directly to JSX.
- * The hook self-registers with the parent useGSAP context automatically
- * because it calls gsap.* inside a useEffect that runs inside the GSAP
- * context scope. If you need standalone use outside useGSAP, pass ctx.
- */
+"use client"; 
 
 import { useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap-init";
@@ -82,7 +58,7 @@ export function useWipeReveal(options: WipeRevealOptions): WipeRevealRefs {
 
     gsap.fromTo(block, fromProps, {
       width: "100%",
-      duration: 0.5,
+      duration: 0.4,
       ease,
       scrollTrigger: {
         trigger: triggerEl,
@@ -92,10 +68,10 @@ export function useWipeReveal(options: WipeRevealOptions): WipeRevealRefs {
       onComplete: () => {
         gsap.to(block, {
           ...exitProps,
-          duration: 0.4,
+          duration: 0.3,
           ease,
           onComplete: () => {
-            gsap.to(text, { opacity: 1, duration: 0.1, ease });
+            gsap.to(text, { opacity: 1, duration: 0.08, ease });
           },
         });
       },
