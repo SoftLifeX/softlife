@@ -42,7 +42,7 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
         style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 45%, transparent 100%)" }}
       />
 
-      <span className="absolute top-4 right-4 z-20 text-xs font-mono text-white/40">{index}</span>
+      <span className="absolute top-4 right-4 z-20 text-xs font-mono" style={{ color: p.bg }} >{index}</span>
 
       {p.disabled && (
         <span className="absolute top-4 left-4 z-20 text-xs text-white/60 border border-white/20 rounded-full px-2.5 py-0.5">
