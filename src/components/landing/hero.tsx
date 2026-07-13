@@ -209,7 +209,7 @@ export default function Hero() {
     <section ref={sectionRef} className="px relative md:min-h-svh min-h-[85svh] bg-primary" id="#">
       <Navbar />
       <div ref={containerRef} className="hero">
-        <div data-speed="1.1" className="relative w-full flex md:pt-15 pt-60 pb-6 md:pb-12">
+        <div data-speed="1.1" className="relative w-full flex md:items-end pt-40 md:pt-20 pb-6 md:pb-12">
           <div className="relative w-full flex justify-end">
             <h1
               className="heading gsap-hide large text-[2.4rem] md:text-[5rem] text-right leading-tight text-transparent"
@@ -224,7 +224,7 @@ export default function Hero() {
 
             <div
               ref={revealRef}
-              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-4xl md:text-[5rem] z-10 bg-primary text-end text-foreground"
+              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-[2.4rem] md:text-[5rem] z-10 bg-primary text-end text-foreground"
               style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
               aria-hidden="true"
             >
@@ -241,7 +241,7 @@ export default function Hero() {
               I&apos;m Daniel, Known online as softlifeX. <br />
               Currently based in Lagos, Nigeria <br />
             </p>
-            <p className="description-large gsap-hide text-foreground text-xl md:text-3xl">
+            <p className="description-large gsap-hide text-foreground text-xl md:text-2xl">
               Building digital products since 2022
             </p>
             <div ref={blockRef2} className="gsap-hide absolute w-0 h-full top-0 right-0 pointer-events-none bg-foreground" />

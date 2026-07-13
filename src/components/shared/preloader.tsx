@@ -58,7 +58,7 @@ export default function Preloader() {
         return Array.from(el.querySelectorAll<HTMLElement>(`.${cls}`));
       };
 
-      const ooChars = splitChars(ooEl, "only one", "oo");
+      const ooChars = splitChars(ooEl, "Only One", "oo");
       const softChars = splitChars(softEl, "soft", "sf");
       const lifeChars = splitChars(lifeEl, "life", "lf");
 
@@ -170,13 +170,10 @@ export default function Preloader() {
             bottom: "clamp(36px, 5vh, 64px)",
             left: "clamp(20px, 4vw, 52px)",
             fontFamily: "system-ui, sans-serif",
-            fontSize: "clamp(9px, 0.9vw, 11px)",
-            fontWeight: 400,
-            letterSpacing: "0.44em",
-            textTransform: "uppercase",
+            fontSize: "1.2rem",
             color: fg,
-            opacity: 0.35,
             whiteSpace: "nowrap",
+            opacity: 0.75
           }}
         />
 

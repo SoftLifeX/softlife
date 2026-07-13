@@ -102,49 +102,55 @@ export default function Navbar() {
           </span>
         </p>
       </div>
-      <div className="nav-grid grid grid-rows-3 grid-flow-col gap-y-3 gap-x-8 items-start">
-        {navlinks.map((link) => {
-          // Check both pathname and active section for anchor links
+      <div className="flex flex-row flex-wrap items-center gap-x-4 gap-y-3">
+        {navlinks.map((link, i) => {
           const isActive = link.href.startsWith('#')
             ? activeSection === link.href
             : pathname === link.href;
 
           return (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={(e) => handleClick(e, link.href)}
-              className={cn(
-                "navlink  relative text-sm font-normal group w-fit",
-                "transition-all duration-500 ease-(--ease-custom)",
-                //underline
-                "before:absolute before:bottom-0 before:h-px before:w-full before:bg-foreground before:content-['']",
-                "before:origin-right before:scale-x-0 before:transition-transform before:duration-500 before:ease-(--ease-custom) hover:before:origin-left hover:before:scale-x-100",
-                isActive
-                  ? " after:absolute after:top-1/2  after:rounded-full after:left-0 after:h-1.25 after:w-1.25 after:bg-invertforeground after:content-[''] after:origin-center after:scale-100 after:transition-transform after:duration-500 after:ease-(--ease-custom) hover:after:translate-x-0.5"
-                  : "after:scale-0"
+            <span key={link.href} className="flex items-center gap-x-4">
+              <Link
+                href={link.href}
+                onClick={(e) => handleClick(e, link.href)}
+                className={cn(
+                  "navlink relative text-sm font-normal group w-fit",
+                  "transition-all duration-500 ease-(--ease-custom)",
+                  //underline
+                  "before:absolute before:bottom-0 before:h-px before:w-full before:bg-foreground before:content-['']",
+                  "before:origin-right before:scale-x-0 before:transition-transform before:duration-500 before:ease-(--ease-custom) hover:before:origin-left hover:before:scale-x-100",
+                  isActive
+                    ? " after:absolute after:top-1/2  after:rounded-full after:left-0 after:h-1.25 after:w-1.25 after:bg-invertforeground after:content-[''] after:origin-center after:scale-100 after:transition-transform after:duration-500 after:ease-(--ease-custom) hover:after:translate-x-0.5"
+                    : "after:scale-0"
+                )}
+              >
+                {/* Text container for stacked animation */}
+                <span className="block h-[1.2em] overflow-hidden relative text-right">
+                  <span
+                    className={cn(
+                      "block transition-all duration-500 ease-(--ease-custom)",
+                      "group-hover:-translate-y-8 "
+                    )}
+                  >
+                    {link.label}
+                  </span>
+                  <span
+                    className={cn(
+                      "block absolute top-full left-0 w-full transition-all duration-500 ease-(--ease-custom)",
+                      "group-hover:-translate-y-full group-hover:opacity-100"
+                    )}
+                  >
+                    {link.label}
+                  </span>
+                </span>
+              </Link>
+
+              {i === 2 && (
+                <span aria-hidden="true" className="text-foreground/30 text-xl select-none">
+                  |
+                </span>
               )}
-            >
-              {/* Text container for stacked animation */}
-              <span className="block h-[1.2em] overflow-hidden relative text-right">
-                <span
-                  className={cn(
-                    "block transition-all duration-500 ease-(--ease-custom)",
-                    "group-hover:-translate-y-8 "
-                  )}
-                >
-                  {link.label}
-                </span>
-                <span
-                  className={cn(
-                    "block absolute top-full left-0 w-full transition-all duration-500 ease-(--ease-custom)",
-                    "group-hover:-translate-y-full group-hover:opacity-100"
-                  )}
-                >
-                  {link.label}
-                </span>
-              </span>
-            </Link>
+            </span>
           );
         })}
       </div>

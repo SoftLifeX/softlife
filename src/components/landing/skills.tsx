@@ -110,7 +110,7 @@ export default function Skills() {
 
       <div className="w-full flex pt-4 justify-end">
         <p className="skillParagraph gsap-hide text-start md:text-center w-full text-sm text-primary-foreground">
-          My{" "}
+          My{" "}"
           <span className="relative inline-block group">
             not so vanity
             <span
@@ -121,7 +121,7 @@ export default function Skills() {
                 "group-hover:origin-right group-hover:scale-x-0"
               )}
             />
-          </span>{" "}
+          </span>"{" "}
           stack is down below.
         </p>
       </div>

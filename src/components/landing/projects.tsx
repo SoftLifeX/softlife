@@ -40,7 +40,7 @@ export default function Projects() {
       });
 
       const isMobile = window.innerWidth < 768;
-      const yAmt = isMobile ? 0 : 18;
+      const yAmt = isMobile ? 10 : 18;
 
       gsap.utils.toArray<HTMLElement>(".parallax-container").forEach((container) => {
         const img = container.querySelector<HTMLImageElement>("img");
@@ -138,8 +138,8 @@ export default function Projects() {
     <div ref={projectsRef} id="craft" className="px py my-[8svh]">
       <WipeLabel {...label} label="selected work" className="mb-4" />
 
-      <h2 className="projects-heading gsap-hide text-3xl md:text-6xl font-bold leading-tight text-foreground mb-12 md:mb-16 w-full">
-        a few things that made it past &ldquo;good enough&rdquo;
+      <h2 className="projects-heading gsap-hide text-sm text-primary-foreground mb-4 md:mb-25 w-full">
+       Here's a few things that made it past &ldquo;good enough&rdquo;
       </h2>
 
       <div className="relative">

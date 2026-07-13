@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SplitText } from "gsap/SplitText";
 import { gsap } from "@/lib/gsap-init";
 import { Fragment } from "react";
@@ -21,6 +21,17 @@ export default function Contact() {
   const ready = usePageReady();
 
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
+
+  // CTA fill position tracking (mouse-following clip-path origin)
+  const [ctaPos, setCtaPos] = useState({ x: 50, y: 50 });
+  const [ctaHovered, setCtaHovered] = useState(false);
+
+  const handleCtaMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setCtaPos({ x, y });
+  };
 
   // Marquee runs regardless of `ready` / reduced-motion — purely decorative, non-blocking
   useEffect(() => {
@@ -113,7 +124,7 @@ export default function Contact() {
 
   return (
     <section ref={contactSectionRef} id="contact" className="relative bg-foreground font-light overflow-hidden">
-      <div className="relative overflow-hidden border-b border-background/10 py-3" aria-hidden="true">
+      {/*<div className="relative overflow-hidden border-b border-background/10 py-3" aria-hidden="true">
         <div ref={marqueRef} className="flex gap-12 whitespace-nowrap w-max">
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={i} className="flex gap-12">
@@ -123,7 +134,7 @@ export default function Contact() {
             </div>
           ))}
         </div>
-      </div>
+      </div>*/}
 
       <div ref={containerRef} className="px py contact flex flex-col items-center justify-center min-h-[90svh]">
         <p className="contact-sub gsap-hide text-[10px] tracking-[0.4em] text-background/30 uppercase mb-6 text-center">
@@ -146,7 +157,7 @@ export default function Contact() {
             style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
             aria-hidden="true"
           >
-            Just say hello —<br />it&apos;s not that deep.
+            Just say hello, <br />it&apos;s not that deep.
           </div>
         </div>
 
@@ -157,9 +168,23 @@ export default function Contact() {
         <div className="contact-links gsap-hide mt-12 flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
           <Link
             href="mailto:daniel.c.daniel.dev@gmail.com"
-            className="link cta-primary group relative inline-flex items-center gap-3 px-8 py-4 border border-background/20 text-background text-sm tracking-wide hover:border-background/60 transition-colors duration-500 overflow-hidden"
+            onMouseEnter={(e) => {
+              handleCtaMove(e);
+              setCtaHovered(true);
+            }}
+            onMouseMove={handleCtaMove}
+            onMouseLeave={() => setCtaHovered(false)}
+            className="link cta-primary group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground text-primary-foreground text-sm tracking-wide hover:border-background/60 transition-colors duration-500 overflow-hidden"
           >
-            <span aria-hidden="true" className="cta-fill absolute inset-0 bg-background" />
+            <span
+              aria-hidden="true"
+              className="cta-fill absolute inset-0 bg-background"
+              style={{
+                clipPath: `circle(${ctaHovered ? 150 : 0}% at ${ctaPos.x}% ${ctaPos.y}%)`,
+                opacity: ctaHovered ? 1 : 0,
+                transition: "clip-path 0.5s var(--ease-custom), opacity 0.5s var(--ease-custom)",
+              }}
+            />
             <span className="relative z-10 block h-[1.2em] overflow-hidden">
               <span className="contact-link-text block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full group-hover:text-foreground">
                 Send an email
@@ -202,7 +227,6 @@ export default function Contact() {
         </div>
       </div>
 
-      
     </section>
   );
 }

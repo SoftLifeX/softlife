@@ -76,7 +76,7 @@ export default function Intro() {
   });
 
   return (
-    <section ref={introSectionRef} className="intro-section relative py px">
+    <section id="about" ref={introSectionRef} className="intro-section relative py px">
       <WipeLabel {...introLabel} label="Who tf do I think i am?" />
 
       <div className="flex justify-end-safe w-full pt-4 pb-3 md:pb-12 text-sm text-primary-foreground">
@@ -101,7 +101,6 @@ export default function Intro() {
 
         <div
           ref={revealRef}
-          id="about"
           className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-[5rem] z-10 bg-background"
           style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
         >

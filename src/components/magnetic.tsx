@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, ReactNode } from "react";
 import { gsap } from "@/lib/gsap-init";
+import { cn } from "@/lib/utils";
 
 interface MagneticProps {
   children: ReactNode;
@@ -10,6 +11,11 @@ interface MagneticProps {
   radius?: number;
   tiltStrength?: number;
   disabled?: boolean;
+  /** Renders both wrappers as block/w-full instead of inline-block — needed
+   *  for grid/flex children (like ProjectCard) so the wrapper doesn't
+   *  shrink-to-fit and collapse the card's own w-full sizing. */
+  fullWidth?: boolean;
+  className?: string;
 }
 
 export default function Magnetic({
@@ -19,6 +25,8 @@ export default function Magnetic({
   radius = Infinity,
   tiltStrength = 15,
   disabled = false,
+  fullWidth = false,
+  className,
 }: MagneticProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const boundsRef  = useRef<DOMRect | null>(null);
@@ -26,7 +34,6 @@ export default function Magnetic({
   useEffect(() => {
     if (!wrapperRef.current || disabled) return;
 
-    // Use a mediaQuery listener so the effect responds to viewport changes
     const mq = window.matchMedia("(max-width: 768px), (prefers-reduced-motion: reduce)");
     if (mq.matches) return;
 
@@ -37,7 +44,7 @@ export default function Magnetic({
     const rotateXTo = gsap.quickTo(wrapper, "rotationX", { duration: 0.6, ease: "power2.out", overwrite: "auto" });
     const rotateYTo = gsap.quickTo(wrapper, "rotationY", { duration: 0.6, ease: "power2.out", overwrite: "auto" });
 
-    const refreshBounds = () => { boundsRef.current = null; }; // lazy — recalculated on next move
+    const refreshBounds = () => { boundsRef.current = null; };
 
     const onMouseEnter = () => {
       boundsRef.current = wrapper.getBoundingClientRect();
@@ -91,12 +98,16 @@ export default function Magnetic({
   if (disabled) return <>{children}</>;
 
   return (
-    <div style={{ perspective: "1000px", display: "inline-block" }}>
+    <div
+      className={cn(fullWidth && "block w-full", className)}
+      style={{ perspective: "1000px", display: fullWidth ? "block" : "inline-block" }}
+    >
       <div
         ref={wrapperRef}
+        className={cn(fullWidth && "block w-full")}
         style={{
           transformStyle: "preserve-3d",
-          display: "inline-block",
+          display: fullWidth ? "block" : "inline-block",
           isolation: "isolate",
           willChange: "transform",
         }}
