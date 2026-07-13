@@ -116,9 +116,7 @@ export default function RootLayout({
           <CustomCursor />
           <Header />
           <PageTransition>
-            <SmoothScroller>
               {children}
-            </SmoothScroller>
           </PageTransition>
         </ThemeProvider>
       </body>

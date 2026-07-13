@@ -15,7 +15,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCardProps) {
   return (
-    <Magnetic fullWidth>
+    <Magnetic fullWidth strength={0}>
       <div
         className={cn(
           "project-card-inner group1 relative flex flex-col w-full h-95 overflow-hidden rounded-xl",

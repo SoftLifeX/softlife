@@ -62,7 +62,7 @@ export function Tag({ icon, label, className }: TagProps) {
   };
 
   return (
-    <Magnetic strength={0.4}>
+    <Magnetic strength={0.2}>
       <div
         ref={containerRef}
         onMouseEnter={handleMouseEnter}
