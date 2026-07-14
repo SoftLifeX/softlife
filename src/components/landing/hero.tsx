@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { SplitText } from "gsap/SplitText";
 import { gsap } from "@/lib/gsap-init";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { usePageReady } from "@/hooks/usePageReady";
 import { useRevealMask } from "@/hooks/useRevealMask";
 import { useGsapScope } from "@/hooks/useGsapScope";
 import { EASE } from "@/lib/animations/tokens";
+import { AnchorLink } from "../shared/anchor-link";
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -19,6 +20,13 @@ export default function Hero() {
   const heroWidthRef = useRef<HTMLDivElement | null>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
 
+  // New refs — the "Start a conversation" CTA link itself, and the
+  // arrow-icon wrapper inside it. These mirror the text reveal (simple
+  // opacity in, then opacity out on scroll) instead of just snapping
+  // visible with the rest of .link-container.
+  const ctaLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const ctaIconRef = useRef<HTMLSpanElement | null>(null);
+
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
   const ready = usePageReady();
 
@@ -26,6 +34,16 @@ export default function Hero() {
   // alongside the pointer-events toggle below, in case anything ever calls
   // these handlers programmatically rather than via a real DOM hover.
   const interactionsReady = useRef(false);
+
+  const [ctaPos, setCtaPos] = useState({ x: 50, y: 50 });
+  const [ctaHovered, setCtaHovered] = useState(false);
+
+  const handleCtaMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setCtaPos({ x, y });
+  };
 
   const onHeadingEnter = () => {
     if (!interactionsReady.current) return;
@@ -50,6 +68,9 @@ export default function Hero() {
         visibility: "visible",
         width: 0,
       });
+      // Keep the CTA link + icon in sync with the reduced-motion fallback
+      // for everything else — just fully visible, no animation.
+      gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 1 });
       gsap.set(headingRef.current, { pointerEvents: "auto" });
       interactionsReady.current = true;
       window.dispatchEvent(new CustomEvent("hero-animations-complete"));
@@ -126,6 +147,10 @@ export default function Hero() {
         yPercent: 100,
         opacity: 0,
       });
+      // CTA link + its icon start hidden too — they'll fade in alongside
+      // the "Start a conversation" text instead of just appearing with
+      // the rest of .link-container.
+      gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 0 });
       gsap.set(heroWidthRef.current, { width: 0 });
 
       const scrollExit = (trigger: Element | null) => ({
@@ -136,12 +161,18 @@ export default function Hero() {
         scrollTrigger: { trigger, start: "30% top", end: "+=10%", scrub: true },
       });
 
+      // Same scroll-out trigger as the text, but opacity only — no
+      // yPercent — since the CTA link/icon only ever fade, they don't
+      // translate like the split text lines do.
+      const scrollExitOpacityOnly = (trigger: Element | null) => ({
+        opacity: 0,
+        ease: EASE,
+        scrollTrigger: { trigger, start: "30% top", end: "+=10%", scrub: true },
+      });
+
       blocksSweepDone.then(() => {
         if (!sectionRef.current) return;
 
-        // Hover becomes valid the instant the block has actually swept
-        // away — same gate as the text reveal, so there's no window where
-        // the block is gone but hover still isn't live (or vice versa).
         interactionsReady.current = true;
         gsap.set(headingRef.current, { pointerEvents: "auto" });
 
@@ -156,7 +187,7 @@ export default function Hero() {
           xPercent: 0,
           opacity: 1,
           stagger: 0.05,
-          duration: 0.6,
+          duration: 0.4,
           ease: EASE,
           onComplete: () => {
             gsap.to(titleSplit.words, {
@@ -186,7 +217,7 @@ export default function Hero() {
             {
               yPercent: 0,
               opacity: 1,
-              duration: 0.8,
+              duration: 0.6,
               stagger: 0.05,
               ease: EASE,
               onComplete: () => {
@@ -197,6 +228,24 @@ export default function Hero() {
             position
           );
         });
+
+        tl.to(
+          [ctaLinkRef.current, ctaIconRef.current],
+          {
+            opacity: 1,
+            duration: 0.6,
+            stagger: 0.05,
+            ease: EASE,
+            onComplete: () => {
+              gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 1 });
+              gsap.to(
+                [ctaLinkRef.current, ctaIconRef.current],
+                scrollExitOpacityOnly(containerRef.current)
+              );
+            },
+          },
+          "<"
+        );
 
         tl.to(
           heroWidthRef.current,
@@ -276,20 +325,52 @@ export default function Hero() {
         <div className="flex flex-col md:flex-row w-full items-start md:justify-center md:items-center">
           <div className="relative w-fit">
             <div className="link-container gsap-hide relative flex flex-col md:flex-row items-start md:justify-center md:items-center w-full gap-4 mb-8 md:mb-0">
-              <Link href="#contact" className="link relative inline-block text-sm text-primary-foreground group">
-                <span className="relative block h-[1.2em] overflow-hidden z-10">
-                  <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-8">
-                    Start A Conversation
+              <AnchorLink
+                ref={ctaLinkRef}
+                href="#contact"
+                onMouseEnter={(e) => {
+                  handleCtaMove(e);
+                  setCtaHovered(true);
+                }}
+                onMouseMove={handleCtaMove}
+                onMouseLeave={() => setCtaHovered(false)}
+                className="link group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground text-primary-foreground text-sm tracking-wide hover:border-foreground transition-colors duration-500 overflow-hidden"
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-foreground"
+                  style={{
+                    clipPath: `circle(${ctaHovered ? 150 : 0}% at ${ctaPos.x}% ${ctaPos.y}%)`,
+                    opacity: ctaHovered ? 1 : 0,
+                    transition: "clip-path 0.5s var(--ease-custom), opacity 0.5s var(--ease-custom)",
+                  }}
+                />
+                <span className="relative z-10 block h-[1.2em] overflow-hidden">
+                  <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+                    Start a conversation
                   </span>
-                  <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
-                    Start A Conversation
+                  <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full group-hover:text-background">
+                    Start a conversation
                   </span>
                 </span>
                 <span
-                  ref={heroWidthRef}
-                  className="absolute left-0 right-0 -bottom-px h-px bg-current z-0 origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom) group-hover:origin-right group-hover:scale-x-0"
-                />
-              </Link>
+                  ref={ctaIconRef}
+                  className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden rotate-135"
+                >
+                  <svg
+                    width="14" height="14" viewBox="0 0 14 14" fill="none"
+                    className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5 group-hover:text-foreground"
+                  >
+                    <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <svg
+                    width="14" height="14" viewBox="0 0 14 14" fill="none"
+                    className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150 group-hover:text-background"
+                  >
+                    <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </AnchorLink>
 
               <Link href="/resume.pdf" target="_blank" download className="link relative inline-block text-sm text-primary-foreground group">
                 <span className="relative block h-[1.2em] overflow-hidden z-10">

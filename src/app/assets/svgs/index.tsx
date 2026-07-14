@@ -1,4 +1,3 @@
-// components/icons/index.ts
 import { ComponentType, memo as reactMemo } from "react";
 
 import Html from "./html";
@@ -21,10 +20,15 @@ import GithubIcon from "./githubIcon";
 import tRPC from "./tRPC";
 import prisma from "./prisma";
 import mongoDB from "./mongoDB";
+import Expo from "./expo";
+import Docker from "./docker";
+import Vercel from "./vercel";
+import GraphQl from "./graphql";
+import PostgreSQL from "./postgresql";
+import Redis from "./redis";
+import Redux from "./redux";
+import Zustand from "./zustand";
 
-/**
- * Memo wrapper for SVG components
- */
 const memo = <P,>(Comp: ComponentType<P>) =>
   reactMemo(Comp) as ComponentType<P>;
 
@@ -49,6 +53,14 @@ export const Icons = {
   Flutter: memo(Flutter),
   Typescript: memo(Typescript),
   GithubIcon: memo(GithubIcon),
+  Expo: memo(Expo),
+  Docker: memo(Docker),
+  Vercel: memo(Vercel),
+  GraphQl: memo(GraphQl),
+  PostgreSQL: memo(PostgreSQL),
+  Redis: memo(Redis),
+  Redux: memo(Redux),
+  Zustand: memo(Zustand),
 } as const;
 
 export type IconName = keyof typeof Icons;

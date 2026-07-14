@@ -58,7 +58,7 @@ export function useWipeReveal(options: WipeRevealOptions): WipeRevealRefs {
 
     gsap.fromTo(block, fromProps, {
       width: "100%",
-      duration: 0.4,
+      duration: 0.25,
       ease,
       scrollTrigger: {
         trigger: triggerEl,
@@ -68,10 +68,10 @@ export function useWipeReveal(options: WipeRevealOptions): WipeRevealRefs {
       onComplete: () => {
         gsap.to(block, {
           ...exitProps,
-          duration: 0.3,
+          duration: 0.15,
           ease,
           onComplete: () => {
-            gsap.to(text, { opacity: 1, duration: 0.05, ease });
+            gsap.to(text, { opacity: 1, duration: 0.01, ease });
           },
         });
       },
@@ -134,7 +134,7 @@ export function registerWipe(refs: WipeRevealRefs, options: WipeRevealOptions) {
 
   gsap.fromTo(block, fromProps, {
     width: "100%",
-    duration: 0.4,
+    duration: 0.25,
     ease,
     scrollTrigger: {
       trigger: triggerEl,
@@ -144,10 +144,10 @@ export function registerWipe(refs: WipeRevealRefs, options: WipeRevealOptions) {
     onComplete: () => {
       gsap.to(block, {
         ...exitProps,
-        duration: 0.3,
+        duration: 0.15,
         ease,
         onComplete: () => {
-          gsap.to(text, { opacity: 1, duration: 0.05, ease });
+          gsap.to(text, { opacity: 1, duration: 0.01, ease });
         },
       });
     },

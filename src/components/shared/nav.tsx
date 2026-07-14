@@ -5,8 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navlinks } from "@/lib/constants/nav-links";
 import { cn } from "@/lib/utils";
-import { gsap } from "@/lib/gsap-init";
+import { scrollToHash } from "@/lib/scroll-to-hash";
 import { useEffect, useState } from "react";
+
+// First 3 nav entries are in-page hash links (smooth-scrolled to, hash
+// pushed then cleared). The remaining entries are normal page routes and
+// get a plain Link with no scroll/hash handling at all.
+const ANCHOR_LINK_COUNT = 3;
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -51,24 +56,46 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle smooth scrolling with GSAP
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('#')) {
-      e.preventDefault();
-
-      gsap.to(window, {
-        duration: 1.5,
-        scrollTo: {
-          y: href,
-          offsetY: 0, // Adjust if you have a fixed header
-        },
-        ease: "power3.inOut",
-      });
-
-      window.history.pushState(null, '', href);
-    }
-    // External links will work normally
+  // Smooth-scroll (never a native snap) to the target section, then let
+  // scrollToHash reliably clear the hash once the scroll lands.
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    scrollToHash(href);
   };
+
+  const sharedLinkClassName = (isActive: boolean) =>
+    cn(
+      "navlink relative text-sm font-normal group w-fit",
+      "transition-all duration-500 ease-(--ease-custom)",
+      //underline
+      "before:absolute before:bottom-0 before:h-px before:w-full before:bg-foreground before:content-['']",
+      "before:origin-right before:scale-x-0 before:transition-transform before:duration-500 before:ease-(--ease-custom) hover:before:origin-left hover:before:scale-x-100",
+      isActive
+        ? " after:absolute after:top-1/2  after:rounded-full after:left-0 after:h-1.25 after:w-1.25 after:bg-invertforeground after:content-[''] after:origin-center after:scale-100 after:transition-transform after:duration-500 after:ease-(--ease-custom) hover:after:translate-x-0.5"
+        : "after:scale-0"
+    );
+
+  const linkLabel = (label: string) => (
+    // Text container for stacked animation
+    <span className="block h-[1.2em] overflow-hidden relative text-right">
+      <span
+        className={cn(
+          "block transition-all duration-500 ease-(--ease-custom)",
+          "group-hover:-translate-y-8 "
+        )}
+      >
+        {label}
+      </span>
+      <span
+        className={cn(
+          "block absolute top-full left-0 w-full transition-all duration-500 ease-(--ease-custom)",
+          "group-hover:-translate-y-full group-hover:opacity-100"
+        )}
+      >
+        {label}
+      </span>
+    </span>
+  );
 
   return (
     <nav
@@ -104,46 +131,26 @@ export default function Navbar() {
       </div>
       <div className="flex flex-row flex-wrap items-center gap-x-4 gap-y-3">
         {navlinks.map((link, i) => {
-          const isActive = link.href.startsWith('#')
+          const isAnchor = i < ANCHOR_LINK_COUNT;
+          const isActive = isAnchor
             ? activeSection === link.href
             : pathname === link.href;
 
           return (
             <span key={link.href} className="flex items-center gap-x-4">
-              <Link
-                href={link.href}
-                onClick={(e) => handleClick(e, link.href)}
-                className={cn(
-                  "navlink relative text-sm font-normal group w-fit",
-                  "transition-all duration-500 ease-(--ease-custom)",
-                  //underline
-                  "before:absolute before:bottom-0 before:h-px before:w-full before:bg-foreground before:content-['']",
-                  "before:origin-right before:scale-x-0 before:transition-transform before:duration-500 before:ease-(--ease-custom) hover:before:origin-left hover:before:scale-x-100",
-                  isActive
-                    ? " after:absolute after:top-1/2  after:rounded-full after:left-0 after:h-1.25 after:w-1.25 after:bg-invertforeground after:content-[''] after:origin-center after:scale-100 after:transition-transform after:duration-500 after:ease-(--ease-custom) hover:after:translate-x-0.5"
-                    : "after:scale-0"
-                )}
-              >
-                {/* Text container for stacked animation */}
-                <span className="block h-[1.2em] overflow-hidden relative text-right">
-                  <span
-                    className={cn(
-                      "block transition-all duration-500 ease-(--ease-custom)",
-                      "group-hover:-translate-y-8 "
-                    )}
-                  >
-                    {link.label}
-                  </span>
-                  <span
-                    className={cn(
-                      "block absolute top-full left-0 w-full transition-all duration-500 ease-(--ease-custom)",
-                      "group-hover:-translate-y-full group-hover:opacity-100"
-                    )}
-                  >
-                    {link.label}
-                  </span>
-                </span>
-              </Link>
+              {isAnchor ? (
+                <Link
+                  href={link.href}
+                  onClick={(e) => handleAnchorClick(e, link.href)}
+                  className={sharedLinkClassName(isActive)}
+                >
+                  {linkLabel(link.label)}
+                </Link>
+              ) : (
+                <Link href={link.href} className={sharedLinkClassName(isActive)}>
+                  {linkLabel(link.label)}
+                </Link>
+              )}
 
               {i === 2 && (
                 <span aria-hidden="true" className="text-foreground/30 text-xl select-none">
