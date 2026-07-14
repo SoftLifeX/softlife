@@ -22,7 +22,6 @@ export default function Contact() {
 
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
 
-  // CTA fill position tracking (mouse-following clip-path origin)
   const [ctaPos, setCtaPos] = useState({ x: 50, y: 50 });
   const [ctaHovered, setCtaHovered] = useState(false);
 
@@ -33,7 +32,6 @@ export default function Contact() {
     setCtaPos({ x, y });
   };
 
-  // Marquee runs regardless of `ready` / reduced-motion — purely decorative, non-blocking
   useEffect(() => {
     const el = marqueRef.current;
     if (!el) return;
@@ -53,7 +51,6 @@ export default function Contact() {
       gsap.set(contactWidthRef.current, { width: "100%" });
     },
 
-    // Underline draw + footer fade — no font metrics needed
     animate: () => {
       gsap.set([contactWidthRef.current, footerRef.current], { visibility: "visible" });
 
@@ -77,7 +74,6 @@ export default function Contact() {
       );
     },
 
-    // Heading / sub / link SplitText — waits fonts.ready + 1 rAF
     animateWithSplitText: (ctx) => {
       gsap.set([".contact-heading", ".contact-sub", ".contact-links"], { visibility: "visible" });
 
@@ -124,18 +120,6 @@ export default function Contact() {
 
   return (
     <section ref={contactSectionRef} id="contact" className="relative bg-foreground font-light overflow-hidden">
-      {/*<div className="relative overflow-hidden border-b border-background/10 py-3" aria-hidden="true">
-        <div ref={marqueRef} className="flex gap-12 whitespace-nowrap w-max">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="flex gap-12">
-              {["Available for work", "Open to collaboration", "Lagos, Nigeria", "Let's build something", "daniel.c.daniel.dev@gmail.com"].map((t) => (
-                <span key={t} className="text-background/25 text-xs tracking-[0.25em] uppercase">{t}</span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>*/}
-
       <div ref={containerRef} className="px py contact flex flex-col items-center justify-center min-h-[90svh]">
         <p className="contact-sub gsap-hide text-[10px] tracking-[0.4em] text-background/30 uppercase mb-6 text-center">
           get in touch
@@ -193,9 +177,20 @@ export default function Contact() {
                 Send an email
               </span>
             </span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="relative z-10 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-foreground">
-              <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <span className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden">
+              <svg
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5 group-hover:text-foreground"
+              >
+                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <svg
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150 group-hover:text-foreground"
+              >
+                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
           </Link>
 
           <Link href="/resume.pdf" target="_blank" download className="link relative inline-block text-sm text-background group">
@@ -226,7 +221,6 @@ export default function Contact() {
           ))}
         </div>
       </div>
-
     </section>
   );
 }

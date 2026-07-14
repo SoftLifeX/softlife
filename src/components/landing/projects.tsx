@@ -15,6 +15,13 @@ const INDEX_LABELS = ["01", "02", "03", "04", "05", "06", "07", "08"];
 const featured = project.slice(0, 6);
 const offsetY = ["", "md:-translate-y-15", "", "", "md:translate-y-15", "", ""];
 
+// Numeric scrub — the tween catches up to scroll position over this many
+// seconds instead of mirroring it frame-for-frame. Absorbs the little
+// momentum/rubber-band correction that happens when native scroll settles,
+// which reads as a "jump" when scrub is a boolean. Applies to every
+// scroll-driven tween in this file.
+const SCRUB = 0.4;
+
 export default function Projects() {
   const projectsRef = useRef<HTMLDivElement>(null);
   const label = useWipeRefs();
@@ -48,7 +55,7 @@ export default function Projects() {
         gsap.fromTo(
           img,
           { yPercent: -yAmt },
-          { yPercent: yAmt, ease: "none", scrollTrigger: { trigger: container, start: "top bottom", end: "bottom top", scrub: true } }
+          { yPercent: yAmt, ease: "none", scrollTrigger: { trigger: container, start: "top bottom", end: "bottom top", scrub: SCRUB } }
         );
       });
 
@@ -76,7 +83,7 @@ export default function Projects() {
 
           gsap.to(cards, {
             x: 0, y: 0, opacity: 1, scale: 1, ease: EASE, stagger: 0.15,
-            scrollTrigger: { trigger: cards[baseIndex], start: "top bottom", end: "top 45%", scrub: true },
+            scrollTrigger: { trigger: cards[baseIndex], start: "top bottom", end: "top 45%", scrub: SCRUB },
             onComplete: () => {
               gsap.set(cards, { willChange: "auto" });
             },
@@ -104,7 +111,7 @@ export default function Projects() {
           yPercent: 0,
           ease: "power2.out",
           stagger: 0.03,
-          scrollTrigger: { trigger: ".projects-heading", start: "top 85%", end: "top 60%", scrub: true },
+          scrollTrigger: { trigger: ".projects-heading", start: "top 85%", end: "top 60%", scrub: SCRUB },
         }
       );
 
@@ -116,7 +123,7 @@ export default function Projects() {
         opacity: 1,
         ease: EASE,
         stagger: 0.02,
-        scrollTrigger: { trigger: ".projectline", start: "top 80%", end: "top 65%", scrub: true },
+        scrollTrigger: { trigger: ".projectline", start: "top 80%", end: "top 65%", scrub: SCRUB },
       });
 
       ctx.add(() => () => {

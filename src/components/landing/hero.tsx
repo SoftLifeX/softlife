@@ -17,12 +17,25 @@ export default function Hero() {
   const blockRef2 = useRef<HTMLDivElement | null>(null);
   const blockRef3 = useRef<HTMLDivElement | null>(null);
   const heroWidthRef = useRef<HTMLDivElement | null>(null);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
 
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
   const ready = usePageReady();
 
-  // Set inside `animate`, awaited inside `animateWithSplitText` — this is the
-  // gate that stops text from revealing until its covering block is gone.
+  // Guards the reveal-mask hover handlers directly — belt-and-suspenders
+  // alongside the pointer-events toggle below, in case anything ever calls
+  // these handlers programmatically rather than via a real DOM hover.
+  const interactionsReady = useRef(false);
+
+  const onHeadingEnter = () => {
+    if (!interactionsReady.current) return;
+    handleMouseEnter();
+  };
+  const onHeadingLeave = () => {
+    if (!interactionsReady.current) return;
+    handleMouseLeave();
+  };
+
   let blocksSweepDone: Promise<void> = Promise.resolve();
 
   useGsapScope(sectionRef, {
@@ -37,6 +50,8 @@ export default function Hero() {
         visibility: "visible",
         width: 0,
       });
+      gsap.set(headingRef.current, { pointerEvents: "auto" });
+      interactionsReady.current = true;
       window.dispatchEvent(new CustomEvent("hero-animations-complete"));
     },
 
@@ -46,15 +61,21 @@ export default function Hero() {
         visibility: "visible",
       });
 
+      // Content under the sweeping blocks shouldn't be hoverable at all
+      // while its block is covering it — otherwise the reveal-mask hover
+      // and any hover-based custom cursor logic fire the instant the
+      // cursor crosses the area, regardless of what's visually happening.
+      gsap.set(headingRef.current, { pointerEvents: "none" });
+
       const wipeConfigs: Array<{
         el: HTMLElement | null;
         from: gsap.TweenVars;
         exitTo: gsap.TweenVars;
       }> = [
-        { el: blockRef.current, from: { width: "0%", right: "0%" }, exitTo: { width: 0, right: "100%" } },
-        { el: blockRef2.current, from: { width: "0%", left: "0%" }, exitTo: { width: 0, left: "100%" } },
-        { el: blockRef3.current, from: { width: "0%", left: "0%" }, exitTo: { width: 0, left: "100%" } },
-      ];
+          { el: blockRef.current, from: { width: "0%", right: "0%" }, exitTo: { width: 0, right: "100%" } },
+          { el: blockRef2.current, from: { width: "0%", left: "0%" }, exitTo: { width: 0, left: "100%" } },
+          { el: blockRef3.current, from: { width: "0%", left: "0%" }, exitTo: { width: 0, left: "100%" } },
+        ];
 
       const promises = wipeConfigs.map(({ el, from, exitTo }) => {
         if (!el) return Promise.resolve();
@@ -71,12 +92,9 @@ export default function Hero() {
         });
       });
 
-      blocksSweepDone = Promise.all(promises).then(() => {});
+      blocksSweepDone = Promise.all(promises).then(() => { });
     },
 
-    // Phase 2 — SplitText work. Splits are built as soon as fonts are ready
-    // (so char/line metrics are correct), but the reveal tween itself waits
-    // on `blocksSweepDone` so it never races the wipe.
     animateWithSplitText: (ctx) => {
       gsap.set(
         [".heading", ".description", ".description-large", ".link-container"],
@@ -119,7 +137,13 @@ export default function Hero() {
       });
 
       blocksSweepDone.then(() => {
-        if (!sectionRef.current) return; // unmounted mid-flight
+        if (!sectionRef.current) return;
+
+        // Hover becomes valid the instant the block has actually swept
+        // away — same gate as the text reveal, so there's no window where
+        // the block is gone but hover still isn't live (or vice versa).
+        interactionsReady.current = true;
+        gsap.set(headingRef.current, { pointerEvents: "auto" });
 
         const tl = gsap.timeline({
           onComplete: () => {
@@ -212,9 +236,10 @@ export default function Hero() {
         <div data-speed="1.1" className="relative w-full flex md:items-end pt-40 md:pt-20 pb-6 md:pb-12">
           <div className="relative w-full flex justify-end">
             <h1
+              ref={headingRef}
               className="heading gsap-hide large text-[2.4rem] md:text-[5rem] text-right leading-tight text-transparent"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={onHeadingEnter}
+              onMouseLeave={onHeadingLeave}
               role="heading"
               aria-level={1}
               aria-label="I am SoftLifeX Developer & Designer"

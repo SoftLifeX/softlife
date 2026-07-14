@@ -84,15 +84,20 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
                 View Project
               </span>
             </span>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 14 14"
-              fill="none"
-              className="transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1"
-            >
-              <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <span className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden">
+              <svg
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5"
+              >
+                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <svg
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150"
+              >
+                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
             <span
               className={cn(
                 "absolute left-0 -bottom-0.5 h-px w-[80%] bg-white/60",

@@ -21,7 +21,7 @@ export const project: Project[] = [
     bg:    "#2466F2",
     href:  "/work/givtro",
     color: "#ffffff",
-    intro: "the work speaks. i'll be quiet.",
+    intro: "A full-featured Nigerian fintech Mobile Application, built solo across the entire stack.",
     stack: ["React Native", "Expo", "Node.js", "MongoDB", "TypeScript"],
   },
   {
@@ -31,7 +31,7 @@ export const project: Project[] = [
     bg:    "#163200",
     href:  "https://supadupa-website-bysoft.vercel.app/",
     color: "#c2cabb",
-    intro: "This site isn't about me,\nit's about YOU",
+    intro: "Landing page for a SaaS product that helps small businesses sell online.",
     stack: ["Typescript", "Tailwind", "gsap", "framer-motion", "Next.js"],
   },
   {
@@ -41,7 +41,7 @@ export const project: Project[] = [
     bg:    "#cdea68",
     href:  "https://ochi-website-clone-bysoft.vercel.app/",
     color: "#0d0d0d",
-    intro: "I'm not a vendor, \nI'm an extension of your team. \nAcross the web and your brand",
+    intro: "High fidelity clone of a modern SaaS website, built to showcase my frontend skills.",
     stack: ["Typescript", "Tailwind", "gsap", "framer-motion", "Next.js"],
   },
   {
@@ -51,7 +51,7 @@ export const project: Project[] = [
     bg:    "#B3EB16",
     href:  "https://flow-website-bysoft.vercel.app/",
     color: "#0d0d0d",
-    intro: "I'm a founder too. I get it",
+    intro: "A modern, responsive landing page for a music festival, built with a focus on smooth animations and user experience.",
     stack: ["Typescript", "Tailwind", "gsap", "framer-motion", "Next.js"],
   },
   {
@@ -61,7 +61,7 @@ export const project: Project[] = [
     bg:    "#0d0d0d",
     href:  "",
     color: "#f5f3ef",
-    intro: "That's why I never do the same work twice! \neach one is a unique challenge \nand I always deliver",
+    intro: "A high fidelity clone of the Airbnb website, built to showcase my frontend skills.",
     stack: ["Typescript", "Tailwind", "Next.js", "Prisma"],
     disabled: true,
   },
@@ -72,7 +72,7 @@ export const project: Project[] = [
     bg:    "#0D1EA2",
     href:  "https://light-website-bysoft.vercel.app/",
     color: "#e8e7e3",
-    intro: "Every project is custom. \nEvery approach is collaborative. \nEvery result moves people",
+    intro: "A modern, responsive landing page for a SaaS product",
     stack: ["Typescript", "Tailwind", "gsap", "Next.js", "Motion design"],
   },
   {
