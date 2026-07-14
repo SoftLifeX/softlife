@@ -342,7 +342,7 @@ export default function Hero() {
                   style={{
                     clipPath: `circle(${ctaHovered ? 150 : 0}% at ${ctaPos.x}% ${ctaPos.y}%)`,
                     opacity: ctaHovered ? 1 : 0,
-                    transition: "clip-path 0.5s var(--ease-custom), opacity 0.5s var(--ease-custom)",
+                    transition: "clip-path 0.4s var(--ease-custom), opacity 0.4s var(--ease-custom)",
                   }}
                 />
                 <span className="relative z-10 block h-[1.2em] overflow-hidden">
