@@ -61,8 +61,9 @@ export default function Hero() {
         visibility: "visible",
         width: 0,
       });
-      
-      gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 1 });
+
+      gsap.set(ctaIconRef.current, { opacity: 1 });
+      gsap.set(ctaLinkRef.current, { scaleX: 1, opacity: 1 });
       gsap.set(headingRef.current, { pointerEvents: "auto" });
       interactionsReady.current = true;
       window.dispatchEvent(new CustomEvent("hero-animations-complete"));
@@ -135,11 +136,20 @@ export default function Hero() {
         opacity: 0,
       });
 
-      gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 0 });
+      gsap.set(ctaIconRef.current, { opacity: 0 });
+      gsap.set(ctaLinkRef.current, { scaleX: 0.2, opacity: 0 });
       gsap.set(heroWidthRef.current, { width: 0 });
 
       const scrollExit = (trigger: Element | null) => ({
         yPercent: -50,
+        opacity: 0,
+        stagger: 0.2,
+        ease: EASE,
+        scrollTrigger: { trigger, start: "30% top", end: "+=10%", scrub: true },
+      });
+
+      const scrollExitScaleX = (trigger: Element | null) => ({
+        scaleX: 0,
         opacity: 0,
         stagger: 0.2,
         ease: EASE,
@@ -212,17 +222,36 @@ export default function Hero() {
         });
 
         tl.to(
-          [ctaLinkRef.current, ctaIconRef.current],
+          ctaIconRef.current,
           {
             opacity: 1,
             duration: 0.4,
             stagger: 0.05,
             ease: EASE,
             onComplete: () => {
-              gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 1 });
+              gsap.set(ctaIconRef.current, { opacity: 1 });
               gsap.to(
-                [ctaLinkRef.current, ctaIconRef.current],
+                ctaIconRef.current,
                 scrollExitOpacityOnly(containerRef.current)
+              );
+            },
+          },
+          "<"
+        );
+
+        tl.to(
+          ctaLinkRef.current,
+          {
+            scaleX: 1,
+            opacity: 1,
+            duration: 0.4,
+            stagger: 0.05,
+            ease: EASE,
+            onComplete: () => {
+              gsap.set(ctaLinkRef.current, { scaleX: 1, opacity: 1 });
+              gsap.to(
+                ctaLinkRef.current,
+                scrollExitScaleX(containerRef.current)
               );
             },
           },
@@ -264,49 +293,49 @@ export default function Hero() {
     <section ref={sectionRef} className="px relative md:min-h-svh min-h-[85svh] bg-primary" id="#">
       <Navbar />
       <div ref={containerRef} className="hero">
-        <div data-speed="1.1" className="relative w-full flex md:items-end pt-40 md:pt-20 pb-6 md:pb-12">
+        <div data-speed="1.1" className="relative w-full flex md:items-end pt-40 md:pt-20 pb-12">
           <div className="relative w-full flex justify-end">
             <h1
               ref={headingRef}
-              className="heading gsap-hide large text-[2.4rem] md:text-[5rem] text-right leading-tight text-transparent"
+              className="heading gsap-hide large text-[2.4rem] md:text-[5rem] text-center md:text-end leading-tight text-transparent"
               onMouseEnter={onHeadingEnter}
               onMouseLeave={onHeadingLeave}
               role="heading"
               aria-level={1}
-              aria-label="I am Daniel. Developer & Designer"
+              aria-label="Daniel c. Daniel Developer & Designer"
             >
               Daniel c. Daniel. <br /> Developer &amp; Designer <br />
             </h1>
 
             <div
               ref={revealRef}
-              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-[2.4rem] md:text-[5rem] z-10 bg-primary text-end text-foreground"
+              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-[2.4rem] md:text-[5rem] z-10 bg-primary text-center md:text-end text-foreground"
               style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
               aria-hidden="true"
             >
-              Building Products People Actually Want To Click
+              Building Products People <br /> Actually Want To Click
             </div>
 
             <div ref={blockRef} className="gsap-hide absolute w-0 h-full top-0 right-0 pointer-events-none bg-foreground" />
           </div>
         </div>
 
-        <div className="pb-6">
+        <div className="pb-12">
           <div className="relative w-fit">
-            <p className="description relative gsap-hide text-sm text-foreground">
+            <p className="description relative gsap-hide text-sm text-foreground text-center md:text-left">
               I&apos;m Daniel c. Daniel, Known online as softlifeX. <br />
               Currently based in Lagos, Nigeria <br />
             </p>
-            <p className="description-large gsap-hide text-foreground text-xl md:text-2xl">
+            <p className="description-large gsap-hide text-foreground text-xl md:text-2xl text-center md:text-left">
               Building digital products since 2022
             </p>
             <div ref={blockRef2} className="gsap-hide absolute w-0 h-full top-0 right-0 pointer-events-none bg-foreground" />
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row w-full items-start md:justify-center md:items-center">
+        <div className="flex flex-col md:flex-row w-full md:justify-center items-center">
           <div className="relative w-fit">
-            <div className="link-container gsap-hide relative flex flex-col md:flex-row items-start md:justify-center md:items-center w-full gap-4 mb-8 md:mb-0">
+            <div className="link-container gsap-hide relative flex flex-col md:flex-row md:justify-center items-center w-full gap-4 mb-8 md:mb-0">
               <AnchorLink
                 ref={ctaLinkRef}
                 href="#contact"
@@ -316,7 +345,7 @@ export default function Hero() {
                 }}
                 onMouseMove={handleCtaMove}
                 onMouseLeave={() => setCtaHovered(false)}
-                className="link group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground text-primary-foreground text-sm tracking-wide hover:border-foreground transition-colors duration-500 overflow-hidden"
+                className="link group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground text-primary-foreground text-sm tracking-wide hover:border-foreground transition-colors duration-500 overflow-hidden origin-left"
               >
                 <span
                   aria-hidden="true"

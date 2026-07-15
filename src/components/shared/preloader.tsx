@@ -79,29 +79,30 @@ export default function Preloader() {
       };
 
       const textHalfVh = 12;
+      const textHalfVw = 10;
 
       tl = gsap.timeline();
 
-      tl.to(softChars, { x: 0, opacity: 1, duration: 0.55, stagger: 0.04, ease });
-      tl.to(lifeChars, { x: 0, opacity: 1, duration: 0.55, stagger: 0.04, ease }, "<0.12");
+      tl.to(softChars, { x: 0, opacity: 1, duration: 0.6, stagger: 0.04, ease });
+      tl.to(lifeChars, { x: 0, opacity: 1, duration: 0.6, stagger: 0.04, ease }, "<0.2");
 
-      tl.to({}, { duration: 0.18 });
+      tl.to({}, { duration: 0.25 });
 
       tl.add("split");
-      tl.to(softEl, { x: "-12vw", duration: 0.45, ease: snap }, "split");
-      tl.to(lifeEl, { x: "12vw", duration: 0.45, ease: snap }, "split");
+      tl.to(softEl, { x: `-${textHalfVw}vw`, duration: 0.5, ease: snap }, "split");
+      tl.to(lifeEl, { x: `${textHalfVw}vw`, duration: 0.5, ease: snap }, "split");
       tl.to(hole, {
-        left: 40,
-        right: 60,
+        left: 50 - textHalfVw,
+        right: 50 + textHalfVw,
         top: 50 - textHalfVh,
         bottom: 50 + textHalfVh,
-        duration: 0.45,
+        duration: 0.5,
         ease: snap,
         onUpdate: applyClip,
       }, "split");
 
       tl.to({}, {
-        duration: 0.12,
+        duration: 0.2,
         onStart: () => {
           window.dispatchEvent(new CustomEvent("preloader-complete"));
         },
@@ -112,12 +113,12 @@ export default function Preloader() {
         right: 100,
         top: 0,
         bottom: 100,
-        duration: 0.5,
+        duration: 0.6,
         ease: snap,
         onUpdate: applyClip,
         onComplete: () => setMounted(false),
       });
-      tl.to([softEl, lifeEl], { opacity: 0, duration: 0.15 }, "-=0.35");
+      tl.to([softEl, lifeEl], { opacity: 0, duration: 0.25 }, "-=0.35");
     });
 
     return () => {

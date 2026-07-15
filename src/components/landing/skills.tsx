@@ -243,7 +243,7 @@ export default function Skills() {
         <div
           ref={dividerRef}
           aria-hidden="true"
-          className="hidden md:block absolute left-1/2 top-11 h-full w-[0.5px] -translate-x-1/2 bg-primary-foreground"
+          className="hidden md:block absolute left-1/2 top-11 h-[90%] w-[0.5px] -translate-x-1/2 bg-primary-foreground"
         />
 
         <div className="flex flex-col gap-8 md:w-1/2 md:pl-10">
