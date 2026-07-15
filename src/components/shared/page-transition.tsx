@@ -29,7 +29,6 @@ export default function PageTransition({ children }: { children: React.ReactNode
 
     const tl = gsap.timeline();
 
-    // 1. Fade in — covers outgoing page while still visible
     tl.to(overlay, {
       opacity: 1,
       duration: 0.3,
@@ -39,8 +38,6 @@ export default function PageTransition({ children }: { children: React.ReactNode
       },
     });
 
-    // 2. Opaque — reset scroll, kill stale triggers, swap page key
-    //    Everything happens here, invisible to the user
     tl.add(() => {
       ScrollTrigger.killAll();
 
@@ -48,22 +45,18 @@ export default function PageTransition({ children }: { children: React.ReactNode
       const smoother = (window as any).__smoother;
       if (smoother) smoother.scrollTo(0, false);
 
-      // Key change forces full unmount + remount of the page tree
-      // so every useGSAP runs fresh and all animations are ready to play
       setPageKey(pathname);
     });
 
-    // 3. One frame for React to commit the new tree before revealing
     tl.to({}, { duration: 0.06 });
 
-    // 4. Fade out — new page revealed clean from the top
     tl.to(overlay, {
       opacity: 0,
       duration: 0.4,
       ease: "power2.inOut",
       onComplete: () => {
         overlay.style.pointerEvents = "none";
-        // Gate signal — usePreloaderDone listens for this on subsequent navigations
+        
         window.dispatchEvent(new CustomEvent("page-transition-complete"));
       },
     });

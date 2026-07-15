@@ -22,8 +22,6 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
   useEffect(() => {
     if (!wrapRef.current || !contentRef.current) return;
 
-    // Only enable smooth scroll on pointer devices — touch devices get
-    // native scroll (smoothTouch causes jank on low-end Android).
     const mm = gsap.matchMedia();
 
     mm.add("(pointer: fine)", () => {
@@ -36,7 +34,6 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
         smoothTouch:     0,
       });
 
-      // Expose so PageTransition can scroll to top between route changes
       (window as any).__smoother = smoother;
 
       return () => {

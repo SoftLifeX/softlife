@@ -19,13 +19,9 @@ export const AnchorLink = forwardRef<HTMLAnchorElement, AnchorLinkProps>(
       if (e.defaultPrevented) return;
 
       if (isHash) {
-        // Same pattern as Nav: prevent the native jump, smooth-scroll with
-        // GSAP instead, and let scrollToHash handle pushing + reliably
-        // clearing the hash once the scroll lands (or gets interrupted).
         e.preventDefault();
         scrollToHash(hrefString);
       }
-      // Non-hash hrefs are left alone — normal Next.js navigation applies.
     };
 
     return (

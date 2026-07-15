@@ -6,11 +6,9 @@ import { usePathname } from "next/navigation";
 import { navlinks } from "@/lib/constants/nav-links";
 import { cn } from "@/lib/utils";
 import { scrollToHash } from "@/lib/scroll-to-hash";
-import { useEffect, useState } from "react";
+import { gsap } from "@/lib/gsap-init";
+import { useEffect, useRef, useState } from "react";
 
-// First 3 nav entries are in-page hash links (smooth-scrolled to, hash
-// pushed then cleared). The remaining entries are normal page routes and
-// get a plain Link with no scroll/hash handling at all.
 const ANCHOR_LINK_COUNT = 3;
 
 export default function Navbar() {
@@ -18,6 +16,34 @@ export default function Navbar() {
   const [activeSection, setActiveSection] = useState("");
 
   const isLanding = pathname === "/";
+
+  const noteRef = useRef<HTMLSpanElement | null>(null);
+  const noteUnderlineRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (!noteRef.current) return;
+
+    const tl = gsap.timeline({ delay: 1.2 });
+
+    tl.fromTo(
+      noteRef.current,
+      { opacity: 0, y: 6 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+    );
+
+    if (noteUnderlineRef.current) {
+      tl.fromTo(
+        noteUnderlineRef.current,
+        { width: 0 },
+        { width: "100%", duration: 0.5, ease: "power3.out" },
+        "<0.1"
+      );
+    }
+
+    return () => {
+      tl.kill();
+    };
+  }, []);
 
   // Clear active section and URL hash when pathname changes
   useEffect(() => {
@@ -51,13 +77,11 @@ export default function Navbar() {
       }
     };
 
-    handleScroll(); // Run on mount
+    handleScroll(); 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Smooth-scroll (never a native snap) to the target section, then let
-  // scrollToHash reliably clear the hash once the scroll lands.
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     scrollToHash(href);
@@ -67,7 +91,6 @@ export default function Navbar() {
     cn(
       "navlink relative text-sm font-normal group w-fit",
       "transition-all duration-500 ease-(--ease-custom)",
-      //underline
       "before:absolute before:bottom-0 before:h-px before:w-full before:bg-foreground before:content-['']",
       "before:origin-right before:scale-x-0 before:transition-transform before:duration-500 before:ease-(--ease-custom) hover:before:origin-left hover:before:scale-x-100",
       isActive
@@ -76,7 +99,6 @@ export default function Navbar() {
     );
 
   const linkLabel = (label: string) => (
-    // Text container for stacked animation
     <span className="block h-[1.2em] overflow-hidden relative text-right">
       <span
         className={cn(
@@ -125,6 +147,29 @@ export default function Navbar() {
               )}
             >
               code by softlifex
+            </span>
+          </span>
+
+          <span
+            ref={noteRef}
+            className="pointer-events-none absolute left-0 top-full z-40 mt-3 flex items-center gap-2 whitespace-nowrap text-[0.7rem] tracking-wide text-foreground/60 opacity-0"
+          >
+            <span
+              aria-hidden="true"
+              className="relative flex h-1.5 w-1.5 shrink-0 items-center justify-center"
+            >
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foreground/40" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foreground/70" />
+            </span>
+
+            <span className="relative">
+              This whole site reacts — that was the point.
+              <span
+                ref={noteUnderlineRef}
+                aria-hidden="true"
+                className="absolute left-0 -bottom-1 h-px bg-foreground/30"
+                style={{ width: 0 }}
+              />
             </span>
           </span>
         </p>

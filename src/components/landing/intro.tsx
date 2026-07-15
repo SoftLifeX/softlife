@@ -27,7 +27,6 @@ export default function Intro() {
       gsap.set(".intro", { visibility: "visible", opacity: 1 });
     },
 
-    // Wipe label — no font metrics needed, fires immediately
     animate: () => {
       gsap.set(introLabel.textRef.current, { visibility: "visible" });
       registerWipe(introLabel, {
@@ -39,8 +38,7 @@ export default function Intro() {
         ease: EASE,
       });
     },
-
-    // SplitText work — waits fonts.ready + 1 rAF
+    
     animateWithSplitText: (ctx) => {
       gsap.set(".about", { visibility: "visible" });
       const aboutSplit = new SplitText(".about", { type: "chars, words, lines", mask: "lines" });
@@ -96,7 +94,7 @@ export default function Intro() {
           onMouseLeave={handleMouseLeave}
         >
           I&apos;m an award winning Full-stack &amp; Mobile Software Engineer and designer,
-          with 4 years of experience focused on crafting high quality digital &amp; immersive experiences
+          with 4 years of experience.
         </p>
 
         <div
@@ -104,9 +102,8 @@ export default function Intro() {
           className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-[5rem] z-10 bg-background"
           style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
         >
-          A Developer who&apos;s skills haven&apos;t been replaced by chatGPT - (&ldquo;yet&ldquo;),
-          specialized in motion design, I make stuff MOVE! - only when you pay me enough...
-          Or bribe me with sweets
+          A Dev still not replaced by AI - (&ldquo;yet&ldquo;),
+          I make stuff MOVE!, only when you pay me enough.. Or bribe me with sweets
         </div>
       </div>
     </section>

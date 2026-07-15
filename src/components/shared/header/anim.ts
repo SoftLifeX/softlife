@@ -1,8 +1,6 @@
 import { TargetAndTransition, Variants } from "framer-motion";
 
-/**
- * Menu container slide animation
- */
+// Menu container slide animation
 export const menuSlide: Variants = {
   initial: { x: "calc(100% + 100px)" },
   enter: { x: 0, transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } },
@@ -12,9 +10,8 @@ export const menuSlide: Variants = {
   },
 };
 
-/**
- * Menu item slide animation with stagger via `custom`
- */
+// Menu item slide animation with stagger via `custom`
+
 export const slide: {
   initial: TargetAndTransition;
   enter: (i: number) => TargetAndTransition;
@@ -31,9 +28,8 @@ export const slide: {
   }),
 };
 
-/**
- * Dot indicator scale animation
- */
+// Dot indicator scale animation
+
 export const scale: Variants = {
   open: { scale: 1, transition: { duration: 0.3 } },
   closed: { scale: 0, transition: { duration: 0.4 } },

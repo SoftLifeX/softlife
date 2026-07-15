@@ -168,7 +168,7 @@ export default function Skills() {
   }: TechStackCategory & { originalIndex: number }) => (
     <div key={category} className="skill-category">
       <h3 className="relative inline-block group">
-        <span className="skill-category-heading gsap-hide block text-sm tracking-wide text-primary-foreground uppercase">
+        <span className="skill-category-heading gsap-hide block text-sm tracking-wide text-primary-foreground">
           {category}
         </span>
         <span
@@ -232,9 +232,6 @@ export default function Skills() {
         </p>
       </div>
 
-      {/* Two equal-width columns on desktop, a single stacked column on
-          mobile. The divider is `hidden` below md so it never affects
-          mobile layout/height even though it stays mounted. */}
       <div
         ref={categoriesContainerRef}
         className="pt-10 relative flex flex-col md:flex-row gap-8 md:gap-0"

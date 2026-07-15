@@ -1,14 +1,4 @@
 "use client";
-/**
- * useRevealMask
- *
- * Manages the circular clip-path reveal effect used in Hero and Intro.
- *
- * CHANGED: was its own `requestAnimationFrame` loop — a second scheduler
- * running alongside CustomCursor's own rAF loop AND GSAP's internal ticker,
- * three clocks doing the same job in the same page. Now registered on
- * gsap.ticker, same as CustomCursor — one shared clock for the whole site.
- */
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap-init";
@@ -19,11 +9,8 @@ interface ExtendedCSSProperties extends CSSStyleDeclaration {
 }
 
 interface UseRevealMaskOptions {
-  /** Fully-expanded radius in px */
   radius?: number;
-  /** Easing factor when expanding (0–1) */
   expandEase?: number;
-  /** Easing factor when collapsing (0–1) */
   collapseEase?: number;
 }
 
@@ -37,8 +24,7 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
   const maskActiveRef = useRef(false);
   const hasMoved = useRef(false);
   const [hovered, setHovered] = useState(false);
-
-  // ── Single tick, registered on GSAP's shared ticker ──────────────────────
+  
   useEffect(() => {
     const el = revealRef.current;
     if (!el) return;
@@ -68,7 +54,6 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
     return () => gsap.ticker.remove(tick);
   }, [radius, expandEase, collapseEase]);
 
-  // ── Scroll: collapse mask ─────────────────────────────────────────────────
   useEffect(() => {
     let lastY = window.scrollY;
     let ticking = false;
@@ -91,7 +76,6 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // ── Mouse tracking: only needs to set hasMoved ────────────────────────────
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!hasMoved.current && (Math.abs(e.movementX) > 0 || Math.abs(e.movementY) > 0)) {
@@ -102,7 +86,6 @@ export function useRevealMask(options: UseRevealMaskOptions = {}) {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleMouseEnter = () => {
     if (!hasMoved.current) return;
     maskActiveRef.current = true;

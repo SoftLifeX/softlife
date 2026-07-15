@@ -2,8 +2,6 @@
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { WipeRevealRefs } from "@/hooks/useWipeReveal";
-
-/** Creates the three refs WipeLabel + registerWipe both need — call once per label in your component */
 export function useWipeRefs(): WipeRevealRefs {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const widthRef = useRef<HTMLDivElement | null>(null);

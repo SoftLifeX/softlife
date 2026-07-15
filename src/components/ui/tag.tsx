@@ -68,7 +68,7 @@ export function Tag({ icon, label, className }: TagProps) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={cn(
-          "relative inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm overflow-hidden cursor-default",
+          "relative inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm overflow-hidden cursor-default",
           "bg-tag-background backdrop-blur-sm",
           "transition-all duration-200 ease-(--ease-custom)",
           className
@@ -78,11 +78,11 @@ export function Tag({ icon, label, className }: TagProps) {
         <Icon className="w-fit h-fit shrink-0" />
         <span className="whitespace-nowrap text-tag-foreground text-sm">{label}</span>
 
-        {/* Wipe overlay — same content, inverted tag tokens */}
+        {/* Wipe overlay */}
         <div
           ref={overlayRef}
           style={{ clipPath: BOTTOM_RIGHT_CLIP }}
-          className="absolute inset-0 rounded-lg bg-tag-foreground px-3 py-2 flex items-center gap-2 pointer-events-none"
+          className="absolute inset-0 rounded-lg bg-tag-foreground px-3 py-1 flex items-center gap-2 pointer-events-none"
         >
           <Icon className="w-fit h-fit shrink-0 text-tag-background" />
           <span className="whitespace-nowrap text-tag-background text-sm">{label}</span>

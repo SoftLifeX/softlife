@@ -145,17 +145,13 @@ export default function GivtroPage() {
             );
         },
 
-        // Phase 1 — everything that doesn't depend on SplitText's font metrics.
         animate: () => {
-            // Meta rows — fade up on load
             gsap.set(".g-meta", { visibility: "visible", y: 16, opacity: 0 });
             gsap.to(".g-meta", { y: 0, opacity: 1, duration: 0.7, stagger: 0.08, ease: EASE, delay: 0.4 });
 
-            // Hero gallery image
             gsap.set(".g-gallery-item", { visibility: "visible", opacity: 0, scale: 0.98 });
             gsap.to(".g-gallery-item", { opacity: 1, scale: 1, duration: 0.8, ease: EASE, delay: 0.2 });
 
-            // Pills
             const pills = gsap.utils.toArray<HTMLElement>(".g-pill");
             gsap.set(pills, { visibility: "visible", scale: 0.88, opacity: 0, transformOrigin: "50% 50%", willChange: "transform, opacity" });
             gsap.to(pills, {
@@ -166,7 +162,6 @@ export default function GivtroPage() {
                 },
             });
 
-            // Section label wipes
             [
                 { refs: overviewLabel, offset: "top 90%" },
                 { refs: featuresLabel, offset: "top 90%" },
@@ -177,14 +172,12 @@ export default function GivtroPage() {
                 registerWipe(refs, { trigger: () => refs.textRef.current, direction: "left", startOffset: offset, ease: EASE });
             });
 
-            // Feature cards
             gsap.set(".g-feature", { visibility: "visible", y: 32, opacity: 0 });
             gsap.to(".g-feature", {
                 y: 0, opacity: 1, duration: 0.7, stagger: 0.07, ease: EASE,
                 scrollTrigger: { trigger: ".g-features-grid", start: "top 80%", toggleActions: "play none none none" },
             });
-
-            // Engineering divider lines
+            
             [mobileLineRef, backendLineRef].forEach((lineRef) => {
                 gsap.from(lineRef.current, {
                     scaleX: 0,
@@ -194,14 +187,12 @@ export default function GivtroPage() {
                 });
             });
 
-            // Engineering list items
             gsap.set(".g-eng-item", { visibility: "visible", x: -20, opacity: 0 });
             gsap.to(".g-eng-item", {
                 x: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: EASE,
                 scrollTrigger: { trigger: ".g-eng-grid", start: "top 75%", toggleActions: "play none none none" },
             });
 
-            // Screens — scroll-driven card sweep
             const screensSection = pageRef.current?.querySelector<HTMLElement>(".g-screens-section");
             const screenCards = pageRef.current?.querySelectorAll<HTMLElement>(".g-screen-card");
 
@@ -245,7 +236,6 @@ export default function GivtroPage() {
             }
         },
 
-        // Phase 2 — SplitText work, waits fonts.ready + 1 rAF (handled by useGsapScope).
         animateWithSplitText: (ctx) => {
             gsap.set(".g-title, .g-overview-heading, .g-overview-body", { visibility: "visible" });
 

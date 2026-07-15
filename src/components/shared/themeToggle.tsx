@@ -33,7 +33,6 @@ const ThemeToggle: React.FC = () => {
 
   const isLight = resolvedTheme === "light";
 
-  // ── Stable ray animation — no stale closure ───────────────────────────────
   const animateRays = useCallback((show: boolean) => {
     const rays = raysRef.current.filter(Boolean) as SVGPathElement[];
     if (!rays.length) return;
@@ -69,7 +68,6 @@ const ThemeToggle: React.FC = () => {
     }
   }, []);
 
-  // ── Mount-only: set initial dasharray state on rays ───────────────────────
   useEffect(() => {
     if (!mounted) return;
     const rays = raysRef.current.filter(Boolean) as SVGPathElement[];
@@ -82,17 +80,13 @@ const ThemeToggle: React.FC = () => {
         transformOrigin: "50% 50%",
       });
     });
-  // Intentionally runs once after mount — raysRef is stable
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
 
-  // ── Theme change: drive rays to match current theme ───────────────────────
   useEffect(() => {
     if (!mounted) return;
     animateRays(isLight);
   }, [mounted, isLight, animateRays]);
 
-  // ── Toggle handler ────────────────────────────────────────────────────────
   const handleToggle = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -107,10 +101,8 @@ const ThemeToggle: React.FC = () => {
       onComplete: () => setIsAnimating(false),
     });
 
-    // Ray animation fires immediately
     tl.add(() => animateRays(nextTheme === "light"), 0);
 
-    // Morph the body shape
     if (themePathRef.current) {
       tl.to(
         themePathRef.current,
@@ -125,7 +117,6 @@ const ThemeToggle: React.FC = () => {
     }
   };
 
-  // Prevent layout shift while next-themes resolves
   if (!mounted) return <div className="w-10 h-10" />;
 
   return (
@@ -157,8 +148,6 @@ const ThemeToggle: React.FC = () => {
             />
           ))}
         </g>
-
-        {/* Sun / moon body */}
         <path
           ref={themePathRef}
           d={isLight ? SUN_PATH : MOON_PATH}

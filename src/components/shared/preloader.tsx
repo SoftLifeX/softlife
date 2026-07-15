@@ -25,7 +25,6 @@ function buildClip(
 
 export default function Preloader() {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const ooRef = useRef<HTMLDivElement>(null);
   const softRef = useRef<HTMLDivElement>(null);
   const lifeRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(true);
@@ -38,31 +37,37 @@ export default function Preloader() {
       if (cancelled) return;
 
       const overlay = overlayRef.current;
-      const ooEl = ooRef.current;
       const softEl = softRef.current;
       const lifeEl = lifeRef.current;
-      if (!overlay || !ooEl || !softEl || !lifeEl) return;
+      if (!overlay || !softEl || !lifeEl) return;
 
-      // Reveal containers (they start as visibility:hidden via .gsap-hide)
-      gsap.set([ooEl, softEl, lifeEl], { visibility: "visible" });
+      gsap.set([softEl, lifeEl], { visibility: "visible" });
 
-      const splitChars = (el: HTMLElement, text: string, cls: string) => {
-        el.innerHTML = [...text]
-          .map((ch) =>
-            ch === " "
-              ? `<span style="display:inline-block;width:0.3em"> </span>`
-              : `<span style="display:inline-block;overflow:hidden;vertical-align:top">`
-              + `<span class="${cls}" style="display:inline-block;line-height:1">${ch}</span></span>`
-          )
-          .join("");
-        return Array.from(el.querySelectorAll<HTMLElement>(`.${cls}`));
+      const computedFont = `500 ${getComputedStyle(softEl).fontSize} system-ui, sans-serif`;
+      const measureCtx = document.createElement("canvas").getContext("2d");
+      const nWidth = measureCtx
+        ? measureCtx.measureText.call(Object.assign(measureCtx, { font: computedFont }), "n").width
+        : 40;
+      const half = nWidth / 2;
+
+      const nHalfSpan = (side: "left" | "right", cls: string) => {
+        const shift = side === "left" ? 0 : -half;
+        return `<span style="display:inline-block;width:${half}px;height:1em;overflow:hidden;vertical-align:top;position:relative;line-height:1">
+          <span class="${cls}" style="display:inline-block;position:absolute;left:${shift}px;top:0;line-height:1">n</span>
+        </span>`;
       };
 
-      const ooChars = splitChars(ooEl, "Only One", "oo");
-      const softChars = splitChars(softEl, "soft", "sf");
-      const lifeChars = splitChars(lifeEl, "life", "lf");
+      const buildCharSpan = (ch: string, cls: string) =>
+        `<span style="display:inline-block;overflow:hidden;vertical-align:top"><span class="${cls}" style="display:inline-block;line-height:1">${ch}</span></span>`;
 
-      gsap.set(ooChars, { x: -40, opacity: 0 });
+      softEl.innerHTML =
+        buildCharSpan("d", "sf") + buildCharSpan("a", "sf") + nHalfSpan("left", "sf");
+      lifeEl.innerHTML =
+        nHalfSpan("right", "lf") + buildCharSpan("i", "lf") + buildCharSpan("e", "lf") + buildCharSpan("l", "lf");
+
+      const softChars = Array.from(softEl.querySelectorAll<HTMLElement>(".sf"));
+      const lifeChars = Array.from(lifeEl.querySelectorAll<HTMLElement>(".lf"));
+
       gsap.set(softChars, { x: 60, opacity: 0 });
       gsap.set(lifeChars, { x: 60, opacity: 0 });
 
@@ -77,30 +82,26 @@ export default function Preloader() {
 
       tl = gsap.timeline();
 
-      tl.to(ooChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.05, ease: ease });
-      tl.to(softChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: ease }, "-=0.65");
-      tl.to(lifeChars, { x: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: ease }, "<0.18");
+      tl.to(softChars, { x: 0, opacity: 1, duration: 0.55, stagger: 0.04, ease });
+      tl.to(lifeChars, { x: 0, opacity: 1, duration: 0.55, stagger: 0.04, ease }, "<0.12");
 
-      tl.to({}, { duration: 0.75 });
-
-      tl.to(ooChars, { y: -18, opacity: 0, duration: 0.3, stagger: 0.018, ease: ease });
-      tl.to({}, { duration: 0.2 });
+      tl.to({}, { duration: 0.18 });
 
       tl.add("split");
-      tl.to(softEl, { x: "-12vw", duration: 0.7, ease: snap }, "split");
-      tl.to(lifeEl, { x: "12vw", duration: 0.7, ease: snap }, "split");
+      tl.to(softEl, { x: "-12vw", duration: 0.45, ease: snap }, "split");
+      tl.to(lifeEl, { x: "12vw", duration: 0.45, ease: snap }, "split");
       tl.to(hole, {
         left: 40,
         right: 60,
         top: 50 - textHalfVh,
         bottom: 50 + textHalfVh,
-        duration: 0.7,
+        duration: 0.45,
         ease: snap,
         onUpdate: applyClip,
       }, "split");
 
       tl.to({}, {
-        duration: 0.3,
+        duration: 0.12,
         onStart: () => {
           window.dispatchEvent(new CustomEvent("preloader-complete"));
         },
@@ -111,12 +112,12 @@ export default function Preloader() {
         right: 100,
         top: 0,
         bottom: 100,
-        duration: 0.85,
+        duration: 0.5,
         ease: snap,
         onUpdate: applyClip,
         onComplete: () => setMounted(false),
       });
-      tl.to([softEl, lifeEl], { opacity: 0, duration: 0.25 }, "-=0.6");
+      tl.to([softEl, lifeEl], { opacity: 0, duration: 0.15 }, "-=0.35");
     });
 
     return () => {
@@ -162,21 +163,6 @@ export default function Preloader() {
           pointerEvents: "none",
         }}
       >
-        <div
-          ref={ooRef}
-          className="gsap-hide"
-          style={{
-            position: "absolute",
-            bottom: "clamp(36px, 5vh, 64px)",
-            left: "clamp(20px, 4vw, 52px)",
-            fontFamily: "system-ui, sans-serif",
-            fontSize: "1.2rem",
-            color: fg,
-            whiteSpace: "nowrap",
-            opacity: 0.75
-          }}
-        />
-
         <div style={{ display: "flex", width: "50vw", justifyContent: "flex-end" }}>
           <div ref={softRef} className="gsap-hide" style={{ ...TEXT, color: fg }} />
         </div>

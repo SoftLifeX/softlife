@@ -4,16 +4,11 @@ import { useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap-init";
 
 export interface WipeRevealOptions {
-  /** CSS selector or element used as the ScrollTrigger trigger */
   trigger: string | (() => Element | null);
-  /** Which side the block enters from */
   direction?: "left" | "right";
-  /** ScrollTrigger start position */
   startOffset?: string;
-  /** ScrollTrigger start for the underline scrub */
   underlineStart?: string;
   underlineEnd?: string;
-  /** GSAP ease string */
   ease?: string;
 }
 
@@ -37,7 +32,6 @@ export function useWipeReveal(options: WipeRevealOptions): WipeRevealRefs {
   const widthRef = useRef<HTMLDivElement | null>(null);
   const textRef  = useRef<HTMLParagraphElement | null>(null);
 
-  // Called by the consuming component's useGSAP (inside ctx scope)
   const register = () => {
     const block = blockRef.current;
     const width = widthRef.current;
@@ -89,20 +83,11 @@ export function useWipeReveal(options: WipeRevealOptions): WipeRevealRefs {
     });
   };
 
-  // Expose register so the consumer can call it inside their useGSAP
   (useWipeReveal as any).__lastRegister = register;
 
   return { blockRef, widthRef, textRef };
 }
 
-/**
- * Helper to call after useWipeReveal() inside a useGSAP callback.
- * This pattern keeps the GSAP context ownership in the component.
- *
- * Example:
- *   const wipe = useWipeReveal({ trigger: () => textRef.current, direction: "left" });
- *   useGSAP(() => { registerWipe(wipe); }, { scope: sectionRef });
- */
 export function registerWipe(refs: WipeRevealRefs, options: WipeRevealOptions) {
   const {
     trigger,

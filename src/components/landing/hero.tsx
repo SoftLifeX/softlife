@@ -20,19 +20,12 @@ export default function Hero() {
   const heroWidthRef = useRef<HTMLDivElement | null>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
 
-  // New refs — the "Start a conversation" CTA link itself, and the
-  // arrow-icon wrapper inside it. These mirror the text reveal (simple
-  // opacity in, then opacity out on scroll) instead of just snapping
-  // visible with the rest of .link-container.
   const ctaLinkRef = useRef<HTMLAnchorElement | null>(null);
   const ctaIconRef = useRef<HTMLSpanElement | null>(null);
 
   const { revealRef, hovered, handleMouseEnter, handleMouseLeave } = useRevealMask();
   const ready = usePageReady();
 
-  // Guards the reveal-mask hover handlers directly — belt-and-suspenders
-  // alongside the pointer-events toggle below, in case anything ever calls
-  // these handlers programmatically rather than via a real DOM hover.
   const interactionsReady = useRef(false);
 
   const [ctaPos, setCtaPos] = useState({ x: 50, y: 50 });
@@ -68,24 +61,18 @@ export default function Hero() {
         visibility: "visible",
         width: 0,
       });
-      // Keep the CTA link + icon in sync with the reduced-motion fallback
-      // for everything else — just fully visible, no animation.
+      
       gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 1 });
       gsap.set(headingRef.current, { pointerEvents: "auto" });
       interactionsReady.current = true;
       window.dispatchEvent(new CustomEvent("hero-animations-complete"));
     },
 
-    // Phase 1 — block wipes, fires immediately, no font metrics needed.
     animate: () => {
       gsap.set([blockRef.current, blockRef2.current, blockRef3.current], {
         visibility: "visible",
       });
 
-      // Content under the sweeping blocks shouldn't be hoverable at all
-      // while its block is covering it — otherwise the reveal-mask hover
-      // and any hover-based custom cursor logic fire the instant the
-      // cursor crosses the area, regardless of what's visually happening.
       gsap.set(headingRef.current, { pointerEvents: "none" });
 
       const wipeConfigs: Array<{
@@ -103,7 +90,7 @@ export default function Hero() {
         return new Promise<void>((resolve) => {
           gsap.fromTo(el, from, {
             width: "100%",
-            duration: 1,
+            duration: 0.5,
             ease: EASE,
             delay: 0.4,
             onComplete: () => {
@@ -147,9 +134,7 @@ export default function Hero() {
         yPercent: 100,
         opacity: 0,
       });
-      // CTA link + its icon start hidden too — they'll fade in alongside
-      // the "Start a conversation" text instead of just appearing with
-      // the rest of .link-container.
+
       gsap.set([ctaLinkRef.current, ctaIconRef.current], { opacity: 0 });
       gsap.set(heroWidthRef.current, { width: 0 });
 
@@ -161,9 +146,6 @@ export default function Hero() {
         scrollTrigger: { trigger, start: "30% top", end: "+=10%", scrub: true },
       });
 
-      // Same scroll-out trigger as the text, but opacity only — no
-      // yPercent — since the CTA link/icon only ever fade, they don't
-      // translate like the split text lines do.
       const scrollExitOpacityOnly = (trigger: Element | null) => ({
         opacity: 0,
         ease: EASE,
@@ -187,7 +169,7 @@ export default function Hero() {
           xPercent: 0,
           opacity: 1,
           stagger: 0.05,
-          duration: 0.4,
+          duration: 0.3,
           ease: EASE,
           onComplete: () => {
             gsap.to(titleSplit.words, {
@@ -217,7 +199,7 @@ export default function Hero() {
             {
               yPercent: 0,
               opacity: 1,
-              duration: 0.6,
+              duration: 0.4,
               stagger: 0.05,
               ease: EASE,
               onComplete: () => {
@@ -233,7 +215,7 @@ export default function Hero() {
           [ctaLinkRef.current, ctaIconRef.current],
           {
             opacity: 1,
-            duration: 0.6,
+            duration: 0.4,
             stagger: 0.05,
             ease: EASE,
             onComplete: () => {
@@ -291,9 +273,9 @@ export default function Hero() {
               onMouseLeave={onHeadingLeave}
               role="heading"
               aria-level={1}
-              aria-label="I am SoftLifeX Developer & Designer"
+              aria-label="I am Daniel. Developer & Designer"
             >
-              I am SoftLifeX <br /> Developer &amp; Designer <br />
+              Daniel c. Daniel. <br /> Developer &amp; Designer <br />
             </h1>
 
             <div
@@ -312,7 +294,7 @@ export default function Hero() {
         <div className="pb-6">
           <div className="relative w-fit">
             <p className="description relative gsap-hide text-sm text-foreground">
-              I&apos;m Daniel, Known online as softlifeX. <br />
+              I&apos;m Daniel c. Daniel, Known online as softlifeX. <br />
               Currently based in Lagos, Nigeria <br />
             </p>
             <p className="description-large gsap-hide text-foreground text-xl md:text-2xl">

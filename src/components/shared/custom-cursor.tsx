@@ -59,7 +59,7 @@ export default function CustomCursor() {
     };
   }, []);
 
-  // Main animation loop — now driven by gsap.ticker instead of its own rAF
+  // Main animation loop 
   useEffect(() => {
     const el = cursorRef.current;
     if (!el) return;
@@ -76,7 +76,7 @@ export default function CustomCursor() {
       el.style.height = `${w}px`;
       el.style.transform = `translate3d(${p.destX - w / 2}px,${p.destY - w / 2}px,0)`;
 
-      // Write to shared store — zero-cost for readers (no event dispatch)
+      // Write to shared store 
       cursorStore.mouseX = p.mouseX;
       cursorStore.mouseY = p.mouseY;
       cursorStore.x = p.destX;

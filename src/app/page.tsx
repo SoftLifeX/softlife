@@ -35,8 +35,6 @@ const personSchema = {
     "Web Development",
   ],
   sameAs: [
-    // Add your real profile URLs — Google uses these to link your identity
-    // across the web. Comment out any you don't have.
     "https://github.com/SoftLifeX",
     // "https://twitter.com/softlifex",
     // "https://linkedin.com/in/softlifex",
@@ -59,7 +57,6 @@ const websiteSchema = {
 export default function Home() {
   return (
     <>
-      {/* Structured data — rendered server-side, invisible to users */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}

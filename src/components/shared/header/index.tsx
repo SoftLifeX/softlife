@@ -259,7 +259,7 @@ export default function Header({
                 )}
               />
 
-              {/* Button - CHANGED TO BUTTON ELEMENT */}
+              {/* Button */}
               <button
                 ref={buttonRef}
                 onClick={handleToggle}

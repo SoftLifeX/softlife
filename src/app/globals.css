@@ -60,6 +60,12 @@
   font-weight: 400;
 }
 
+@font-face {
+  src: url("../app/assets/fonts/RusticRoadway.otf");
+  font-family: RusticRoadway;
+  font-weight: 400;
+}
+
 @layer base {
   * {
     @apply transition-all duration-300 ease-(--ease-custom);
@@ -105,6 +111,10 @@
 
   a {
     transition: color 0.25s var(--ease-custom);
+  }
+
+  .softlifex {
+    font-family: RusticRoadway;
   }
 
   /* button,

@@ -6,7 +6,6 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-// Register GSAP ScrollTo plugin
 gsap.registerPlugin(ScrollToPlugin);
 
 
@@ -43,13 +42,11 @@ export default function LinkItem({
     if (href.startsWith('#')) {
       e.preventDefault();
 
-      // Use GSAP's scrollTo instead of native scrollIntoView
-      // This works with ScrollSmoother/ScrollTrigger
       gsap.to(window, {
         duration: 1,
         scrollTo: {
           y: href,
-          offsetY: 0, // Adjust if you have a fixed header
+          offsetY: 0, 
         },
         ease: "power3.inOut",
       });
@@ -57,7 +54,6 @@ export default function LinkItem({
       // Update the URL without page reload
       window.history.pushState(null, '', href);
     }
-    // External links (http/https) will work normally
   };
 
   return (

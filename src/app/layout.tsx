@@ -8,7 +8,6 @@ import Preloader from "@/components/shared/preloader";
 import GsapInit from "@/components/shared/gsap-init-client";
 import PageTransition from "@/components/shared/page-transition";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
 
 const SITE_URL  = "https://softlifex.vercel.app";
 const SITE_NAME = "SoftLifeX";
@@ -19,7 +18,6 @@ const DESC =
   "immersive experiences. 4 years building with React, Next.js, React Native " +
   "and Flutter | based in Lagos, Nigeria.";
 
-// ─── Root metadata ───────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
   title: {
@@ -29,18 +27,15 @@ export const metadata: Metadata = {
 
   description: DESC,
 
-  // metadataBase makes all relative URLs absolute for OG/Twitter/canonical.
-  // Also tells Google the canonical domain, preventing the *.vercel.app
-  // mirror (which Vercel generates) from being indexed as a duplicate.
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: "/",
   },
 
-  // Keywords — tight and realistic (Google soft-ignores stuffed lists)
   keywords: [
     "SoftLifeX",
     "Daniel Chimbu-Okaaomee Daniel",
+    "Daniel C Daniel",
     "frontend developer Nigeria",
     "React Native developer Lagos",
     "mobile app developer Nigeria",
@@ -68,8 +63,6 @@ export const metadata: Metadata = {
     },
   },
 
-  // Open Graph — Next.js auto-serves app/opengraph-image.png, but declaring
-  // dimensions explicitly ensures LinkedIn/Slack/WhatsApp pick it up correctly
   openGraph: {
     type:        "website",
     locale:      "en_NG",
@@ -95,14 +88,8 @@ export const metadata: Metadata = {
     creator:     HANDLE,
     images:      ["/opengraph-image.png"],
   },
-
-  // Uncomment and add your token once you connect Google Search Console:
-  // verification: {
-  //   google: "YOUR_VERIFICATION_TOKEN",
-  // },
 };
 
-// ─── Layout ──────────────────────────────────────────────────────────────────
 
 export default function RootLayout({
   children,

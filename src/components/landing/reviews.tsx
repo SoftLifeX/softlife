@@ -10,7 +10,6 @@ import { WipeLabel, useWipeRefs } from "@/lib/animations/wipeLabel";
 import FeatureCard from "@/components/ui/featureCard";
 import { EASE } from "@/lib/animations/tokens";
 
-// No `color` field on Review — cycle a small brand palette per card
 const BRAND_PALETTE = ["#2466F2", "#F24E24", "#24C2A0", "#B024F2"];
 
 export default function Reviews() {
@@ -29,7 +28,6 @@ export default function Reviews() {
       gsap.set(".review-card", { visibility: "visible", opacity: 1, y: 0, pointerEvents: "auto" });
     },
 
-    // No SplitText anywhere here — everything runs immediately
     animate: () => {
       gsap.set([topLabel.textRef.current, botLabel.textRef.current], { visibility: "visible" });
 
@@ -64,9 +62,6 @@ export default function Reviews() {
             scrollTrigger: { trigger: card, start: "top 88%", toggleActions: "play none none none" },
             delay: (i % 3) * 0.08,
             onComplete: () => {
-              // Only accept real hovers once the card has stopped moving —
-              // otherwise a box sliding under a stationary cursor fires a
-              // false mouseenter/mouseleave pair on FeatureCard.
               gsap.set(card, { pointerEvents: "auto" });
             },
           }

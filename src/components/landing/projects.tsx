@@ -15,11 +15,6 @@ const INDEX_LABELS = ["01", "02", "03", "04", "05", "06", "07", "08"];
 const featured = project.slice(0, 6);
 const offsetY = ["", "md:-translate-y-15", "", "", "md:translate-y-15", "", ""];
 
-// Numeric scrub — the tween catches up to scroll position over this many
-// seconds instead of mirroring it frame-for-frame. Absorbs the little
-// momentum/rubber-band correction that happens when native scroll settles,
-// which reads as a "jump" when scrub is a boolean. Applies to every
-// scroll-driven tween in this file.
 const SCRUB = 0.4;
 
 export default function Projects() {
@@ -91,15 +86,14 @@ export default function Projects() {
         }
 
         if (mobile) {
-          gsap.set(cards, { clearProps: "all" }); // wipe any leftover desktop inline styles (x/y/opacity/scale)
-          gsap.set(cards, { visibility: "visible" }); // then explicitly show them
+          gsap.set(cards, { clearProps: "all" });
+          gsap.set(cards, { visibility: "visible" }); 
         }
       });
 
       ctx.add(() => () => mm.revert());
     },
 
-    // Heading + centered text — both need SplitText, both wait fonts.ready.
     animateWithSplitText: (ctx) => {
       gsap.set([".projects-heading", ".projectline"], { visibility: "visible" });
 
@@ -115,7 +109,6 @@ export default function Projects() {
         }
       );
 
-      // Same treatment as Services' .serviceline
       const projectlineSplit = new SplitText(".projectline", { type: "chars, words", mask: "chars" });
       gsap.set(projectlineSplit.chars, { xPercent: 100, opacity: 0 });
       gsap.to(projectlineSplit.chars, {

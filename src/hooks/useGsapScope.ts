@@ -5,15 +5,15 @@ import { RefObject } from "react";
 type Ctx = ReturnType<typeof gsap.context>;
 
 export interface UseGsapScopeOptions {
-  /** Gate from usePageReady() — animations won't run until this is true */
+  // Gate from usePageReady() — animations won't run until this is true
   ready: boolean;
-  /** Called synchronously (no RAF/fonts wait) when prefers-reduced-motion is on */
+  // Called synchronously (no RAF/fonts wait) when prefers-reduced-motion is on
   reducedMotionFallback?: () => void;
-  /** Runs immediately inside the gsap.context scope — wipes, fades, non-SplitText work */
+  // Runs immediately inside the gsap.context scope — wipes, fades, non-SplitText work
   animate?: (ctx: Ctx) => void;
-  /** Runs after fonts.ready + one rAF frame — for anything using `new SplitText(...)` */
+  // Runs after fonts.ready + one rAF frame — for anything using `new SplitText(...)`
   animateWithSplitText?: (ctx: Ctx) => void;
-  /** Extra dependencies to re-run the effect on, beyond `ready` */
+  // Extra dependencies to re-run the effect on, beyond `ready`
   dependencies?: unknown[];
 }
 

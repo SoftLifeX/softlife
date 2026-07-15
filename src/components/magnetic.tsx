@@ -11,9 +11,6 @@ interface MagneticProps {
   radius?: number;
   tiltStrength?: number;
   disabled?: boolean;
-  /** Renders both wrappers as block/w-full instead of inline-block — needed
-   *  for grid/flex children (like ProjectCard) so the wrapper doesn't
-   *  shrink-to-fit and collapse the card's own w-full sizing. */
   fullWidth?: boolean;
   className?: string;
 }

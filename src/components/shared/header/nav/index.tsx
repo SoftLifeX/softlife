@@ -1,4 +1,3 @@
-// app/components/header/nav/index.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";

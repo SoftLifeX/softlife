@@ -8,7 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow:     "/",
-        // Disallow any Next.js internals if they ever surface as routes
         disallow:  ["/_next/", "/api/"],
       },
     ],

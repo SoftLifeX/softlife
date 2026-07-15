@@ -64,7 +64,7 @@ export default function FeatureCard({ number, title, body, brand, className }: F
       onMouseLeave={handleMouseLeave}
       className={cn(
         "g-feature relative bg-primary p-6 md:p-8 flex flex-col gap-4 overflow-hidden cursor-default",
-        "h-64 md:h-72", // fixed height — every card in the grid matches
+        "h-64 md:h-72",
         className
       )}
     >
@@ -73,7 +73,7 @@ export default function FeatureCard({ number, title, body, brand, className }: F
       <h3 className="text-foreground font-semibold text-base leading-snug line-clamp-2 shrink-0">{title}</h3>
       <p className="text-primary-foreground text-sm leading-relaxed line-clamp-4 flex-1">{body}</p>
 
-      {/* Wipe overlay — same content, inverted colors, same clamping */}
+      {/* Wipe overlay*/}
       <div
         ref={overlayRef}
         style={{ clipPath: BOTTOM_RIGHT_CLIP }}
