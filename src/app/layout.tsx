@@ -10,7 +10,7 @@ import PageTransition from "@/components/shared/page-transition";
 
 
 const SITE_URL  = "https://softlifex.vercel.app";
-const SITE_NAME = "SoftLifeX";
+const SITE_NAME = "Daniel C Daniel | SoftLifeX";
 const FULL_NAME = "Daniel Chimbu-Okaaomee Daniel";
 const HANDLE    = "@softlifex";
 const DESC =
@@ -21,7 +21,7 @@ const DESC =
 
 export const metadata: Metadata = {
   title: {
-    default:  `${SITE_NAME} | Full-Stack & Mobile Engineer`,
+    default:  `${SITE_NAME} ~ Full-Stack & Mobile Engineer`,
     template: `%s | ${SITE_NAME}`,
   },
 
