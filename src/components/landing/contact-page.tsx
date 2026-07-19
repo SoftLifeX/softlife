@@ -25,6 +25,7 @@ export default function Contact() {
 
   const [ctaPos, setCtaPos] = useState({ x: 50, y: 50 });
   const [ctaHovered, setCtaHovered] = useState(false);
+  const contactCtaRef = useRef<HTMLAnchorElement | null>(null);
 
   const handleCtaMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -44,12 +45,13 @@ export default function Contact() {
     ready,
 
     reducedMotionFallback: () => {
-      gsap.set([".contact-heading", ".contact-sub", ".contact-links", footerRef.current], {
+      gsap.set([".contact-heading", ".contact-sub", ".contact-links", footerRef.current, contactCtaRef.current], {
         visibility: "visible",
         opacity: 1,
         yPercent: 0,
       });
       gsap.set(contactWidthRef.current, { width: "100%" });
+      gsap.set(contactCtaRef.current, { scale: 1, opacity: 1 });
     },
 
     animate: () => {
@@ -102,6 +104,19 @@ export default function Contact() {
 
       const linkSplit = new SplitText(".contact-link-text", { type: "words, lines", mask: "lines" });
       gsap.set(linkSplit.words, { yPercent: 100, opacity: 0 });
+      gsap.set(contactCtaRef.current, { scale: 0.2, opacity: 0 });
+
+      gsap.to(
+          contactCtaRef.current,
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.4,
+            stagger: 0.05,
+            ease: EASE,
+            scrollTrigger: { trigger: containerRef.current, start: "top 50%", end: "top 25%", scrub: true },
+          },
+        );
       gsap.to(linkSplit.words, {
         yPercent: 0,
         opacity: 1,
@@ -154,6 +169,7 @@ export default function Contact() {
           <Magnetic strength={0} tiltStrength={8}>
             <Link
               href="mailto:daniel.c.daniel.dev@gmail.com"
+              ref={contactCtaRef}
               onMouseEnter={(e) => {
                 handleCtaMove(e);
                 setCtaHovered(true);
@@ -204,7 +220,7 @@ export default function Contact() {
                 Resume
               </span>
             </span>
-            <span ref={contactWidthRef} className="gsap-hide absolute left-0 right-0 -bottom-px h-px bg-current z-0" />
+            <span ref={contactWidthRef} className="gsap-hide absolute left-0 right-0 -bottom-0.75 h-px bg-current z-0" />
           </Link>
         </div>
 

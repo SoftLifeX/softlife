@@ -64,7 +64,7 @@ export default function Hero() {
       });
 
       gsap.set(ctaIconRef.current, { opacity: 1 });
-      gsap.set(ctaLinkRef.current, { scaleX: 1, opacity: 1 });
+      gsap.set(ctaLinkRef.current, { scale: 1, opacity: 1 });
       gsap.set(headingRef.current, { pointerEvents: "auto" });
       interactionsReady.current = true;
       window.dispatchEvent(new CustomEvent("hero-animations-complete"));
@@ -144,7 +144,7 @@ export default function Hero() {
       });
 
       gsap.set(ctaIconRef.current, { opacity: 0 });
-      gsap.set(ctaLinkRef.current, { scaleX: 0.2, opacity: 0 });
+      gsap.set(ctaLinkRef.current, { scale: 0.2, opacity: 0 });
       gsap.set(heroWidthRef.current, { width: 0 });
 
       const scrollExit = (trigger: Element | null) => ({
@@ -156,7 +156,7 @@ export default function Hero() {
       });
 
       const scrollExitScaleX = (trigger: Element | null) => ({
-        scaleX: 0,
+        scale: 0,
         opacity: 0,
         stagger: 0.2,
         ease: EASE,
@@ -257,13 +257,13 @@ export default function Hero() {
         tl.to(
           ctaLinkRef.current,
           {
-            scaleX: 1,
+            scale: 1,
             opacity: 1,
             duration: 0.4,
             stagger: 0.05,
             ease: EASE,
             onComplete: () => {
-              gsap.set(ctaLinkRef.current, { scaleX: 1, opacity: 1 });
+              gsap.set(ctaLinkRef.current, { scale: 1, opacity: 1 });
               gsap.to(
                 ctaLinkRef.current,
                 scrollExitOpacityOnly(containerRef.current)

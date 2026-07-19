@@ -18,12 +18,12 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
     <Magnetic fullWidth strength={0} tiltStrength={5}>
       <div
         className={cn(
-          "project-card-inner group1 relative flex flex-col w-full h-110 overflow-hidden rounded-xs",
+          "project-card-inner group1 relative flex flex-col w-full h-110 overflow-hidden rounded-md",
           offsetClass,
         )}
       >
         {/* Parallax image */}
-        <div className="parallax-container absolute inset-0 overflow-hidden rounded-xs">
+        <div className="parallax-container absolute inset-0 overflow-hidden rounded-md">
           <div className="relative h-[120%] w-full -top-[10%]">
             <Image
               src={p.img}
