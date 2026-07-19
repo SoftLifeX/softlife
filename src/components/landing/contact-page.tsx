@@ -9,6 +9,7 @@ import { useRevealMask } from "@/hooks/useRevealMask";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useGsapScope } from "@/hooks/useGsapScope";
 import { EASE } from "@/lib/animations/tokens";
+import Magnetic from "../magnetic";
 
 const YEAR = new Date().getFullYear();
 
@@ -150,49 +151,50 @@ export default function Contact() {
         </p>
 
         <div className="contact-links gsap-hide mt-12 flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
-          <Link
-            href="mailto:daniel.c.daniel.dev@gmail.com"
-            onMouseEnter={(e) => {
-              handleCtaMove(e);
-              setCtaHovered(true);
-            }}
-            onMouseMove={handleCtaMove}
-            onMouseLeave={() => setCtaHovered(false)}
-            className="link cta-primary group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground text-primary-foreground text-sm tracking-wide hover:border-background/60 transition-colors duration-500 overflow-hidden"
-          >
-            <span
-              aria-hidden="true"
-              className="cta-fill absolute inset-0 bg-background"
-              style={{
-                clipPath: `circle(${ctaHovered ? 150 : 0}% at ${ctaPos.x}% ${ctaPos.y}%)`,
-                opacity: ctaHovered ? 1 : 0,
-                transition: "clip-path 0.4s var(--ease-custom), opacity 0.4s var(--ease-custom)",
+          <Magnetic strength={0} tiltStrength={8}>
+            <Link
+              href="mailto:daniel.c.daniel.dev@gmail.com"
+              onMouseEnter={(e) => {
+                handleCtaMove(e);
+                setCtaHovered(true);
               }}
-            />
-            <span className="relative z-10 block h-[1.2em] overflow-hidden">
-              <span className="contact-link-text block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full group-hover:text-foreground">
-                Send an email
+              onMouseMove={handleCtaMove}
+              onMouseLeave={() => setCtaHovered(false)}
+              className="link cta-primary group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground text-primary-foreground text-sm tracking-wide hover:border-background/60 transition-colors duration-500 overflow-hidden"
+            >
+              <span
+                aria-hidden="true"
+                className="cta-fill absolute inset-0 bg-background"
+                style={{
+                  clipPath: `circle(${ctaHovered ? 150 : 0}% at ${ctaPos.x}% ${ctaPos.y}%)`,
+                  opacity: ctaHovered ? 1 : 0,
+                  transition: "clip-path 0.4s var(--ease-custom), opacity 0.4s var(--ease-custom)",
+                }}
+              />
+              <span className="relative z-10 block h-[1.2em] overflow-hidden">
+                <span className="contact-link-text block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full group-hover:text-foreground">
+                  Send an email
+                </span>
+                <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[90%] group-hover:text-foreground">
+                  Send an email
+                </span>
               </span>
-              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[90%] group-hover:text-foreground">
-                Send an email
+              <span className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden">
+                <svg
+                  width="14" height="14" viewBox="0 0 14 14" fill="none"
+                  className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5 group-hover:text-foreground"
+                >
+                  <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <svg
+                  width="14" height="14" viewBox="0 0 14 14" fill="none"
+                  className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150 group-hover:text-foreground"
+                >
+                  <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </span>
-            </span>
-            <span className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden">
-              <svg
-                width="14" height="14" viewBox="0 0 14 14" fill="none"
-                className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5 group-hover:text-foreground"
-              >
-                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <svg
-                width="14" height="14" viewBox="0 0 14 14" fill="none"
-                className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150 group-hover:text-foreground"
-              >
-                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-          </Link>
-
+            </Link>
+          </Magnetic>
           <Link href="/resume.pdf" target="_blank" download className="link relative inline-block text-sm text-background group">
             <span className="relative block h-[1.2em] overflow-hidden z-10">
               <span className="contact-link-text block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">

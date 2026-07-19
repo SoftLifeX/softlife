@@ -116,7 +116,7 @@ export default function Projects() {
         opacity: 1,
         ease: EASE,
         stagger: 0.02,
-        scrollTrigger: { trigger: ".projectline", start: "top 80%", end: "top 65%", scrub: SCRUB },
+        scrollTrigger: { trigger: ".projectline", start: "top 90%", end: "top 85%", scrub: SCRUB },
       });
 
       ctx.add(() => () => {

@@ -94,6 +94,8 @@ export default function Skills() {
   const skillWidthRef2 = useRef<HTMLDivElement | null>(null);
   const skillWidthRef3 = useRef<HTMLDivElement | null>(null);
   const categoriesContainerRef = useRef<HTMLDivElement | null>(null);
+  const leftGridRef = useRef<HTMLDivElement | null>(null);
+  const rightCardWrapperRef = useRef<HTMLDivElement | null>(null);
   const ready = usePageReady();
 
   const categoryUnderlineRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -108,7 +110,7 @@ export default function Skills() {
       gsap.set(skillLabel.textRef.current, { visibility: "visible", opacity: 1, yPercent: 0 });
       gsap.set(".skillParagraph", { visibility: "visible", opacity: 1, yPercent: 0 });
       gsap.set(".skill-category-heading", { visibility: "visible", opacity: 1, yPercent: 0 });
-      gsap.set(".skill-card", { visibility: "visible", opacity: 1, y: 0 });
+      gsap.set(".skill-card", { visibility: "visible", opacity: 1, x: 0, y: 0 });
       gsap.set(
         [
           skillLabel.widthRef.current,
@@ -157,16 +159,47 @@ export default function Skills() {
         });
       });
 
-      gsap.set(".skill-card", { visibility: "visible", opacity: 0, y: 32 });
-      gsap.to(".skill-card", {
-        opacity: 1,
-        y: 0,
-        duration: 0.7,
-        stagger: 0.1,
-        ease: EASE,
-        scrollTrigger: { trigger: categoriesContainerRef.current, start: "top 80%", toggleActions: "play none none none" },
-      });
+      const leftCards = leftGridRef.current
+        ? Array.from(leftGridRef.current.querySelectorAll<HTMLElement>(".skill-card"))
+        : [];
+      const rightCards = rightCardWrapperRef.current
+        ? Array.from(rightCardWrapperRef.current.querySelectorAll<HTMLElement>(".skill-card"))
+        : [];
 
+      gsap.set([...leftCards, ...rightCards], { visibility: "visible" });
+
+      gsap.fromTo(
+        leftCards,
+        { opacity: 0, x: -48 },
+        {
+          opacity: 1,
+          x: 0,
+          stagger: 0.15,
+          ease: EASE,
+          scrollTrigger: {
+            trigger: categoriesContainerRef.current,
+            start: "top 80%",
+            end: "top top",
+            scrub: true,
+          },
+        }
+      );
+
+      gsap.fromTo(
+        rightCards,
+        { opacity: 0, y: 48 },
+        {
+          opacity: 1,
+          y: 0,
+          ease: EASE,
+          scrollTrigger: {
+            trigger: categoriesContainerRef.current,
+            start: "top 80%",
+            end: "top 50%",
+            scrub: true,
+          },
+        }
+      );
       categoryEls.forEach((categoryEl) => {
         const pills = gsap.utils.toArray<HTMLElement>(".tech-pill", categoryEl);
         if (!pills.length) return;
@@ -303,13 +336,15 @@ export default function Skills() {
         ref={categoriesContainerRef}
         className="pt-10 grid md:grid-cols-2 gap-2 items-stretch"
       >
-        <div className="grid grid-rows-3 gap-2 h-full">
+        <div ref={leftGridRef} className="grid grid-rows-3 gap-2 h-full">
           {leftCategories.map((cat) => (
             <CategoryCard key={cat.category}>{renderCategory(cat)}</CategoryCard>
           ))}
         </div>
 
-        <CategoryCard>{rightCategories.map(renderCategory)}</CategoryCard>
+        <div ref={rightCardWrapperRef} className="h-full">
+          <CategoryCard>{rightCategories.map(renderCategory)}</CategoryCard>
+        </div>
       </div>
     </section>
   );

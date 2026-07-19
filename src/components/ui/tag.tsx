@@ -14,7 +14,7 @@ export function Tag({ icon, label, className }: TagProps) {
     <div
       className={cn(
         "inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm",
-        "border-primary-foreground/50 text-foreground border",
+        "border-primary-foreground/40 text-foreground border",
         className
       )}
     >

@@ -10,6 +10,7 @@ import { useRevealMask } from "@/hooks/useRevealMask";
 import { useGsapScope } from "@/hooks/useGsapScope";
 import { EASE } from "@/lib/animations/tokens";
 import { AnchorLink } from "../shared/anchor-link";
+import Magnetic from "../magnetic";
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -109,13 +110,19 @@ export default function Hero() {
         [".heading", ".description", ".description-large", ".link-container"],
         { visibility: "visible" }
       );
-
+      
       const titleSplit = new SplitText(".heading", {
-        type: "chars, words",
+        type: "chars, words, lines",
         mask: "chars",
         wordsClass: "heading++",
+        charsClass: "headingChar",
       });
-      gsap.set(titleSplit.chars, { xPercent: 100, opacity: 0 });
+
+      const line1Chars = titleSplit.lines[0]?.querySelectorAll(".headingChar") ?? [];
+      const line2Chars = titleSplit.lines[1]?.querySelectorAll(".headingChar") ?? [];
+
+      gsap.set(line1Chars, { xPercent: 100, opacity: 0 });
+      gsap.set(line2Chars, { xPercent: -100, opacity: 0 });
 
       new SplitText(".reveal", { type: "words", wordsClass: "reveal++" });
 
@@ -175,13 +182,22 @@ export default function Hero() {
           },
         });
 
-        tl.to(titleSplit.chars, {
+        tl.to(line1Chars, {
           xPercent: 0,
           opacity: 1,
-          stagger: 0.05,
+          stagger: 0.06,
           duration: 0.3,
           ease: EASE,
-          onComplete: () => {
+        }, 0)
+          .to(line2Chars, {
+            xPercent: 0,
+            opacity: 1,
+            stagger: 0.06,
+            duration: 0.3,
+            ease: EASE,
+          }, 0)
+          .call(() => {
+            
             gsap.to(titleSplit.words, {
               yPercent: -50,
               opacity: 0,
@@ -194,8 +210,7 @@ export default function Hero() {
                 scrub: true,
               },
             });
-          },
-        });
+          }, undefined, 0.20);
 
         (
           [
@@ -336,53 +351,54 @@ export default function Hero() {
         <div className="flex flex-col md:flex-row w-full md:justify-center items-center">
           <div className="relative w-fit">
             <div className="link-container gsap-hide relative flex flex-col md:flex-row md:justify-center items-center w-full gap-4 mb-8 md:mb-0">
-              <AnchorLink
-                ref={ctaLinkRef}
-                href="#contact"
-                onMouseEnter={(e) => {
-                  handleCtaMove(e);
-                  setCtaHovered(true);
-                }}
-                onMouseMove={handleCtaMove}
-                onMouseLeave={() => setCtaHovered(false)}
-                className="link group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground/60 text-primary-foreground text-sm tracking-wide hover:border-foreground transition-colors duration-500 overflow-hidden origin-left"
-              >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-foreground"
-                  style={{
-                    clipPath: `circle(${ctaHovered ? 150 : 0}% at ${ctaPos.x}% ${ctaPos.y}%)`,
-                    opacity: ctaHovered ? 1 : 0,
-                    transition: "clip-path 0.4s var(--ease-custom), opacity 0.4s var(--ease-custom)",
+              <Magnetic strength={0} tiltStrength={8}>
+                <AnchorLink
+                  ref={ctaLinkRef}
+                  href="#contact"
+                  onMouseEnter={(e) => {
+                    handleCtaMove(e);
+                    setCtaHovered(true);
                   }}
-                />
-                <span className="relative z-10 block h-[1.2em] overflow-hidden">
-                  <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
-                    Start a conversation
-                  </span>
-                  <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[80%] group-hover:text-background">
-                    Start a conversation
-                  </span>
-                </span>
-                <span
-                  ref={ctaIconRef}
-                  className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden rotate-135"
+                  onMouseMove={handleCtaMove}
+                  onMouseLeave={() => setCtaHovered(false)}
+                  className="link group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground/60 text-primary-foreground text-sm tracking-wide hover:border-foreground transition-colors duration-500 overflow-hidden origin-left"
                 >
-                  <svg
-                    width="14" height="14" viewBox="0 0 14 14" fill="none"
-                    className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5 group-hover:text-foreground"
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-foreground"
+                    style={{
+                      clipPath: `circle(${ctaHovered ? 150 : 0}% at ${ctaPos.x}% ${ctaPos.y}%)`,
+                      opacity: ctaHovered ? 1 : 0,
+                      transition: "clip-path 0.4s var(--ease-custom), opacity 0.4s var(--ease-custom)",
+                    }}
+                  />
+                  <span className="relative z-10 block h-[1.2em] overflow-hidden">
+                    <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+                      Start a conversation
+                    </span>
+                    <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[80%] group-hover:text-background">
+                      Start a conversation
+                    </span>
+                  </span>
+                  <span
+                    ref={ctaIconRef}
+                    className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden rotate-135"
                   >
-                    <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <svg
-                    width="14" height="14" viewBox="0 0 14 14" fill="none"
-                    className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150 group-hover:text-background"
-                  >
-                    <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              </AnchorLink>
-
+                    <svg
+                      width="14" height="14" viewBox="0 0 14 14" fill="none"
+                      className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5 group-hover:text-foreground"
+                    >
+                      <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <svg
+                      width="14" height="14" viewBox="0 0 14 14" fill="none"
+                      className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150 group-hover:text-background"
+                    >
+                      <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                </AnchorLink>
+              </Magnetic>
               <Link href="/resume.pdf" target="_blank" download className="link relative inline-block text-sm text-primary-foreground group">
                 <span className="relative block h-[1.2em] overflow-hidden z-10">
                   <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-8">
