@@ -5,12 +5,13 @@ import { SplitText } from "gsap/SplitText";
 import { gsap } from "@/lib/gsap-init";
 import { cn } from "@/lib/utils";
 import { Tag } from "../ui/tag";
+import Magnetic from "../magnetic";
 import { techStack, type TechStackCategory } from "@/lib/constants/techstack";
 import { registerWipe } from "@/hooks/useWipeReveal";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useGsapScope } from "@/hooks/useGsapScope";
 import { WipeLabel, useWipeRefs } from "@/lib/animations/wipeLabel";
-import { EASE } from "@/lib/animations/tokens";
+import { EASE, EASE_RAW } from "@/lib/animations/tokens";
 
 const leftCategories = techStack
   .slice(0, 3)
@@ -19,13 +20,80 @@ const rightCategories = techStack
   .slice(3)
   .map((cat, i) => ({ ...cat, originalIndex: i + 3 }));
 
+const NO_CLIP = "polygon(0 0, 100% 0, 100% 100%, 0% 100%)";
+const TOP_RIGHT_CLIP = "polygon(0 0, 0 100%, 100% 100%, 0% 100%)";
+const BOTTOM_LEFT_CLIP = "polygon(100% 100%, 100% 0, 100% 100%, 0 100%)";
+const BOTTOM_RIGHT_CLIP = "polygon(0 0, 100% 0, 0 0, 0% 100%)";
+
+type Side = "top" | "left" | "bottom" | "right";
+
+const ENTRANCE_CLIP: Record<Side, string> = {
+  left: NO_CLIP,
+  bottom: NO_CLIP,
+  top: NO_CLIP,
+  right: NO_CLIP,
+};
+const EXIT_CLIP: Record<Side, string> = {
+  left: TOP_RIGHT_CLIP,
+  bottom: TOP_RIGHT_CLIP,
+  top: TOP_RIGHT_CLIP,
+  right: BOTTOM_LEFT_CLIP,
+};
+
+function getNearestSide(e: React.MouseEvent, el: HTMLElement): Side {
+  const box = el.getBoundingClientRect();
+  const sides = [
+    { side: "left" as Side, proximity: Math.abs(box.left - e.clientX) },
+    { side: "right" as Side, proximity: Math.abs(box.right - e.clientX) },
+    { side: "top" as Side, proximity: Math.abs(box.top - e.clientY) },
+    { side: "bottom" as Side, proximity: Math.abs(box.bottom - e.clientY) },
+  ];
+  return sides.sort((a, b) => a.proximity - b.proximity)[0].side;
+}
+
+function CategoryCard({ children }: { children: React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const side = getNearestSide(e, containerRef.current);
+    gsap.to(overlayRef.current, { clipPath: ENTRANCE_CLIP[side], duration: 0.45, ease: EASE_RAW });
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const side = getNearestSide(e, containerRef.current);
+    gsap.to(overlayRef.current, { clipPath: EXIT_CLIP[side], duration: 0.45, ease: EASE_RAW });
+  };
+
+  return (
+    <Magnetic strength={0} tiltStrength={7} fullWidth>
+      <div
+        ref={containerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="skill-card gsap-hide relative flex h-full flex-col overflow-hidden rounded-xs bg-primary/60 p-6 md:p-8"
+      >
+        <div
+          ref={overlayRef}
+          style={{ clipPath: BOTTOM_RIGHT_CLIP }}
+          className="absolute inset-0 bg-tag-foreground/10 pointer-events-none"
+        />
+        <div className="relative z-10 flex flex-1 flex-col justify-center gap-8">
+          {children}
+        </div>
+      </div>
+    </Magnetic>
+  );
+}
+
 export default function Skills() {
   const skillSectionRef = useRef<HTMLDivElement | null>(null);
   const skillLabel = useWipeRefs();
   const skillWidthRef2 = useRef<HTMLDivElement | null>(null);
   const skillWidthRef3 = useRef<HTMLDivElement | null>(null);
   const categoriesContainerRef = useRef<HTMLDivElement | null>(null);
-  const dividerRef = useRef<HTMLDivElement | null>(null);
   const ready = usePageReady();
 
   const categoryUnderlineRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -40,6 +108,7 @@ export default function Skills() {
       gsap.set(skillLabel.textRef.current, { visibility: "visible", opacity: 1, yPercent: 0 });
       gsap.set(".skillParagraph", { visibility: "visible", opacity: 1, yPercent: 0 });
       gsap.set(".skill-category-heading", { visibility: "visible", opacity: 1, yPercent: 0 });
+      gsap.set(".skill-card", { visibility: "visible", opacity: 1, y: 0 });
       gsap.set(
         [
           skillLabel.widthRef.current,
@@ -49,7 +118,6 @@ export default function Skills() {
         ],
         { width: "100%" }
       );
-      gsap.set(dividerRef.current, { height: "100%" });
       gsap.set(".tech-pill", { scale: 1, opacity: 1 });
     },
 
@@ -89,17 +157,16 @@ export default function Skills() {
         });
       });
 
-      gsap.from(dividerRef.current, {
-        height: 0,
+      gsap.set(".skill-card", { visibility: "visible", opacity: 0, y: 32 });
+      gsap.to(".skill-card", {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.1,
         ease: EASE,
-        scrollTrigger: {
-          trigger: categoriesContainerRef.current,
-          start: "top 75%",
-          end: "bottom 70%",
-          scrub: true,
-        },
+        scrollTrigger: { trigger: categoriesContainerRef.current, start: "top 80%", toggleActions: "play none none none" },
       });
-      
+
       categoryEls.forEach((categoryEl) => {
         const pills = gsap.utils.toArray<HTMLElement>(".tech-pill", categoryEl);
         if (!pills.length) return;
@@ -168,13 +235,13 @@ export default function Skills() {
   }: TechStackCategory & { originalIndex: number }) => (
     <div key={category} className="skill-category">
       <h3 className="relative inline-block group">
-        <span className="skill-category-heading gsap-hide block text-sm tracking-wide text-primary-foreground">
+        <span className="skill-category-heading gsap-hide block text-sm tracking-wide text-tag-foreground">
           {category}
         </span>
         <span
           ref={setCategoryUnderlineRef(originalIndex)}
           className={cn(
-            "absolute left-0 bottom-0 h-px w-full bg-primary-foreground",
+            "absolute left-0 bottom-0 h-px w-full bg-tag-foreground",
             "origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom)",
             "group-hover:origin-right group-hover:scale-x-0"
           )}
@@ -234,21 +301,15 @@ export default function Skills() {
 
       <div
         ref={categoriesContainerRef}
-        className="pt-10 relative flex flex-col md:flex-row gap-8 md:gap-0"
+        className="pt-10 grid md:grid-cols-2 gap-2 items-stretch"
       >
-        <div className="flex flex-col gap-8 md:w-1/2 md:pr-10">
-          {leftCategories.map(renderCategory)}
+        <div className="grid grid-rows-3 gap-2 h-full">
+          {leftCategories.map((cat) => (
+            <CategoryCard key={cat.category}>{renderCategory(cat)}</CategoryCard>
+          ))}
         </div>
 
-        <div
-          ref={dividerRef}
-          aria-hidden="true"
-          className="hidden md:block absolute left-1/2 top-11 h-[90%] w-[0.5px] -translate-x-1/2 bg-primary-foreground"
-        />
-
-        <div className="flex flex-col gap-8 md:w-1/2 md:pl-10">
-          {rightCategories.map(renderCategory)}
-        </div>
+        <CategoryCard>{rightCategories.map(renderCategory)}</CategoryCard>
       </div>
     </section>
   );

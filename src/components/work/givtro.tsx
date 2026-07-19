@@ -3,34 +3,22 @@
 import { useRef } from "react";
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
-import { gsap, ScrollTrigger } from "@/lib/gsap-init";
+import { gsap } from "@/lib/gsap-init";
 import { SplitText } from "gsap/SplitText";
+import { cn } from "@/lib/utils";
 import { registerWipe } from "@/hooks/useWipeReveal";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useGsapScope } from "@/hooks/useGsapScope";
+import Magnetic from "@/components/magnetic";
 import { WipeLabel, useWipeRefs } from "@/lib/animations/wipeLabel";
 import { EASE } from "@/lib/animations/tokens";
 import mockup from "@/app/assets/projects/givtro/givtro_mockup.webp";
 import g1 from "@/app/assets/projects/givtro/givtro_1.webp";
-import g2 from "@/app/assets/projects/givtro/givtro_2.webp";
-import g3 from "@/app/assets/projects/givtro/givtro_3.webp";
 import g4 from "@/app/assets/projects/givtro/givtro_4.webp";
-import g5 from "@/app/assets/projects/givtro/givtro_5.webp";
-import g6 from "@/app/assets/projects/givtro/givtro_6.webp";
-import g7 from "@/app/assets/projects/givtro/givtro_7.webp";
-import g8 from "@/app/assets/projects/givtro/givtro_8.webp";
-import g9 from "@/app/assets/projects/givtro/givtro_9.webp";
 import g10 from "@/app/assets/projects/givtro/givtro_10.webp";
-import g11 from "@/app/assets/projects/givtro/givtro_11.webp";
-import g12 from "@/app/assets/projects/givtro/givtro_12.webp";
 import g13 from "@/app/assets/projects/givtro/givtro_13.webp";
-import g14 from "@/app/assets/projects/givtro/givtro_14.webp";
-import g15 from "@/app/assets/projects/givtro/givtro_15.webp";
 import g16 from "@/app/assets/projects/givtro/givtro_16.webp";
-import g17 from "@/app/assets/projects/givtro/givtro_17.webp";
-import g18 from "@/app/assets/projects/givtro/givtro_18.webp";
 import g19 from "@/app/assets/projects/givtro/givtro_19.webp";
-import g20 from "@/app/assets/projects/givtro/givtro_20.webp";
 import FeatureCard from "@/components/ui/featureCard";
 
 const BRAND = "#2466F2";
@@ -52,51 +40,43 @@ const features = [
     { number: "08", title: "Profile & Security", body: "Profile picture uploads via Cloudinary with in-app cropping. Security centre: active sessions, PIN change, biometric toggle, transaction PIN — all behind re-authentication." },
 ];
 
-const screens: { src: StaticImageData; alt: string }[] = [
-    { src: g1, alt: "Givtro home dashboard" },
-    { src: g2, alt: "P2P transfer" },
-    { src: g3, alt: "Bank transfer" },
-    { src: g4, alt: "Transaction confirmation" },
-    { src: g5, alt: "Transaction receipt" },
-    { src: g6, alt: "Airtime top-up" },
-    { src: g7, alt: "Electricity token" },
-    { src: g8, alt: "Cable TV subscription" },
-    { src: g9, alt: "Betting wallet funding" },
-    { src: g10, alt: "Gift card catalogue" },
-    { src: g11, alt: "Gift card denomination" },
-    { src: g12, alt: "Biometric auth setup" },
-    { src: g13, alt: "KYC verification" },
-    { src: g14, alt: "Wallet funding" },
-    { src: g15, alt: "Transaction history" },
-    { src: g16, alt: "Agent dashboard" },
-    { src: g17, alt: "Profile settings" },
-    { src: g18, alt: "Security centre" },
-    { src: g19, alt: "Onboarding flow" },
-    { src: g20, alt: "Dark mode interface" },
-];
+type ScreenAccentData = { src: StaticImageData; alt: string };
 
-const CARD_TRANSFORMS: [number[], number[]][] = [
-    [[10, 50, -10, 10], [20, -10, -45, 10]],
-    [[0, 47.5, -10, 15], [-25, 15, -45, 30]],
-    [[0, 52.5, -10, 5], [15, -5, -40, 60]],
-    [[10, 50, -10, 10], [20, -10, -45, 90]],
-    [[0, 55, -15, 30], [25, -15, 60, 120]],
-    [[5, 48, -12, 8], [10, -8, -42, 20]],
-    [[0, 53, -8, 20], [-15, 10, -38, 50]],
-    [[8, 51, -14, 12], [18, -12, -44, 70]],
-    [[0, 49, -10, 18], [-20, 12, -40, 40]],
-    [[6, 54, -12, 25], [22, -14, -46, 80]],
-    [[0, 52, -8, 6], [12, -6, -38, 55]],
-    [[10, 50, -15, 14], [-10, 8, -42, 65]],
-    [[0, 55, -10, 22], [16, -10, -44, 95]],
-    [[5, 48, -12, 10], [-18, 14, -40, 35]],
-    [[0, 51, -8, 28], [24, -16, -46, 105]],
-    [[8, 53, -14, 16], [-12, 6, -38, 45]],
-    [[0, 49, -10, 8], [14, -8, -42, 75]],
-    [[6, 52, -12, 20], [-22, 10, -44, 85]],
-    [[10, 50, -15, 12], [20, -12, -46, 15]],
-    [[0, 54, -8, 24], [-16, 16, -40, 100]],
-];
+const overviewAccent: ScreenAccentData = { src: g1, alt: "Givtro home dashboard" };
+const featuresAccentA: ScreenAccentData = { src: g10, alt: "Gift card catalogue" };
+const featuresAccentB: ScreenAccentData = { src: g13, alt: "KYC verification" };
+const engMobileAccent: ScreenAccentData = { src: g4, alt: "Transaction confirmation" };
+const engBackendAccent: ScreenAccentData = { src: g16, alt: "Agent dashboard" };
+const closingAccent: ScreenAccentData = { src: g19, alt: "Onboarding flow" };
+
+function ScreenAccent({ item, className }: { item: ScreenAccentData; className?: string }) {
+    return (
+        <Magnetic fullWidth strength={0} tiltStrength={5}>
+            <div
+                className={cn(
+                    "g-screen-card gsap-hide group1 relative w-full shrink-0 overflow-hidden rounded-[14px]",
+                    "shadow-[0_20px_40px_rgba(0,0,0,0.45)] bg-foreground/5",
+                    className
+                )}
+            >
+                <div style={{ paddingBottom: `${(19.5 / 9) * 100}%` }} />
+
+                <div className="parallax-container absolute inset-0 overflow-hidden rounded-[14px]">
+                    <div className="relative h-[120%] w-full -top-[10%]">
+                        <Image
+                            src={item.src}
+                            alt={item.alt}
+                            fill
+                            loading="eager"
+                            sizes="200px"
+                            className="object-cover transition-transform duration-700 ease-out group1-hover:scale-[1.03]"
+                        />
+                    </div>
+                </div>
+            </div>
+        </Magnetic>
+    );
+}
 
 function GivtroLogo({ size = 32 }: { size?: number }) {
     return (
@@ -122,10 +102,10 @@ export default function GivtroPage() {
     const overviewLabel = useWipeRefs();
     const featuresLabel = useWipeRefs();
     const engLabel = useWipeRefs();
-    const screensLabel = useWipeRefs();
 
     const mobileLineRef = useRef<HTMLDivElement>(null);
     const backendLineRef = useRef<HTMLDivElement>(null);
+    const vLineRef = useRef<HTMLDivElement>(null);
 
     useGsapScope(pageRef, {
         ready,
@@ -135,14 +115,15 @@ export default function GivtroPage() {
                 ".g-title, .g-meta, .g-gallery-item, .g-overview-heading, .g-overview-body, .g-pill, .g-feature, .g-eng-item, .g-screen-card",
                 { visibility: "visible", opacity: 1, y: 0, x: 0, scale: 1 }
             );
-            gsap.set([overviewLabel.textRef.current, featuresLabel.textRef.current, engLabel.textRef.current, screensLabel.textRef.current], {
+            gsap.set([overviewLabel.textRef.current, featuresLabel.textRef.current, engLabel.textRef.current], {
                 visibility: "visible",
                 opacity: 1,
             });
             gsap.set(
-                [overviewLabel.widthRef.current, featuresLabel.widthRef.current, engLabel.widthRef.current, screensLabel.widthRef.current, mobileLineRef.current, backendLineRef.current],
+                [overviewLabel.widthRef.current, featuresLabel.widthRef.current, engLabel.widthRef.current, mobileLineRef.current, backendLineRef.current],
                 { scaleX: 1, width: "100%" }
             );
+            gsap.set(vLineRef.current, { scaleY: 1 });
         },
 
         animate: () => {
@@ -166,7 +147,6 @@ export default function GivtroPage() {
                 { refs: overviewLabel, offset: "top 90%" },
                 { refs: featuresLabel, offset: "top 90%" },
                 { refs: engLabel, offset: "top 90%" },
-                { refs: screensLabel, offset: "top 90%" },
             ].forEach(({ refs, offset }) => {
                 gsap.set(refs.textRef.current, { visibility: "visible" });
                 registerWipe(refs, { trigger: () => refs.textRef.current, direction: "left", startOffset: offset, ease: EASE });
@@ -177,7 +157,7 @@ export default function GivtroPage() {
                 y: 0, opacity: 1, duration: 0.7, stagger: 0.07, ease: EASE,
                 scrollTrigger: { trigger: ".g-features-grid", start: "top 80%", toggleActions: "play none none none" },
             });
-            
+
             [mobileLineRef, backendLineRef].forEach((lineRef) => {
                 gsap.from(lineRef.current, {
                     scaleX: 0,
@@ -187,53 +167,42 @@ export default function GivtroPage() {
                 });
             });
 
+            gsap.from(vLineRef.current, {
+                scaleY: 0,
+                transformOrigin: "top center",
+                ease: EASE,
+                scrollTrigger: { trigger: vLineRef.current, start: "top 80%", end: "top 60%", scrub: true },
+            });
+
             gsap.set(".g-eng-item", { visibility: "visible", x: -20, opacity: 0 });
             gsap.to(".g-eng-item", {
                 x: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: EASE,
                 scrollTrigger: { trigger: ".g-eng-grid", start: "top 75%", toggleActions: "play none none none" },
             });
+            
+            const isMobile = window.innerWidth < 768;
+            const yAmt = isMobile ? 8 : 12;
 
-            const screensSection = pageRef.current?.querySelector<HTMLElement>(".g-screens-section");
-            const screenCards = pageRef.current?.querySelectorAll<HTMLElement>(".g-screen-card");
+            gsap.utils.toArray<HTMLElement>(".parallax-container").forEach((container) => {
+                const img = container.querySelector<HTMLImageElement>("img");
+                if (!img) return;
+                gsap.fromTo(
+                    img,
+                    { yPercent: -yAmt },
+                    { yPercent: yAmt, ease: "none", scrollTrigger: { trigger: container, start: "top bottom", end: "bottom top", scrub: 0.4 } }
+                );
+            });
 
-            if (screensSection && screenCards?.length) {
-                const isMobile = window.innerWidth < 768;
-                const stickyHeight = window.innerHeight * (isMobile ? 4 : 6);
-                const vw = window.innerWidth;
-                const startX = vw + 20;
-                const endX = -(vw + 200);
-
-                gsap.set(screenCards, { visibility: "visible", opacity: 0, x: startX });
-
-                ScrollTrigger.create({
-                    trigger: screensSection,
-                    start: "top top",
-                    end: `+=${stickyHeight}px`,
-                    pin: true,
-                    pinSpacing: true,
-                    onUpdate: (self) => {
-                        const progress = self.progress;
-                        screenCards.forEach((card, index) => {
-                            const delay = index * (isMobile ? 0.04 : 0.065);
-                            const cardProgress = Math.max(0, Math.min((progress - delay) * 2, 1));
-
-                            if (cardProgress > 0) {
-                                const yPos = CARD_TRANSFORMS[index]?.[0] ?? [0, 0, 0, 0];
-                                const rotations = CARD_TRANSFORMS[index]?.[1] ?? [0, 0, 0, 0];
-                                const cardX = gsap.utils.interpolate(startX, endX, cardProgress);
-                                const yProgress = cardProgress * 3;
-                                const yIndex = Math.min(Math.floor(yProgress), yPos.length - 2);
-                                const yLerp = yProgress - yIndex;
-                                const cardY = gsap.utils.interpolate(yPos[yIndex], yPos[yIndex + 1] ?? yPos[yIndex], yLerp);
-                                const cardRotation = gsap.utils.interpolate(rotations[yIndex], rotations[yIndex + 1] ?? rotations[yIndex], yLerp);
-                                gsap.set(card, { x: cardX, yPercent: cardY, rotation: cardRotation, opacity: 1 });
-                            } else {
-                                gsap.set(card, { opacity: 0 });
-                            }
-                        });
-                    },
+            gsap.set(".g-screen-card", { visibility: "visible", y: 40, opacity: 0 });
+            gsap.utils.toArray<HTMLElement>(".g-screen-card").forEach((card) => {
+                gsap.to(card, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: EASE,
+                    scrollTrigger: { trigger: card, start: "top 90%", toggleActions: "play none none none" },
                 });
-            }
+            });
         },
 
         animateWithSplitText: (ctx) => {
@@ -302,7 +271,7 @@ export default function GivtroPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-start">
-                    <div className="g-gallery-item gsap-hide relative w-full overflow-hidden rounded-2xl bg-foreground/5" style={{ aspectRatio: "9/10" }}>
+                    <div className="g-gallery-item gsap-hide relative w-full overflow-hidden rounded-xl bg-foreground/5" style={{ aspectRatio: "9/10" }}>
                         <Image src={mockup} alt="Givtro" fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
                     </div>
 
@@ -316,55 +285,81 @@ export default function GivtroPage() {
                 </div>
             </section>
 
-            {/* Overview */}
             <section className="px py border-t border-foreground/10">
-                <WipeLabel {...overviewLabel} label="Overview" />
-                <div className="grid md:grid-cols-2 gap-12 md:gap-24 mt-8">
-                    <p className="g-overview-heading gsap-hide text-foreground text-xl md:text-3xl leading-relaxed">
-                        Givtro is a consumer fintech app built for the Nigerian market — a single platform for moving money,
-                        paying bills, buying gift cards, and managing a digital wallet.
-                    </p>
-                    <div className="flex flex-col gap-6 text-sm text-primary-foreground leading-relaxed">
-                        <p className="g-overview-body gsap-hide">
-                            I was the sole engineer on Givtro from architecture to delivery — designing and building the React Native
-                            app, the Node.js/Express API, and every integration in between. No design handoff, no backend team.
-                            Every decision from database schema to animation timing was mine.
-                        </p>
-                        <p className="g-overview-body gsap-hide">
-                            The brief was to build something that felt premium and trustworthy in a market where most fintech apps
-                            still feel like they were designed in 2015. That meant getting the details right — snappy transitions,
-                            clear error states, and a transaction flow that never leaves the user guessing.
-                        </p>
+                <div className="flex gap-16 items-start">
+                    <div className="flex-1 min-w-0">
+                        <WipeLabel {...overviewLabel} label="Overview" />
+                        <div className="grid md:grid-cols-2 gap-12 md:gap-24 mt-8">
+                            <p className="g-overview-heading gsap-hide text-foreground text-xl md:text-3xl leading-relaxed">
+                                Givtro is a consumer fintech app built for the Nigerian market — a single platform for moving
+                                money, paying bills, buying gift cards, and managing a digital wallet.
+                            </p>
+                            <div className="flex flex-col gap-6 text-sm text-primary-foreground leading-relaxed">
+                                <p className="g-overview-body gsap-hide">
+                                    I was the sole engineer on Givtro from architecture to delivery — designing and building the
+                                    React Native app, the Node.js/Express API, and every integration in between. No design
+                                    handoff, no backend team. Every decision from database schema to animation timing was mine.
+                                </p>
+                                <p className="g-overview-body gsap-hide">
+                                    The brief was to build something that felt premium and trustworthy in a market where most
+                                    fintech apps still feel like they were designed in 2015. That meant getting the details right
+                                    — snappy transitions, clear error states, and a transaction flow that never leaves the user
+                                    guessing.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="hidden xl:block w-36 shrink-0 pt-14">
+                        <ScreenAccent item={overviewAccent} className="rotate-3" />
+                    </div>
+                </div>
+            </section>
+            
+            <section className="px py border-t border-foreground/10">
+                <div className="flex gap-16 items-start">
+                    <div className="flex-1 min-w-0">
+                        <WipeLabel {...featuresLabel} label="Features" />
+                        <div className="g-features-grid grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/10 mt-8">
+                            {features.map((f) => (
+                                <FeatureCard
+                                    key={f.number}
+                                    number={f.number}
+                                    title={f.title}
+                                    body={f.body}
+                                    brand={BRAND}
+                                    className="gsap-hide"
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="hidden xl:flex flex-col gap-14 w-36 shrink-0 pt-20">
+                        <ScreenAccent item={featuresAccentA} className="-rotate-2" />
+                        <ScreenAccent item={featuresAccentB} className="rotate-2" />
                     </div>
                 </div>
             </section>
 
-            {/* Features */}
-            <section className="px py border-t border-foreground/10">
-                <WipeLabel {...featuresLabel} label="Features" />
-                <div className="g-features-grid grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/10 mt-8">
-                    {features.map((f) => (
-                        <FeatureCard
-                            key={f.number}
-                            number={f.number}
-                            title={f.title}
-                            body={f.body}
-                            brand={BRAND}
-                            className="gsap-hide"
-                        />
-                    ))}
-                </div>
-            </section>
-
-            {/* Engineering */}
             <section className="px py border-t border-foreground/10">
                 <WipeLabel {...engLabel} label="Engineering" />
-                <div className="g-eng-grid grid md:grid-cols-2 gap-px bg-foreground/10 mt-8">
+                <div className="g-eng-grid relative grid md:grid-cols-2 gap-px mt-8">
+
+                    <div
+                        ref={vLineRef}
+                        aria-hidden="true"
+                        className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 origin-top bg-foreground/10"
+                    />
 
                     <div className="bg-primary p-6 md:p-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <span className="text-xs font-mono tracking-widest uppercase shrink-0" style={{ color: BRAND }}>Mobile</span>
-                            <div ref={mobileLineRef} className="h-px flex-1 bg-foreground/10 origin-left" />
+                        <div className="flex items-start justify-between gap-6 mb-6">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <span className="text-xs font-mono tracking-widest uppercase shrink-0" style={{ color: BRAND }}>Mobile</span>
+                                <div ref={mobileLineRef} className="h-px flex-1 bg-foreground/10 origin-left" />
+                            </div>
+                            <div className="hidden lg:block w-20 shrink-0 -mt-2 -mr-2">
+                                <ScreenAccent item={engMobileAccent} className="rotate-2" />
+                            </div>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-8">
                             {stack.mobile.map((s) => <Pill key={s} label={s} />)}
@@ -388,9 +383,14 @@ export default function GivtroPage() {
                     </div>
 
                     <div className="bg-primary p-6 md:p-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <span className="text-xs font-mono tracking-widest uppercase shrink-0" style={{ color: BRAND }}>Backend</span>
-                            <div ref={backendLineRef} className="h-px flex-1 bg-foreground/10 origin-left" />
+                        <div className="flex items-start justify-between gap-6 mb-6">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <span className="text-xs font-mono tracking-widest uppercase shrink-0" style={{ color: BRAND }}>Backend</span>
+                                <div ref={backendLineRef} className="h-px flex-1 bg-foreground/10 origin-left" />
+                            </div>
+                            <div className="hidden lg:block w-20 shrink-0 -mt-2 -mr-2">
+                                <ScreenAccent item={engBackendAccent} className="-rotate-2" />
+                            </div>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-8">
                             {[...stack.backend, ...stack.services].map((s, i) => <Pill key={`backend-${s}-${i}`} label={s} />)}
@@ -414,37 +414,12 @@ export default function GivtroPage() {
                     </div>
                 </div>
             </section>
-
-            {/* Screens */}
-            <section className="g-screens-section relative border-t border-foreground/10 w-full h-screen overflow-hidden">
-                <div className="px relative pt-10 z-10">
-                    <WipeLabel {...screensLabel} label="Screens" />
-                </div>
-
-                {screens.map((img, i) => (
-                    <div
-                        key={i}
-                        className="g-screen-card gsap-hide absolute will-change-transform z-20"
-                        style={{
-                            width: "clamp(100px, 12vw, 160px)",
-                            aspectRatio: "9/19.5",
-                            top: "30%",
-                            left: 0,
-                            marginTop: "-22vh",
-                            borderRadius: "14px",
-                            overflow: "hidden",
-                            boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-                        }}
-                    >
-                        <Image src={img.src} alt={img.alt} fill sizes="160px" className="object-cover" />
-                    </div>
-                ))}
-            </section>
-
-            {/* Project nav */}
+            
             <section className="px py border-t border-foreground/10">
                 <div className="flex items-center justify-between">
-                    <div />
+                    <div className="w-16 md:w-20">
+                        <ScreenAccent item={closingAccent} className="-rotate-3" />
+                    </div>
                     <Link href="/work/supadupa" className="link group inline-flex items-center gap-2 text-sm text-primary-foreground">
                         <span>SupaDupa</span>
                         <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>

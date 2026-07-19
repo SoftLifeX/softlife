@@ -5,8 +5,8 @@ type JavascriptProps = React.SVGProps<SVGSVGElement>;
 const Javascript: React.FC<JavascriptProps> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="18"
+    height="18"
     viewBox="0 0 48 48"
     className=" outline-3 outline-[#ffd600] -outline-offset-3"
   >

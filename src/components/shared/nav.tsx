@@ -150,7 +150,7 @@ export default function Navbar() {
             </span>
           </span>
 
-          <span
+          {/*<span
             ref={noteRef}
             className="pointer-events-none absolute left-0 top-full z-40 mt-3 flex items-center gap-2 whitespace-nowrap text-[0.7rem] tracking-wide text-foreground/60 opacity-0"
           >
@@ -171,7 +171,7 @@ export default function Navbar() {
                 style={{ width: 0 }}
               />
             </span>
-          </span>
+          </span>*/}
         </p>
       </div>
       <div className="flex flex-row flex-wrap items-center gap-x-4 gap-y-3">

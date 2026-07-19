@@ -79,7 +79,7 @@ export default function Intro() {
 
       <div className="flex justify-end-safe w-full pt-4 pb-3 md:pb-12 text-sm text-primary-foreground">
         <p className="about gsap-hide text-end">
-          Asides from the &ldquo;generic&ldquo; slab of text you&apos;re about to read,
+          Asides from the &ldquo;generic&rdquo; slab of text you&apos;re about to read,
           <br /> i&apos;m just a chill guy, I like traveling, learning new things,
           <br /> I enjoy the peace and quiet but will opt for the occasional chaos at times.
           <br />
@@ -93,8 +93,8 @@ export default function Intro() {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          I&apos;m an award winning Full-stack &amp; Mobile Software Engineer and designer,
-          with 4 years of experience.
+          An award winning Full-stack &amp; Mobile Software Engineer and Designer,
+          with 4+ years of experience.
         </p>
 
         <div
@@ -102,8 +102,7 @@ export default function Intro() {
           className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-[5rem] z-10 bg-background"
           style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
         >
-          A Dev still not replaced by AI - (&ldquo;yet&ldquo;),
-          I make stuff MOVE!, only when you pay me enough.. Or bribe me with sweets
+          A Developer making Apps and websites that actually look good (not just an overused AI generated template)
         </div>
       </div>
     </section>

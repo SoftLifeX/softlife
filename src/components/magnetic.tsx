@@ -96,12 +96,12 @@ export default function Magnetic({
 
   return (
     <div
-      className={cn(fullWidth && "block w-full", className)}
+      className={cn(fullWidth && "block w-full h-full", className)}
       style={{ perspective: "1000px", display: fullWidth ? "block" : "inline-block" }}
     >
       <div
         ref={wrapperRef}
-        className={cn(fullWidth && "block w-full")}
+        className={cn(fullWidth && "block w-full h-full")}
         style={{
           transformStyle: "preserve-3d",
           display: fullWidth ? "block" : "inline-block",

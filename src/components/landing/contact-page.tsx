@@ -173,7 +173,7 @@ export default function Contact() {
               <span className="contact-link-text block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full group-hover:text-foreground">
                 Send an email
               </span>
-              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full group-hover:text-foreground">
+              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[90%] group-hover:text-foreground">
                 Send an email
               </span>
             </span>
@@ -198,7 +198,7 @@ export default function Contact() {
               <span className="contact-link-text block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
                 Resume
               </span>
-              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[85%]">
                 Resume
               </span>
             </span>

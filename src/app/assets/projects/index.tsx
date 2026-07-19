@@ -6,6 +6,7 @@ import only     from "./only.webp";
 import airbnb   from "./airbnb.webp";
 import skyline  from "./skyline.webp";
 import givtro   from "./givtro/givtro_mockup.webp";
+import intarakt from "./intarakt/intarakt_mockup.webp";
 
 export const projects = {
     flow,
@@ -16,4 +17,5 @@ export const projects = {
     airbnb,
     skyline,
     givtro,
+    intarakt,
 };

@@ -251,7 +251,7 @@ export default function Hero() {
               gsap.set(ctaLinkRef.current, { scaleX: 1, opacity: 1 });
               gsap.to(
                 ctaLinkRef.current,
-                scrollExitScaleX(containerRef.current)
+                scrollExitOpacityOnly(containerRef.current)
               );
             },
           },
@@ -293,11 +293,11 @@ export default function Hero() {
     <section ref={sectionRef} className="px relative md:min-h-svh min-h-[85svh] bg-primary" id="#">
       <Navbar />
       <div ref={containerRef} className="hero">
-        <div data-speed="1.1" className="relative w-full flex md:items-end pt-40 md:pt-20 pb-12">
-          <div className="relative w-full flex justify-end">
+        <div data-speed="1.1" className="relative flex justify-center md:items-center pt-40 md:pt-20 pb-12">
+          <div className="relative w-fit justify-center">
             <h1
               ref={headingRef}
-              className="heading gsap-hide large text-[2.4rem] md:text-[5rem] text-center md:text-end leading-tight text-transparent"
+              className="heading gsap-hide large text-[2.4rem] md:text-[5rem] text-center leading-tight text-transparent"
               onMouseEnter={onHeadingEnter}
               onMouseLeave={onHeadingLeave}
               role="heading"
@@ -309,25 +309,25 @@ export default function Hero() {
 
             <div
               ref={revealRef}
-              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-[2.4rem] md:text-[5rem] z-10 bg-primary text-center md:text-end text-foreground"
+              className="w-full reveal hidden md:block pointer-events-none absolute inset-0 leading-tight text-[2.4rem] md:text-[4.9rem] z-10 bg-primary text-center text-foreground"
               style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
               aria-hidden="true"
             >
-              Building Products People <br /> Actually Want To Click
+              Making Stuff People Actually Want To Click
             </div>
 
             <div ref={blockRef} className="gsap-hide absolute w-0 h-full top-0 right-0 pointer-events-none bg-foreground" />
           </div>
         </div>
 
-        <div className="pb-12">
+        <div className="pb-12 flex justify-center">
           <div className="relative w-fit">
-            <p className="description relative gsap-hide text-sm text-foreground text-center md:text-left">
+            <p className="description relative gsap-hide text-sm text-foreground text-center">
               I&apos;m Daniel c. Daniel, Known online as softlifeX. <br />
               Currently based in Lagos, Nigeria <br />
             </p>
-            <p className="description-large gsap-hide text-foreground text-xl md:text-2xl text-center md:text-left">
-              Building digital products since 2022
+            <p className="description-large gsap-hide text-foreground text-xl text-center">
+              Building products that &ldquo;don&apos;t suck&rdquo;
             </p>
             <div ref={blockRef2} className="gsap-hide absolute w-0 h-full top-0 right-0 pointer-events-none bg-foreground" />
           </div>
@@ -345,7 +345,7 @@ export default function Hero() {
                 }}
                 onMouseMove={handleCtaMove}
                 onMouseLeave={() => setCtaHovered(false)}
-                className="link group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground text-primary-foreground text-sm tracking-wide hover:border-foreground transition-colors duration-500 overflow-hidden origin-left"
+                className="link group relative inline-flex items-center gap-3 px-8 py-4 border border-primary-foreground/60 text-primary-foreground text-sm tracking-wide hover:border-foreground transition-colors duration-500 overflow-hidden origin-left"
               >
                 <span
                   aria-hidden="true"
@@ -360,7 +360,7 @@ export default function Hero() {
                   <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
                     Start a conversation
                   </span>
-                  <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full group-hover:text-background">
+                  <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[80%] group-hover:text-background">
                     Start a conversation
                   </span>
                 </span>
@@ -388,7 +388,7 @@ export default function Hero() {
                   <span className="herolink block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-8">
                     Resume
                   </span>
-                  <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+                  <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[85%]">
                     Resume
                   </span>
                 </span>

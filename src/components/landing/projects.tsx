@@ -15,7 +15,7 @@ const INDEX_LABELS = ["01", "02", "03", "04", "05", "06", "07", "08"];
 const featured = project.slice(0, 6);
 const offsetY = ["", "md:-translate-y-15", "", "", "md:translate-y-15", "", ""];
 
-const SCRUB = 0.4;
+const SCRUB = 0.5;
 
 export default function Projects() {
   const projectsRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export default function Projects() {
       });
 
       const isMobile = window.innerWidth < 768;
-      const yAmt = isMobile ? 10 : 18;
+      const yAmt = isMobile ? 10 : 15;
 
       gsap.utils.toArray<HTMLElement>(".parallax-container").forEach((container) => {
         const img = container.querySelector<HTMLImageElement>("img");

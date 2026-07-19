@@ -5,8 +5,8 @@ type TypescriptProps = React.SVGProps<SVGSVGElement>;
 const Typescript: React.FC<TypescriptProps> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="18"
+    height="18"
     viewBox="0 0 48 48"
     fill="#1374acff"
     className="bg-white outline-2 outline-[#1374acff] -outline-offset-2"

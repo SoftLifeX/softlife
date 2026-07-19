@@ -18,12 +18,12 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
     <Magnetic fullWidth strength={0} tiltStrength={5}>
       <div
         className={cn(
-          "project-card-inner group1 relative flex flex-col w-full h-95 overflow-hidden rounded-xl",
+          "project-card-inner group1 relative flex flex-col w-full h-110 overflow-hidden rounded-xs",
           offsetClass,
         )}
       >
         {/* Parallax image */}
-        <div className="parallax-container absolute inset-0 overflow-hidden rounded-xl">
+        <div className="parallax-container absolute inset-0 overflow-hidden rounded-xs">
           <div className="relative h-[120%] w-full -top-[10%]">
             <Image
               src={p.img}
@@ -80,20 +80,20 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
               <span className="block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
                 View Project
               </span>
-              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[85%]">
                 View Project
               </span>
             </span>
-            <span className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden">
+            <span className="relative items-center z-10 w-3.5 h-[1.4em] shrink-0 overflow-hidden">
               <svg
                 width="14" height="14" viewBox="0 0 14 14" fill="none"
-                className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-4.5 group-hover:-translate-y-4.5"
+                className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) translate-y-1.5 group-hover:translate-x-4.5 group-hover:-translate-y-4.5"
               >
                 <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <svg
                 width="14" height="14" viewBox="0 0 14 14" fill="none"
-                className="absolute inset-0 -translate-x-4.5 translate-y-4.5 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-0 group-hover:delay-150"
+                className="absolute inset-0 -translate-x-4.5 translate-y-6 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-1.5 group-hover:delay-150"
               >
                 <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

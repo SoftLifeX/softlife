@@ -1,16 +1,4 @@
 "use client";
-/**
- * SmoothScroller
- *
- * CHANGES FROM ORIGINAL:
- * - Import ScrollSmoother + ScrollTrigger from the centralized gsap-init
- *   (eliminates duplicate registerPlugin calls across the codebase).
- * - Added typeof window guard so the module is safe during SSR / static
- *   generation (ScrollSmoother reads `window` at import time on some
- *   versions of the GSAP bundle).
- * - Smoother instance created inside a matchMedia callback so it never
- *   activates on touch-only devices where it fights native scroll.
- */
 
 import { useEffect, useRef } from "react";
 import { gsap, ScrollSmoother, ScrollTrigger } from "@/lib/gsap-init";
