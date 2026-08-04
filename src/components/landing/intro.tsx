@@ -102,7 +102,7 @@ export default function Intro() {
           className="hidden md:block pointer-events-none absolute inset-0 text-3xl md:text-[5rem] z-10 bg-background"
           style={{ opacity: hovered ? 1 : 0, transition: "opacity 0s ease", willChange: "clip-path" }}
         >
-          A Developer making Apps and websites that actually look good (not just an overused AI generated template)
+          A Developer who builds Apps and websites that actually look good (not just overused AI generated templates)
         </div>
       </div>
     </section>

@@ -15,14 +15,14 @@ interface ProjectCardProps {
 
 export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCardProps) {
   return (
-    <Magnetic fullWidth strength={0} tiltStrength={5}>
-      <div
-        className={cn(
-          "project-card-inner group1 relative flex flex-col w-full h-110 overflow-hidden rounded-md",
-          offsetClass,
-        )}
-      >
-        {/* Parallax image */}
+    <div
+      className={cn(
+        "project-card-inner group1 relative flex flex-col w-full h-110 overflow-hidden rounded-md",
+        offsetClass,
+      )}
+    >
+      {/* Parallax image — magnetic tilt applies only to the image */}
+      <Magnetic fullWidth strength={0} tiltStrength={5} className="absolute inset-0 z-0">
         <div className="parallax-container absolute inset-0 overflow-hidden rounded-md">
           <div className="relative h-[120%] w-full -top-[10%]">
             <Image
@@ -38,76 +38,76 @@ export function ProjectCard({ p, index, offsetClass, onLockedClick }: ProjectCar
             />
           </div>
         </div>
+      </Magnetic>
 
-        <div
-          className="absolute inset-0 z-10 pointer-events-none"
-          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 45%, transparent 100%)" }}
-        />
+      <div
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 45%, transparent 100%)" }}
+      />
 
-        <span className="absolute top-4 right-4 z-20 text-xs font-mono" style={{ color: p.bg }} >{index}</span>
+      <span className="absolute top-4 right-4 z-20 text-xs font-mono" style={{ color: p.bg }} >{index}</span>
 
-        {p.disabled && (
-          <span className="absolute top-4 left-4 z-20 text-xs text-white/60 border border-white/20 rounded-full px-2.5 py-0.5">
-            soon
+      {p.disabled && (
+        <span className="absolute top-4 left-4 z-20 text-xs text-white/60 border border-white/20 rounded-full px-2.5 py-0.5">
+          soon
+        </span>
+      )}
+
+      <div className="relative z-20 mt-auto p-6 flex flex-col gap-3">
+        <div className="flex items-end justify-between">
+          <h3 className="text-white font-semibold text-lg leading-tight">{p.title}</h3>
+          <span className="text-xs rounded-full px-2.5 py-0.5 ml-3 shrink-0" style={{ color: p.color, backgroundColor: p.bg }}>
+            {p.stack[0]}
           </span>
-        )}
-
-        <div className="relative z-20 mt-auto p-6 flex flex-col gap-3">
-          <div className="flex items-end justify-between">
-            <h3 className="text-white font-semibold text-lg leading-tight">{p.title}</h3>
-            <span className="text-xs rounded-full px-2.5 py-0.5 ml-3 shrink-0" style={{ color: p.color, backgroundColor: p.bg }}>
-              {p.stack[0]}
-            </span>
-          </div>
-
-          <p className="text-white/60 text-xs leading-relaxed line-clamp-1">{p.intro}</p>
-
-          <div className="flex flex-wrap gap-1.5">
-            {p.stack.slice(0, 3).map((tech) => (
-              <span key={tech} className="text-xs text-white/70 border border-white/15 rounded-full px-2.5 py-0.5 backdrop-blur-sm">
-                {tech}
-              </span>
-            ))}
-            {p.stack.length > 3 && <span className="text-xs text-white/40 px-1 py-0.5">+{p.stack.length - 3}</span>}
-          </div>
-
-          <Link
-            href={p.disabled ? "#" : p.href}
-            onClick={(e) => onLockedClick(e, p.disabled)}
-            className={cn("link group relative inline-flex items-center gap-2 w-fit text-sm text-white mt-1",
-              p.disabled ? "cursor-not-allowed" : "cursor-pointer")}>
-            <span className="relative block h-[1.2em] overflow-hidden">
-              <span className="block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
-                View Project
-              </span>
-              <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[85%]">
-                View Project
-              </span>
-            </span>
-            <span className="relative items-center z-10 w-3.5 h-[1.4em] shrink-0 overflow-hidden">
-              <svg
-                width="14" height="14" viewBox="0 0 14 14" fill="none"
-                className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) translate-y-1.5 group-hover:translate-x-4.5 group-hover:-translate-y-4.5"
-              >
-                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <svg
-                width="14" height="14" viewBox="0 0 14 14" fill="none"
-                className="absolute inset-0 -translate-x-4.5 translate-y-6 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-1.5 group-hover:delay-150"
-              >
-                <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-            <span
-              className={cn(
-                "absolute left-0 -bottom-0.5 h-px w-[80%] bg-white/60",
-                "origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom)",
-                "group-hover:origin-right group-hover:scale-x-0"
-              )}
-            />
-          </Link>
         </div>
+
+        <p className="text-white/60 text-xs leading-relaxed line-clamp-1">{p.intro}</p>
+
+        <div className="flex flex-wrap gap-1.5">
+          {p.stack.slice(0, 3).map((tech) => (
+            <span key={tech} className="text-xs text-white/70 border border-white/15 rounded-full px-2.5 py-0.5 backdrop-blur-sm">
+              {tech}
+            </span>
+          ))}
+          {p.stack.length > 3 && <span className="text-xs text-white/40 px-1 py-0.5">+{p.stack.length - 3}</span>}
+        </div>
+
+        <Link
+          href={p.disabled ? "#" : p.href}
+          onClick={(e) => onLockedClick(e, p.disabled)}
+          className={cn("link group relative inline-flex items-center gap-2 w-fit text-sm text-white mt-1",
+            p.disabled ? "cursor-not-allowed" : "cursor-pointer")}>
+          <span className="relative block h-[1.2em] overflow-hidden">
+            <span className="block transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-full">
+              View Project
+            </span>
+            <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[85%]">
+              View Project
+            </span>
+          </span>
+          <span className="relative items-center z-10 w-3.5 h-[1.4em] shrink-0 overflow-hidden">
+            <svg
+              width="14" height="14" viewBox="0 0 14 14" fill="none"
+              className="absolute inset-0 transition-transform duration-300 ease-(--ease-custom) translate-y-1.5 group-hover:translate-x-4.5 group-hover:-translate-y-4.5"
+            >
+              <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <svg
+              width="14" height="14" viewBox="0 0 14 14" fill="none"
+              className="absolute inset-0 -translate-x-4.5 translate-y-6 transition-transform duration-300 ease-(--ease-custom) group-hover:translate-x-0 group-hover:translate-y-1.5 group-hover:delay-150"
+            >
+              <path d="M2 12L12 2M12 2H5M12 2V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <span
+            className={cn(
+              "absolute left-0 -bottom-0.5 h-px w-[80%] bg-white/60",
+              "origin-left scale-x-100 transition-transform duration-500 ease-(--ease-custom)",
+              "group-hover:origin-right group-hover:scale-x-0"
+            )}
+          />
+        </Link>
       </div>
-    </Magnetic>
+    </div>
   );
 }

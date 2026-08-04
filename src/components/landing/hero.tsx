@@ -56,7 +56,7 @@ export default function Hero() {
     reducedMotionFallback: () => {
       gsap.set(
         [".heading", ".description", ".description-large", ".link-container"],
-        { visibility: "visible", opacity: 1, yPercent: 0, xPercent: 0 }
+        { visibility: "visible", yPercent: 0, xPercent: 0 }
       );
       gsap.set([blockRef.current, blockRef2.current, blockRef3.current], {
         visibility: "visible",
@@ -113,7 +113,7 @@ export default function Hero() {
       
       const titleSplit = new SplitText(".heading", {
         type: "chars, words, lines",
-        mask: "chars",
+        mask: "chars", 
         wordsClass: "heading++",
         charsClass: "headingChar",
       });
@@ -121,8 +121,8 @@ export default function Hero() {
       const line1Chars = titleSplit.lines[0]?.querySelectorAll(".headingChar") ?? [];
       const line2Chars = titleSplit.lines[1]?.querySelectorAll(".headingChar") ?? [];
 
-      gsap.set(line1Chars, { xPercent: 100, opacity: 0 });
-      gsap.set(line2Chars, { xPercent: -100, opacity: 0 });
+      gsap.set(line1Chars, { xPercent: 100 });
+      gsap.set(line2Chars, { xPercent: -100 });
 
       new SplitText(".reveal", { type: "words", wordsClass: "reveal++" });
 
@@ -139,8 +139,7 @@ export default function Hero() {
       const linkSplit = new SplitText(".herolink", { type: "words, lines", mask: "lines" });
 
       gsap.set([descSplit.words, descLargeSplit.words, linkSplit.words], {
-        yPercent: 100,
-        opacity: 0,
+        yPercent: 100
       });
 
       gsap.set(ctaIconRef.current, { opacity: 0 });
@@ -148,16 +147,7 @@ export default function Hero() {
       gsap.set(heroWidthRef.current, { width: 0 });
 
       const scrollExit = (trigger: Element | null) => ({
-        yPercent: -50,
-        opacity: 0,
-        stagger: 0.2,
-        ease: EASE,
-        scrollTrigger: { trigger, start: "30% top", end: "+=10%", scrub: true },
-      });
-
-      const scrollExitScaleX = (trigger: Element | null) => ({
-        scale: 0,
-        opacity: 0,
+        yPercent: -100,
         stagger: 0.2,
         ease: EASE,
         scrollTrigger: { trigger, start: "30% top", end: "+=10%", scrub: true },
@@ -184,14 +174,12 @@ export default function Hero() {
 
         tl.to(line1Chars, {
           xPercent: 0,
-          opacity: 1,
           stagger: 0.06,
           duration: 0.3,
           ease: EASE,
         }, 0)
           .to(line2Chars, {
             xPercent: 0,
-            opacity: 1,
             stagger: 0.06,
             duration: 0.3,
             ease: EASE,
@@ -199,7 +187,7 @@ export default function Hero() {
           .call(() => {
             
             gsap.to(titleSplit.words, {
-              yPercent: -50,
+              yPercent: -100,
               opacity: 0,
               stagger: 0.05,
               ease: EASE,
@@ -223,12 +211,11 @@ export default function Hero() {
             words as HTMLElement[],
             {
               yPercent: 0,
-              opacity: 1,
               duration: 0.4,
               stagger: 0.05,
               ease: EASE,
               onComplete: () => {
-                gsap.set(words as HTMLElement[], { yPercent: 0, opacity: 1 });
+                gsap.set(words as HTMLElement[], { yPercent: 0 });
                 gsap.to(words as HTMLElement[], scrollExit(trigger));
               },
             },
@@ -377,7 +364,7 @@ export default function Hero() {
                       Start a conversation
                     </span>
                     <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[80%] group-hover:text-background">
-                      Start a conversation
+                      Even if it's to say hi
                     </span>
                   </span>
                   <span

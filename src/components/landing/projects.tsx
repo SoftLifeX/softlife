@@ -110,10 +110,9 @@ export default function Projects() {
       );
 
       const projectlineSplit = new SplitText(".projectline", { type: "chars, words", mask: "chars" });
-      gsap.set(projectlineSplit.chars, { xPercent: 100, opacity: 0 });
+      gsap.set(projectlineSplit.chars, { xPercent: 100 });
       gsap.to(projectlineSplit.chars, {
         xPercent: 0,
-        opacity: 1,
         ease: EASE,
         stagger: 0.02,
         scrollTrigger: { trigger: ".projectline", start: "top 90%", end: "top 85%", scrub: SCRUB },

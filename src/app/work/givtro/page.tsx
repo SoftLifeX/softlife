@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "P2P transfers, bank transfers, VTU services, gift cards, biometric auth, and KYC — React Native frontend, Node.js/Express backend.",
   alternates: { canonical: "/work/givtro" },
   openGraph: {
-    title: "Givtro — Nigerian Fintech App | SoftLifeX",
+    title: "Givtro — Nigerian Fintech App | Daniel C Daniel",
     description:
       "Full-stack fintech platform — React Native, Node.js/Express, MongoDB. " +
       "P2P transfers, bank transfers, VTU, gift cards, biometric auth, KYC. Built solo.",

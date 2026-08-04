@@ -45,7 +45,7 @@ const personSchema = {
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type":    "WebSite",
-  name:       "SoftLifeX",
+  name:       "Daniel C Daniel | SoftLifeX",
   url:        siteURL,
   author:     { "@type": "Person", name: "Daniel Chimbu-Okaaomee Daniel" },
   description:

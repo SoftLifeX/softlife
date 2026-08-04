@@ -192,7 +192,7 @@ export default function Contact() {
                   Send an email
                 </span>
                 <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[90%] group-hover:text-foreground">
-                  Send an email
+                  Don't spam :(
                 </span>
               </span>
               <span className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden">
