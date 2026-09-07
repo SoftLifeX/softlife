@@ -25,8 +25,8 @@ export default function OutdatedSiteModal() {
       );
       gsap.fromTo(
         ".outdated-modal-panel",
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.5, ease: EASE, delay: 0.1 }
+        { opacity: 0, scale: 0.5 },
+        { opacity: 1, scale: 1, duration: 0.5, ease: EASE, delay: 0.1 }
       );
     }, 800);
 
@@ -34,6 +34,12 @@ export default function OutdatedSiteModal() {
   }, []);
 
   const handleClose = () => {
+    gsap.to(".outdated-modal-panel", {
+      opacity: 0,
+      scale: 0.5,
+      duration: 0.3,
+      ease: EASE,
+    });
     gsap.to(".outdated-modal-overlay", {
       opacity: 0,
       duration: 0.3,
@@ -59,11 +65,11 @@ export default function OutdatedSiteModal() {
       aria-modal="true"
       aria-labelledby="outdated-modal-title"
     >
-      <div className="outdated-modal-panel relative w-full max-w-md bg-primary border border-primary-foreground/60 px-8 py-10 text-center">
+      <div className="outdated-modal-panel relative w-full max-w-md bg-primary border border-primary-foreground/60 rounded-2xl px-8 py-10 text-center">
         <button
           onClick={handleClose}
           aria-label="Close"
-          className="absolute top-4 right-4 text-primary-foreground/60 hover:text-foreground transition-colors duration-300 text-sm tracking-wide"
+          className="absolute top-4 right-4 cursor-pointer text-primary-foreground/60 hover:text-foreground transition-colors duration-300 text-sm tracking-wide"
         >
           ✕
         </button>
@@ -83,7 +89,7 @@ export default function OutdatedSiteModal() {
           I&apos;ve moved everything to a newer, better build. Head over there to see the latest work.
         </p>
 
-        <a
+        
           href={NEW_SITE_URL}
           target="_blank"
           rel="noopener noreferrer"
@@ -109,7 +115,7 @@ export default function OutdatedSiteModal() {
               Visit the new site
             </span>
             <span className="absolute left-0 top-full block w-full transition-transform duration-500 ease-(--ease-custom) group-hover:-translate-y-[80%] group-hover:text-background">
-              danielcdaniel.vercel.app
+              Visit the new site
             </span>
           </span>
           <span className="relative z-10 w-3.5 h-3.5 shrink-0 overflow-hidden rotate-135">
@@ -130,7 +136,7 @@ export default function OutdatedSiteModal() {
 
         <button
           onClick={handleClose}
-          className="block mx-auto text-xs text-primary-foreground/50 hover:text-primary-foreground transition-colors duration-300"
+          className="block mx-auto cursor-pointer text-xs text-primary-foreground/50 hover:text-primary-foreground transition-colors duration-300"
         >
           Continue on the old site
         </button>
