@@ -11,6 +11,7 @@ import { useGsapScope } from "@/hooks/useGsapScope";
 import { EASE } from "@/lib/animations/tokens";
 import { AnchorLink } from "../shared/anchor-link";
 import Magnetic from "../magnetic";
+import OutdatedSiteModal from "../shared/outdated-site-modal";
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -292,6 +293,8 @@ export default function Hero() {
   });
 
   return (
+    <>
+    <OutdatedSiteModal />
     <section ref={sectionRef} className="px relative md:min-h-svh min-h-[85svh] bg-primary" id="#">
       <Navbar />
       <div ref={containerRef} className="hero">
@@ -403,5 +406,6 @@ export default function Hero() {
         </div>
       </div>
     </section>
+    </>
   );
 }
