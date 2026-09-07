@@ -83,7 +83,7 @@ export default function OutdatedSiteModal() {
           I&apos;ve moved everything to a newer, better build. Head over there to see the latest work.
         </p>
 
-        
+        <a
           href={NEW_SITE_URL}
           target="_blank"
           rel="noopener noreferrer"
